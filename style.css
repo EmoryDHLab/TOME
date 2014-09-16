@@ -1,0 +1,121 @@
+path:hover{
+    opacity: 1;
+    stroke:black;
+    stroke-width:0.5px;
+  }
+
+  .sizeForm {
+  font: 11px sans-serif;
+  float:left;
+  padding-right: 30px;
+  }
+
+  h1{
+    font: 16px sans-serif;
+  }
+
+  svg{
+
+  }
+
+  body{
+    background-color:#ddd;
+  }
+  #searchQuery{
+    width:300px;
+  }
+
+  #middleContainer{
+    border-color:#a9a9a9;
+    border-style:solid;
+    border-width:1px;
+    width:100%;
+    height:300px;
+    float:left;
+    margin-top:5px;
+  }
+
+  #topQuery{
+    border-color:#a9a9a9;
+    border-style:solid;
+    border-width:1px;
+
+    font: 15px sans-serif;
+    display:inline-block;
+    width:100%;
+    height:40px;
+    background-color:#96CDCD;
+    float:left;
+    margin-top:5px;
+
+    text-align: center;
+    line-height: 40px; /* where the magic happens */
+  }
+
+  #topQuery form#query {
+    display: inline;
+  }
+  #topQuery select#query {
+    display: inline;
+  }
+  #topQuery button#search {
+    display: inline;
+  }
+
+  #highlighted{
+    font: 14px sans-serif;
+    float:left;
+    width:50px;
+    height:20px;
+    background-color:#FFB94E;
+  }
+  #pathBox{
+    float:left;
+    width:80%;
+  /*  background-color:#333;*/
+    background-color:#efefef;
+    height:300px;
+  }
+
+  #textBox{
+    font: 14px sans-serif;
+    width: 100%;
+    height: 200px;
+    float:left;
+    clear:left;
+    background-color: #FFB94E;
+    border-style:solid;
+    border-width:1px;
+    border-color:#a9a9a9;
+    margin-top:5px;
+  }
+
+  #textBoxInner{
+    padding-top:10px;
+    padding-left:20px;
+  }
+
+  #controlPanel{
+    font: 11px sans-serif;
+    float:left;
+    width:20%;
+    height:300px;
+    background-color:#ccc;
+  }
+
+  #controlPanelInner{
+    width:90%;
+    height:90%;
+    background-color:#ccc;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top:10px;
+  }
+
+  label{display:block;}
+
+  #toggleContainer{
+    overflow:auto;
+    height:100px;
+    background-color: #fff;
+  }
