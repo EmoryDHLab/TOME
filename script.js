@@ -114,6 +114,7 @@ $( document ).ready(function() {
       }
       //making the points along the bottom of the path to close off the shape
       for(i=9;i>-1;i--){
+        //var randHeighttemp= i*1.5+10;
         var randHeight = Math.floor((Math.random()*height)+10); //minimum height of 10 px
         var tempX = x + (i+1)*width + i*g;
         var tempX2 = x + i*width + i*g;
@@ -143,7 +144,12 @@ $( document ).ready(function() {
     .enter()
       .append("svg:path")
       .attr("d", function(d) { return flowChart(d);}) //d--the path for topic number (d)
-      .attr("fill", function(d) {return d.color = color(d);}) //fills it with the corresponding color
+      .attr("fill", function(d) {
+           var toggleContainerDiv =  document.getElementById("toggleContainer");
+           var labels=toggleContainerDiv.getElementsByTagName('LABEL'); //grabs topic's corresponding label
+           labels[d].style.backgroundColor = color(d); //sets label to color of topic path.
+          // lables[d].style.opacity = "0.5";
+           return d.color = color(d);}) //fills it with the corresponding color
       .attr("index",function(d){return d;}) //individual attribute for keeping track of each individual path
       .attr("opacity",0.5)
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
@@ -285,8 +291,8 @@ $( document ).ready(function() {
       var num1 = n1.attr("index");
       var num2 = n2.attr("index");
       var tempTitle = "<h1>Topics " + num1 + " and " + num2 + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
-      var tempContent = "Here is some temporary text about topics <b>" + num1 + 
-      "and" + num2 + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
+      var tempContent = "Here is some temporary text about topics <b> " + num1 + 
+      " and " + num2 + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
       document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
   }
 

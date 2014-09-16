@@ -115,7 +115,8 @@ path:hover{
   label{display:block;}
 
   #toggleContainer{
-    overflow:auto;
-    height:100px;
+    overflow: auto;
+    margin-top: 15px;
+    height: 150px;
     background-color: #fff;
   }
