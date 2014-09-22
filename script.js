@@ -1,22 +1,69 @@
 $( document ).ready(function() {
-  var numTopics = 10;
+  var numTopics = 11;
   var windowHeight = 300;
   var windowWidth = $("#pathBox").width();
-
   //top/left margins for the paths
   var x = 10;
   var y = 10;
+  var padding = 5;
+  var topicData;
+  var pathWidth =18;
 
+ //append an svg to the designated div for containing the paths
+  var svg = d3.select("#pathBox").append("svg")
+    .attr("width", windowWidth)
+    .attr("height", windowHeight)
 
   //keeps track of the checked topics 
-  var topicChecked = [true, true, true, true, true, true, true, true, true, true];
+  var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
   var shiftPressed = false;
 
   var width = (windowWidth/numTopics)*.75; //width of each column
-  var g = (windowWidth/numTopics)*.25; //
+  var g = (windowWidth/numTopics)*.25; //space between columns	
   var verticalGap = windowHeight/numTopics;
   var height = verticalGap/(numTopics/2);
   var oldScale = [1,1]; //initial X/Y scale is 1:1
+
+//scale to determine thickness of the hexagon (height), which translates values in
+//the domain 0.9-70 to the range 1-40. The domain is based off popularity values
+//in the CSV, under the label "value"
+var thicknessScale = d3.scale.linear()
+  .domain([0.9,70]) //work on scraping domain straight from data ***
+  .range([1,60]);
+
+//two formats for parsing date-- one is for the ones that only have the year and month values,
+//the other is for the dates with year, month, and day values
+var parseDate = d3.time.format("%Y-%m").parse;
+var parseDate2 = d3.time.format("%Y-%m-%d").parse;
+var parseDate3= d3.time.format("%m/%d/%Y").parse;
+//date range for this dataset
+var mindate = parseDate("1845-09"),
+  maxdate = parseDate("1861-05");
+
+
+var c = d3.scale.linear()
+  .domain([0,11])
+  .range([0,1]);
+
+var xScale = d3.time.scale()
+  .domain([mindate, maxdate])
+  .range([padding, windowWidth*10 - padding * 2]);
+
+var yScale = d3.scale.linear()
+              .domain([250, 2200])
+              .range([2, 20]);
+
+var xAxis = d3.svg.axis()
+    .scale(xScale)
+    .orient("bottom");
+
+//topics selected as the most relevant in the data set, the data set (narrowed down to these)
+//can be found in a-month-shorter3.csv
+var indices = [15,29,44,46,49,60,70,82,84,86,91];
+var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when selecting/deselecting checkboxes
+
+//colorscale to color each path
+var color = d3.scale.category20();
 
 
   $(document).keydown(function (e) {
@@ -54,101 +101,141 @@ $( document ).ready(function() {
       .duration(750)
       .attr("width", windowWidth).attr("height", windowHeight);
   }
+var w = window;
+
+  
+
+//-------------------HERE, WORK ON GETTING CORRECT HEIGHTS-------//
 
 
-  //--------------THIS SECTION IS JUST FOR MAKING DUMMY DATA------------------//
-
-  function shuffle(o){
-      for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-      return o;
-  }
-
-    var arr0= [0,1,2,3,4,5,6,7,8,9];
-    var arr1= [0,1,2,3,4,5,6,7,8,9];
-    var arr2= [0,1,2,3,4,5,6,7,8,9];
-    var arr3= [0,1,2,3,4,5,6,7,8,9];
-    var arr4= [0,1,2,3,4,5,6,7,8,9];
-    var arr5= [0,1,2,3,4,5,6,7,8,9];
-    var arr6= [0,1,2,3,4,5,6,7,8,9];
-    var arr7= [0,1,2,3,4,5,6,7,8,9];
-    var arr8= [0,1,2,3,4,5,6,7,8,9];
-    var arr9= [0,1,2,3,4,5,6,7,8,9];
-
-    list = [arr0,arr1,arr2,arr3,arr4,arr5,arr6,arr7,arr8,arr9];
-
-    //shuffles list so that the "topics" are in various order
-    for(i=0;i<10;i++){
-      list[i]=shuffle(list[i]);
-    }
-
-    var tempArray = [];
-
-    var w = window;
-
-    //shuffles each topic's ordering 
-    for(i=0;i<10;i++){
-      w["arr_"+i] = [];
-    }
-    for(i=0;i<10;i++){
-      for(j=0;j<10;j++){
-          w["arr_"+i].push(list[j].indexOf(i));
-      }
-    } 
-
-//--------------------END DUMMY DATA SECTION----------------------//
+// //adds the x axis
+// svg.append("g")
+//     .attr("class", "xaxis")
+//     .attr("transform","translate(0,270)")
+//     .call(xAxis)
+//     .selectAll("text")
+//         .style("font-size", "10px");
 
 
-  //function that takes in the "topic number" and spits out the associated path
-  function flowChart(topicNum){
+
+
+//for each topic, copy it to an array to keep track
+for(i=0;i<indices.length;i++){
+      w["arr_topic"+indices[i]] = [];
+}
+
+//load the data and place it into an array where an array of data on each topic is located by looking
+//for w["arr_topic<number>"] where <number> is the topic number.
+d3.csv("a_month_shorter3.csv", function(error, data){
+	topicData=data;
+	topicData.forEach( function(d){
+
+			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
+		
+		})
+
+
+
+//working on new draw_Paths takes in an array containing information on one topic
+//and returns the points for the entire path.
+  function draw_Paths(topicArray){
 
       var points = [];
-
       //making the points along the top of the path
-      for(i=0;i<10;i++){
-        var tempX = x + i*width + i*g;
-        var tempX2 = x + (i+1)*width + i*g;
-        var tempY = y+(w["arr_"+topicNum][i]*verticalGap); //Y value determined by the topic's order at "time" i
-        var tempY2 = tempY;
-        points.push([tempX,tempY]); //the leftmost point in each column
-        points.push([tempX2,tempY2]); //the rightmost point in each column
-      }
+
+      for(i=0;i<topicArray.length;i++){
+      	//var tempX = x + i*width + i*g;
+       // var tempX2 = x + (i+1)*width + i*g;
+       //console.log(parseDate3(topicArray[i][0].date));
+		 var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+		  var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+		 var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+		  var tempY2 =  tempY1;
+		  points.push([tempX,tempY1]); //the leftmost point in each column
+	      points.push([tempX2,tempY2]); //the rightmost point in each column
+}
       //making the points along the bottom of the path to close off the shape
-      for(i=9;i>-1;i--){
+      for(i=topicArray.length-1;i>-1;i--){
         //var randHeighttemp= i*1.5+10;
-        var randHeight = Math.floor((Math.random()*height)+10); //minimum height of 10 px
-        var tempX = x + (i+1)*width + i*g;
-        var tempX2 = x + i*width + i*g;
-        var tempY = y+(w["arr_"+topicNum][i]*verticalGap)+randHeight;
+        //var tempX = x + (i+1)*width + i*g;
+       // var tempX2 = x + i*width + i*g;
+        var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
+        var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+        var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
         var tempY2 = tempY;
         points.push([tempX,tempY]);
         points.push([tempX2,tempY2]); 
       }
-          
       return d3.svg.line()(points);
       
   }
+//---------------END HEIGHT WORK ------------------------------//
 
-  //dataArray so that the path function will run 10 times
-  //color scale for the paths
-  var dataArray = [0,1,2,3,4,5,6,7,8,9];
-  var color = d3.scale.category20();
 
-  //append an svg to the designated div for containing the paths
-  var svg = d3.select("#pathBox").append("svg")
-    .attr("width", windowWidth)
-    .attr("height", windowHeight)
+
+
+  //create labels in d3 related to each topic. 
+  var topicLabels = d3.select("#toggleContainer").append("div")
+  						.selectAll("label")
+  						.data(indices)
+  	topicLabels.enter()
+  			.append("div")
+  			.attr("class", "topicLabels")
+  			.append("label")
+  			.attr("class","topicName");
+
+  	//give each label, text, color, and "on click" functionality to select/deselect paths.
+  	topicLabels.select(".topicName")
+  					.attr("value", function(d){
+  									return d;
+  					})
+  					.style("border", "5px")
+  					.style("height", "20px")
+  					.style("background-color", function(d){
+
+  												return color(d);})
+  					.style("opacity", 0.5)
+  					.on("mouseover", function(d){
+  								d3.select(this).transition()
+  									.style("opacity",1);
+  									// .style("background-color", function(d){
+  									// 		return d3.rgb(color(d)).darker();
+  									// 	});
+  								})
+  					.on("mouseout", function(d){
+  							d3.select(this).transition()
+  								.style("opacity", 0.5);
+  								// .style("background-color", function(d){
+  								// 		return color(d);});
+  								})
+  					
+  					.on("click", function(d){
+  								var a= dataArray.indexOf(d);
+  								var tempChecked = topicChecked[a];
+  								topicChecked[a] = !tempChecked;
+  								labelChecked();
+  							})
+  					.html( function(d){
+  							var finalText = "Topic Number: " + d + " ";
+  							return finalText;
+  					});
+
+
+
+  	topicLabels.exit().remove();
+
 
   //iterate over dataArray and append that number of paths to the svg
   var paths = svg.selectAll("path")
-    .data(dataArray)
+    .data(indices) //adjust this to indicies
     .enter()
       .append("svg:path")
-      .attr("d", function(d) { return flowChart(d);}) //d--the path for topic number (d)
+      .attr("d", function(d) { 
+      	var currTopicArray = w["arr_topic" + d];
+      	
+      	
+      return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
       .attr("fill", function(d) {
-           var toggleContainerDiv =  document.getElementById("toggleContainer");
-           var labels=toggleContainerDiv.getElementsByTagName('LABEL'); //grabs topic's corresponding label
-           labels[d].style.backgroundColor = color(d); //sets label to color of topic path.
-          // lables[d].style.opacity = "0.5";
            return d.color = color(d);}) //fills it with the corresponding color
       .attr("index",function(d){return d;}) //individual attribute for keeping track of each individual path
       .attr("opacity",0.5)
@@ -330,34 +417,33 @@ $( document ).ready(function() {
 
   function updateData(){
     var tempDataStr = ""
-    for(i=0;i<topicChecked.length;i++){
-      if(topicChecked[i]){
+    for(i=0;i<dataArray.length;i++){ //for the length of the data array (always the number of topics)
+      if(topicChecked[i]){ //if in the topicChecked array, the topic is checked
         if (tempDataStr == ""){
-          tempDataStr += i;
+          tempDataStr += dataArray[i];
         }
         else{
-          tempDataStr= tempDataStr + "," + i;  
+          tempDataStr= tempDataStr + "," + dataArray[i];  //add that topic to tempDataStr
         } 
       }
     }
-    dataArray = tempDataStr.split(",");
-    console.log(dataArray);
+    var tempArrayd = tempDataStr.split(","); 
+    indices= tempArrayd; //set the indices array to reflect which topics are actually checked "true" currently
   }
 
-  //a listener for any changes in the checkbox
-  $(":checkbox").change(function() {
-    var tempChecked = topicChecked[this.value];
-    topicChecked[this.value]=!tempChecked;
-    
+  	//updates things if a label gets "checked" or selected
+    function labelChecked(){
 
     //update the paths in the div
     updateData();
-    svg.selectAll("path").remove();
+    svg.selectAll("path").remove(); //removes all paths
     paths = svg.selectAll("path")
-    .data(dataArray)
+    .data(indices) //takes updated indices array
     .enter()
       .append("svg:path")
-      .attr("d", function(d) { return flowChart(d);})
+      .attr("d", function(d) { 
+      	var currTopicArray = w["arr_topic" + d];
+      return draw_Paths(currTopicArray);}) //redraws paths
       .attr("fill", function(d) {return d.color = color(d);})
       .attr("index",function(d){return d;})
       .attr("opacity",0.5)
@@ -518,6 +604,87 @@ $( document ).ready(function() {
 
   });
 
-});
+}}
+);
 
 });
+
+
+
+
+
+//--------------THIS SECTION IS JUST FOR MAKING DUMMY DATA------------------//
+
+  // function shuffle(o){
+  //     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  //     return o;
+  // }
+
+  //   var arr0= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr1= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr2= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr3= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr4= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr5= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr6= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr7= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr8= [0,1,2,3,4,5,6,7,8,9];
+  //   var arr9= [0,1,2,3,4,5,6,7,8,9];
+
+  //   list = [arr0,arr1,arr2,arr3,arr4,arr5,arr6,arr7,arr8,arr9];
+
+  //   //shuffles list so that the "topics" are in various order
+  //   for(i=0;i<10;i++){
+  //     list[i]=shuffle(list[i]);
+  //   }
+
+  //   var tempArray = [];
+
+  //   var w = window;
+
+  //   //shuffles each topic's ordering 
+  //   for(i=0;i<10;i++){
+  //     w["arr_"+i] = [];
+  //   }
+  //   for(i=0;i<10;i++){
+  //     for(j=0;j<10;j++){
+  //         w["arr_"+i].push(list[j].indexOf(i));
+  //     }
+  //   } 
+
+//--------------------END DUMMY DATA SECTION----------------------//
+
+
+
+
+
+//function that takes in the "topic number" and spits out the associated path
+  // function flowChart(topicNum){
+
+  //     var points = [];
+
+  //     //making the points along the top of the path
+  //     for(i=0;i<10;i++){
+  //       var tempX = x + i*width + i*g;
+  //       var tempX2 = x + (i+1)*width + i*g;
+  //       var tempY = y+(w["arr_"+topicNum][i]*verticalGap); //Y value determined by the topic's order at "time" i
+  //       var tempY2 = tempY;
+  //       points.push([tempX,tempY]); //the leftmost point in each column
+  //       points.push([tempX2,tempY2]); //the rightmost point in each column
+  //     }
+  //     //making the points along the bottom of the path to close off the shape
+  //     for(i=9;i>-1;i--){
+  //       //var randHeighttemp= i*1.5+10;
+  //       var randHeight = thicknessScale(w["arr_"+topicNum][i]);
+  //     //  var randHeight = Math.floor((Math.random()*height)+10); //minimum height of 10 px
+  //       var tempX = x + (i+1)*width + i*g;
+  //       var tempX2 = x + i*width + i*g;
+  //       var tempY = y+(w["arr_"+topicNum][i]*verticalGap)+randHeight;
+  //       var tempY2 = tempY;
+  //       points.push([tempX,tempY]);
+  //       points.push([tempX2,tempY2]); 
+  //     }
+          
+  //     return d3.svg.line()(points);
+      
+  // }

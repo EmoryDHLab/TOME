@@ -65,7 +65,7 @@ path:hover{
   #highlighted{
     font: 14px sans-serif;
     float:left;
-    width:50px;
+    width:65px;
     height:20px;
     background-color:#FFB94E;
   }
@@ -116,7 +116,7 @@ path:hover{
 
   #toggleContainer{
     overflow: auto;
-    margin-top: 15px;
-    height: 150px;
+    margin-top: 20px;
+    height: 170px;
     background-color: #fff;
   }

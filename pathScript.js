@@ -292,11 +292,13 @@ function pathPiece(d){
 function draw_events(){
       //iterates through all rows in the CSV file
       d3.csv("a_month_shorter3.csv", function(data){
+        console.log(data);
       var articles = svg.selectAll("path.article").data(data)
       articles.enter()
         .append("path")
           .attr("d", function(d) { 
               if(d.relevance!=""){
+                console.log(d);
                 return pathPiece(d);
               }
             })
