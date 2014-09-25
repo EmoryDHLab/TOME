@@ -3,7 +3,11 @@ path:hover{
     stroke:black;
     stroke-width:0.5px;
   }
-
+.topicLabels:hover{
+    opacity: 1;
+    stroke:black;
+    stroke-width:0.5px;
+  }
   .sizeForm {
   font: 11px sans-serif;
   float:left;
@@ -119,4 +123,8 @@ path:hover{
     margin-top: 20px;
     height: 170px;
     background-color: #fff;
+  }
+
+  path.domain{
+    stroke-width: 1px;
   }

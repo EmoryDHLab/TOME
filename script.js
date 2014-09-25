@@ -7,12 +7,13 @@ $( document ).ready(function() {
   var y = 10;
   var padding = 5;
   var topicData;
-  var pathWidth =18;
+  var pathWidth =20;
 
  //append an svg to the designated div for containing the paths
   var svg = d3.select("#pathBox").append("svg")
     .attr("width", windowWidth)
-    .attr("height", windowHeight)
+    .attr("height", windowHeight);
+    //.attr("overflow", "visible");
 
   //keeps track of the checked topics 
   var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
@@ -29,7 +30,7 @@ $( document ).ready(function() {
 //in the CSV, under the label "value"
 var thicknessScale = d3.scale.linear()
   .domain([0.9,70]) //work on scraping domain straight from data ***
-  .range([1,60]);
+  .range([2,50]);
 
 //two formats for parsing date-- one is for the ones that only have the year and month values,
 //the other is for the dates with year, month, and day values
@@ -47,7 +48,7 @@ var c = d3.scale.linear()
 
 var xScale = d3.time.scale()
   .domain([mindate, maxdate])
-  .range([padding, windowWidth*10 - padding * 2]);
+  .range([0, windowWidth*10]);
 
 var yScale = d3.scale.linear()
               .domain([250, 2200])
@@ -55,8 +56,18 @@ var yScale = d3.scale.linear()
 
 var xAxis = d3.svg.axis()
     .scale(xScale)
-    .orient("bottom");
+    .ticks(d3.time.years)
+    .orient("top");
 
+//adds the x axis
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform","translate(0,300)")
+    .call(xAxis)
+    .selectAll("text")
+        .style("font-size", "10px");
+
+    
 //topics selected as the most relevant in the data set, the data set (narrowed down to these)
 //can be found in a-month-shorter3.csv
 var indices = [15,29,44,46,49,60,70,82,84,86,91];
@@ -106,15 +117,6 @@ var w = window;
   
 
 //-------------------HERE, WORK ON GETTING CORRECT HEIGHTS-------//
-
-
-// //adds the x axis
-// svg.append("g")
-//     .attr("class", "xaxis")
-//     .attr("transform","translate(0,270)")
-//     .call(xAxis)
-//     .selectAll("text")
-//         .style("font-size", "10px");
 
 
 
@@ -226,10 +228,11 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 
 
   //iterate over dataArray and append that number of paths to the svg
-  var paths = svg.selectAll("path")
+  var paths = svg.selectAll(".topicPaths")
     .data(indices) //adjust this to indicies
     .enter()
       .append("svg:path")
+      .attr("class","topicPaths")
       .attr("d", function(d) { 
       	var currTopicArray = w["arr_topic" + d];
       	
