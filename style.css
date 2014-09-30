@@ -3,10 +3,18 @@ path:hover{
     stroke:black;
     stroke-width:0.5px;
   }
-.topicLabels:hover{
-    opacity: 1;
+
+#topicdiv{
+  padding-left: 10px;
+  padding-top: 5px;
+  }
+
+#topicdiv:hover{
     stroke:black;
+    border: solid 2px black;
+    margin: -2px;
     stroke-width:0.5px;
+    border-top: 1px solid #000000;
   }
   .sizeForm {
   font: 11px sans-serif;

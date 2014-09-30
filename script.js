@@ -7,7 +7,7 @@ $( document ).ready(function() {
   var y = 10;
   var padding = 5;
   var topicData;
-  var pathWidth =20;
+  var pathWidth =20; //this variable changes the xscale and how much shows on screen at once.
 
  //append an svg to the designated div for containing the paths
   var svg = d3.select("#pathBox").append("svg")
@@ -48,7 +48,7 @@ var c = d3.scale.linear()
 
 var xScale = d3.time.scale()
   .domain([mindate, maxdate])
-  .range([0, windowWidth*10]);
+  .range([0, windowWidth*pathWidth/2]);
 
 var yScale = d3.scale.linear()
               .domain([250, 2200])
@@ -149,10 +149,18 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       	//var tempX = x + i*width + i*g;
        // var tempX2 = x + (i+1)*width + i*g;
        //console.log(parseDate3(topicArray[i][0].date));
+       if (topicArray[i][3].relevance !=''){
 		 var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
 		  var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
 		 var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
 		  var tempY2 =  tempY1;
+		}
+		else {
+		 var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+		  var tempY1 = windowHeight;
+		 var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+		  var tempY2 =  tempY1;
+		}
 		  points.push([tempX,tempY1]); //the leftmost point in each column
 	      points.push([tempX2,tempY2]); //the rightmost point in each column
 }
@@ -161,10 +169,18 @@ d3.csv("a_month_shorter3.csv", function(error, data){
         //var randHeighttemp= i*1.5+10;
         //var tempX = x + (i+1)*width + i*g;
        // var tempX2 = x + i*width + i*g;
+       if(topicArray[i][3].relevance!=''){
         var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
         var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
         var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
         var tempY2 = tempY;
+    	}
+    else{
+    	var tempY = windowHeight; //minimum height of 10 px
+        var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+        var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+        var tempY2 = tempY;
+    }
         points.push([tempX,tempY]);
         points.push([tempX2,tempY2]); 
       }
@@ -177,54 +193,76 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 
 
   //create labels in d3 related to each topic. 
-  var topicLabels = d3.select("#toggleContainer").append("div")
-  						.selectAll("label")
+  var topicDivs = d3.select("#toggleContainer").append("div")
+  						.selectAll(".topicDiv")
   						.data(indices)
-  	topicLabels.enter()
-  			.append("div")
-  			.attr("class", "topicLabels")
-  			.append("label")
-  			.attr("class","topicName");
+  							.enter()
+  							.append('div')
+  							.attr("class", "topicdiv");
 
+  var topicLabels = topicDivs.selectAll('.topicLabel')
+  						.data(function(d){return [d];})
+  						.enter().append('label')
+  						.attr("class", "topicLabel");
+ 
+
+
+
+  	topicDivs.style("background-color", function(d){
+  			var c = d3.rgb(color(d));
+  			var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
+  			return newColor;})
+
+  			.on("mouseout", function(d){
+  							d3.select(this).transition()
+  								.style("background-color", function(d){
+	  								var c = d3.rgb(color(d));
+	  								var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
+	  								return newColor;}
+  								)
+  								.style("border", "3px solid rgba(0,0,0,0)");
+  								//.style("border", "0px solid #000000")
+  							})
+  			.on("mouseover", function(d){
+  								d3.select(this).transition()
+  									.style("background-color", function(d){
+	  								var c = d3.rgb(color(d));
+	  								var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +1 +")";
+	  								return newColor;}
+  									)
+  									.style("border", "3px solid rgba(0,0,0,1)");
+								var a=dataArray.indexOf(d);
+
+
+
+
+  							})
+  			.style("border", "3px solid rgba(0,0,0,0)")					
+  			.style("height", "16px")
+  			.style()
+  			.on("click", function(d){
+				var a= dataArray.indexOf(d);
+				var tempChecked = topicChecked[a];
+				topicChecked[a] = !tempChecked;
+				labelChecked();
+			})
+			.style("padding-left","10px")
+			.style("padding-top","3px");
+  					
+  	
   	//give each label, text, color, and "on click" functionality to select/deselect paths.
-  	topicLabels.select(".topicName")
-  					.attr("value", function(d){
+  	topicLabels.attr("value", function(d){
   									return d;
   					})
-  					.style("border", "5px")
+  					.style("opacity",1)
   					.style("height", "20px")
-  					.style("background-color", function(d){
-
-  												return color(d);})
-  					.style("opacity", 0.5)
-  					.on("mouseover", function(d){
-  								d3.select(this).transition()
-  									.style("opacity",1);
-  									// .style("background-color", function(d){
-  									// 		return d3.rgb(color(d)).darker();
-  									// 	});
-  								})
-  					.on("mouseout", function(d){
-  							d3.select(this).transition()
-  								.style("opacity", 0.5);
-  								// .style("background-color", function(d){
-  								// 		return color(d);});
-  								})
-  					
-  					.on("click", function(d){
-  								var a= dataArray.indexOf(d);
-  								var tempChecked = topicChecked[a];
-  								topicChecked[a] = !tempChecked;
-  								labelChecked();
-  							})
   					.html( function(d){
-  							var finalText = "Topic Number: " + d + " ";
+  							var finalText = "<b>Topic Number: " + d + "</b> ";
   							return finalText;
   					});
 
 
 
-  	topicLabels.exit().remove();
 
 
   //iterate over dataArray and append that number of paths to the svg
