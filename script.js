@@ -221,7 +221,11 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 	  								return newColor;}
   								)
   								.style("border", "3px solid rgba(0,0,0,0)");
-  								//.style("border", "0px solid #000000")
+  					            
+  					            var a= dataArray.indexOf(d);
+  					            if(topicChecked[a]){
+  									deHighlightPath(d);
+  									}
   							})
   			.on("mouseover", function(d){
   								d3.select(this).transition()
@@ -231,11 +235,10 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 	  								return newColor;}
   									)
   									.style("border", "3px solid rgba(0,0,0,1)");
-								var a=dataArray.indexOf(d);
-
-
-
-
+								var a= dataArray.indexOf(d);
+  					            if(topicChecked[a]){
+  									highlightPath(d);
+  									}
   							})
   			.style("border", "3px solid rgba(0,0,0,0)")					
   			.style("height", "16px")
@@ -265,6 +268,8 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 
 
 
+
+
   //iterate over dataArray and append that number of paths to the svg
   var paths = svg.selectAll(".topicPaths")
     .data(indices) //adjust this to indicies
@@ -278,7 +283,10 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
       .attr("fill", function(d) {
            return d.color = color(d);}) //fills it with the corresponding color
-      .attr("index",function(d){return d;}) //individual attribute for keeping track of each individual path
+      .attr("index",function(d){return d;})
+      .attr("id", function(d){
+      				var idTag= "topicPath"+d+"";
+      				return idTag;}) //individual attribute for keeping track of each individual path
       .attr("opacity",0.5)
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
     });
@@ -297,6 +305,29 @@ d3.csv("a_month_shorter3.csv", function(error, data){
   var numSelected = 0;
   var node1;
   var node2;
+
+
+//console.log(d3.select("path#topicPath29"));
+
+//highligting paths when hovering over a label.
+function deHighlightPath(num){
+	var text="path#topicPath"+num+"";
+	var object= d3.select(text);
+	object.transition().attr("opacity",0.5)
+			.attr("stroke","#000000")
+            .attr("stroke-width","0px");
+
+}
+
+function highlightPath(num){
+	var text="path#topicPath"+num+"";
+	var object= d3.select(text);
+	object.transition().attr("opacity",1)
+		.attr("stroke","#000000")
+            .attr("stroke-width","1.5px");
+}
+
+
 
   //clicking functionality
   paths.on("mousedown", function(){
@@ -487,6 +518,9 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       return draw_Paths(currTopicArray);}) //redraws paths
       .attr("fill", function(d) {return d.color = color(d);})
       .attr("index",function(d){return d;})
+      .attr("id", function(d){
+      				var idTag= "topicPath"+d+"";
+      				return idTag;})
       .attr("opacity",0.5)
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
       });
