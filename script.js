@@ -7,15 +7,12 @@ $( document ).ready(function() {
   var y = 10;
   var padding = 5;
   var topicData;
-  var pathWidth =20; //this variable changes the xscale and how much shows on screen at once.
+  var zoomPathAdjustment = 200;
+  var pathWidth =windowWidth/zoomPathAdjustment; //this variable changes the xscale and how many columns shows on screen at once.
+  var paths;
 
- //append an svg to the designated div for containing the paths
-  var svg = d3.select("#pathBox").append("svg")
-    .attr("width", windowWidth)
-    .attr("height", windowHeight);
-    //.attr("overflow", "visible");
 
-  //keeps track of the checked topics 
+  //keeps track of the checked topics (what labels are selected) 
   var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
   var shiftPressed = false;
 
@@ -24,6 +21,15 @@ $( document ).ready(function() {
   var verticalGap = windowHeight/numTopics;
   var height = verticalGap/(numTopics/2);
   var oldScale = [1,1]; //initial X/Y scale is 1:1
+
+  //information for which topics are currently selected
+  var selectedTopic = [-1,-1];
+  var somethingSelected = false;
+  var numSelected = 0;
+  var node1;
+  var node2;
+  var stOne;
+  var stTwo;
 
 //scale to determine thickness of the hexagon (height), which translates values in
 //the domain 0.9-70 to the range 1-40. The domain is based off popularity values
@@ -37,7 +43,8 @@ var thicknessScale = d3.scale.linear()
 var parseDate = d3.time.format("%Y-%m").parse;
 var parseDate2 = d3.time.format("%Y-%m-%d").parse;
 var parseDate3= d3.time.format("%m/%d/%Y").parse;
-//date range for this dataset
+
+//date range for this dataset *********************Can do this more dynamically?****************
 var mindate = parseDate("1845-09"),
   maxdate = parseDate("1861-05");
 
@@ -46,26 +53,19 @@ var c = d3.scale.linear()
   .domain([0,11])
   .range([0,1]);
 
+//creates xscale that takes in a date between min and max date and assigns it the corresponding position in the range
 var xScale = d3.time.scale()
-  .domain([mindate, maxdate])
-  .range([0, windowWidth*pathWidth/2]);
+  .range([0, windowWidth]);
 
 var yScale = d3.scale.linear()
               .domain([250, 2200])
               .range([2, 20]);
 
+//xaxis
 var xAxis = d3.svg.axis()
     .scale(xScale)
     .ticks(d3.time.years)
     .orient("top");
-
-//adds the x axis
-svg.append("g")
-    .attr("class", "x axis")
-    .attr("transform","translate(0,300)")
-    .call(xAxis)
-    .selectAll("text")
-        .style("font-size", "10px");
 
     
 //topics selected as the most relevant in the data set, the data set (narrowed down to these)
@@ -75,6 +75,67 @@ var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when select
 
 //colorscale to color each path
 var color = d3.scale.category20();
+
+
+/////////////////////////////////////////////////////
+
+
+
+  ////zoom information////////////////
+  var zoom = d3.behavior.zoom()
+              .on("zoom", function(d){
+                console.log("draw");
+                draw();
+
+              });
+
+  function draw(){
+    console.log("zooming");
+    svg.select("g.x.axis").call(xAxis);
+    paths.attr("d", function(d) { 
+          var currTopicArray = w["arr_topic" + d];        
+
+          return draw_Paths(currTopicArray);})
+  }
+
+ //append an svg to the designated div for containing the paths
+  var svg = d3.select("#pathBox").append("svg")
+    .attr("width", windowWidth)
+    .attr("height", windowHeight)
+    .append("g")
+      .attr("transform", "translate(0,0)")
+      .call(zoom);
+    
+  svg.append("clipPath")
+      .attr("id", "clip")
+    .append("rect")
+      .attr("x", xScale(0))
+      .attr("y", 0)
+      .attr("width", windowWidth)
+      .attr("height", windowHeight);
+
+  svg.append("path")
+      .attr("class", "area")
+      .attr("clip-path", "url(#clip)")
+      .style("fill", "url(#gradient)");
+
+  svg.append("path")
+      .attr("class", "line")
+      .attr("clip-path", "url(#clip)");
+
+  svg.append("rect")
+      .attr("class", "pane")
+      .attr("width", width)
+      .attr("height", height)
+      .call(zoom);
+
+  //adds the x axis
+svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform","translate(0,300)")
+    .call(xAxis)
+    .selectAll("text")
+        .style("font-size", "10px");
 
 
   $(document).keydown(function (e) {
@@ -114,31 +175,14 @@ var color = d3.scale.category20();
   }
 var w = window;
 
-  
-
-//-------------------HERE, WORK ON GETTING CORRECT HEIGHTS-------//
 
 
 
-
-//for each topic, copy it to an array to keep track
+//for each topic number in array indices, copy it to an array to keep track
 for(i=0;i<indices.length;i++){
       w["arr_topic"+indices[i]] = [];
 }
-
-//load the data and place it into an array where an array of data on each topic is located by looking
-//for w["arr_topic<number>"] where <number> is the topic number.
-d3.csv("a_month_shorter3.csv", function(error, data){
-	topicData=data;
-	topicData.forEach( function(d){
-
-			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
-		
-		})
-
-
-
-//working on new draw_Paths takes in an array containing information on one topic
+//draw_Paths takes in an array containing information on one topic
 //and returns the points for the entire path.
   function draw_Paths(topicArray){
 
@@ -146,23 +190,23 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       //making the points along the top of the path
 
       for(i=0;i<topicArray.length;i++){
-      	//var tempX = x + i*width + i*g;
+        //var tempX = x + i*width + i*g;
        // var tempX2 = x + (i+1)*width + i*g;
        //console.log(parseDate3(topicArray[i][0].date));
        if (topicArray[i][3].relevance !=''){
-		 var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-		  var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
-		 var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-		  var tempY2 =  tempY1;
-		}
-		else {
-		 var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-		  var tempY1 = windowHeight;
-		 var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-		  var tempY2 =  tempY1;
-		}
-		  points.push([tempX,tempY1]); //the leftmost point in each column
-	      points.push([tempX2,tempY2]); //the rightmost point in each column
+     var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+      var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+     var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+      var tempY2 =  tempY1;
+    }
+    else {
+     var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+      var tempY1 = windowHeight;
+     var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+      var tempY2 =  tempY1;
+    }
+      points.push([tempX,tempY1]); //the leftmost point in each column
+        points.push([tempX2,tempY2]); //the rightmost point in each column
 }
       //making the points along the bottom of the path to close off the shape
       for(i=topicArray.length-1;i>-1;i--){
@@ -174,9 +218,9 @@ d3.csv("a_month_shorter3.csv", function(error, data){
         var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
         var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
         var tempY2 = tempY;
-    	}
+      }
     else{
-    	var tempY = windowHeight; //minimum height of 10 px
+      var tempY = windowHeight; //minimum height of 10 px
         var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
         var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
         var tempY2 = tempY;
@@ -187,10 +231,24 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       return d3.svg.line()(points);
       
   }
-//---------------END HEIGHT WORK ------------------------------//
+//load the data and place it into an array where an array of data on each topic is located by looking
+//for w["arr_topic<number>"] where <number> is the topic number.
+d3.csv("a_month_shorter3.csv", function(error, data){
+	topicData=data;
+	topicData.forEach( function(d){
+
+			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
+		
+		})
+
+  xScale.domain([mindate, maxdate]);
+  zoom.x(xScale);
 
 
 
+
+
+//-------------------------------------CREATE LABELS FOR CONTROL PANEL---------------------->
 
   //create labels in d3 related to each topic. 
   var topicDivs = d3.select("#toggleContainer").append("div")
@@ -207,37 +265,35 @@ d3.csv("a_month_shorter3.csv", function(error, data){
  
 
 
-
+    //here, give each topic a color
   	topicDivs.style("background-color", function(d){
   			var c = d3.rgb(color(d));
   			var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
   			return newColor;})
-
+        //when you hover over a label
+        .on("mouseover", function(d){
+                  d3.select(this).transition()
+                    .style("background-color", function(d){
+                    var c = d3.rgb(color(d));
+                    var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +1 +")";
+                    return newColor;}) //opacity of color is now 1 
+                    .style("border", "3px solid rgba(0,0,0,1)"); //give it a border
+                var a= dataArray.indexOf(d);
+                        if(topicChecked[a]){
+                    highlightPath(d); //highlight the corresponding path by making its opacity 1 and giving it a border.
+                    }
+                })
+        //when the mouse stops hovering over a label
   			.on("mouseout", function(d){
   							d3.select(this).transition()
   								.style("background-color", function(d){
 	  								var c = d3.rgb(color(d));
 	  								var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
-	  								return newColor;}
-  								)
-  								.style("border", "3px solid rgba(0,0,0,0)");
-  					            
+	  								return newColor;}) //opacity is 0.5 again
+  								.style("border", "3px solid rgba(0,0,0,0)"); //remove border
   					            var a= dataArray.indexOf(d);
   					            if(topicChecked[a]){
-  									deHighlightPath(d);
-  									}
-  							})
-  			.on("mouseover", function(d){
-  								d3.select(this).transition()
-  									.style("background-color", function(d){
-	  								var c = d3.rgb(color(d));
-	  								var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +1 +")";
-	  								return newColor;}
-  									)
-  									.style("border", "3px solid rgba(0,0,0,1)");
-								var a= dataArray.indexOf(d);
-  					            if(topicChecked[a]){
-  									highlightPath(d);
+  									deHighlightPath(d); //dehighlight corresponding path
   									}
   							})
   			.style("border", "3px solid rgba(0,0,0,0)")					
@@ -247,13 +303,13 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 				var a= dataArray.indexOf(d);
 				var tempChecked = topicChecked[a];
 				topicChecked[a] = !tempChecked;
-				labelChecked();
+				labelChecked(); //if the label is clicked, update which paths should be shown
 			})
 			.style("padding-left","10px")
 			.style("padding-top","3px");
   					
   	
-  	//give each label, text, color, and "on click" functionality to select/deselect paths.
+  	//give each label text values.
   	topicLabels.attr("value", function(d){
   									return d;
   					})
@@ -266,21 +322,19 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 
 
 
-
-
-
+//--------------------------------APPEND PATHS FOR FIRST TIME ------------------>
 
   //iterate over dataArray and append that number of paths to the svg
-  var paths = svg.selectAll(".topicPaths")
+   paths = svg.selectAll(".topicPaths")
     .data(indices) //adjust this to indicies
     .enter()
       .append("svg:path")
       .attr("class","topicPaths")
       .attr("d", function(d) { 
-      	var currTopicArray = w["arr_topic" + d];
-      	
-      	
-      return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
+      	var currTopicArray = w["arr_topic" + d];      	
+
+        return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
+
       .attr("fill", function(d) {
            return d.color = color(d);}) //fills it with the corresponding color
       .attr("index",function(d){return d;})
@@ -299,24 +353,20 @@ d3.csv("a_month_shorter3.csv", function(error, data){
     document.getElementById("highlighted").innerHTML = "Topic " + num;
   });
 
-  //selectedTopic w/2 elements to be replaced by topic number -- 2 paths can be highlighted at one time
-  var selectedTopic = [-1,-1];
-  var somethingSelected = false;
-  var numSelected = 0;
-  var node1;
-  var node2;
+  
 
 
-//console.log(d3.select("path#topicPath29"));
+//--------------------------------------------ON HOVER FUNCTIONALITY FOR LABELS---------------->
 
 //highligting paths when hovering over a label.
 function deHighlightPath(num){
-	var text="path#topicPath"+num+"";
-	var object= d3.select(text);
-	object.transition().attr("opacity",0.5)
-			.attr("stroke","#000000")
-            .attr("stroke-width","0px");
-
+  if(!($.inArray(num,selectedTopic) > -1)){
+  	var text="path#topicPath"+num+"";
+  	var object= d3.select(text);
+  	object.transition().attr("opacity",0.5)
+  			.attr("stroke","#000000")
+              .attr("stroke-width","0px");
+}
 }
 
 function highlightPath(num){
@@ -326,54 +376,49 @@ function highlightPath(num){
 		.attr("stroke","#000000")
             .attr("stroke-width","1.5px");
 }
+function updateHighlightPath(){
+    if(selectedTopic[0]!=-1 ) {
+      var num1=selectedTopic[0];
+      var text="path#topicPath"+num1+"";
+      var object= d3.select(text);
+      object.transition().attr("opacity",1)
+        .attr("stroke","#000000")
+                .attr("stroke-width","1.5px");
+    }
+    if(selectedTopic[1]!=-1) {
+      var num1=selectedTopic[1];
+      var text="path#topicPath"+num1+"";
+      var object= d3.select(text);
+      object.transition().attr("opacity",1)
+        .attr("stroke","#000000")
+                .attr("stroke-width","1.5px");
+    }
+}
 
+function updateSelectedTopics(){
+  var deselect0=true;
+  var deselect1=true;
 
+  for(i=0; i<indices.length; i++){
+    if(parseInt(indices[i])==selectedTopic[0]){
+      console.log(indices[i]);
+      deselect0=false;
+       console.log("deselect 0"+selectedTopic);
+    }
+    if(parseInt(indices[i])==selectedTopic[1]){
+      console.log(indices[i]);
+      deselect1=false;
+       console.log("deselect1"+selectedTopic);
+    }
+  }
 
-  //clicking functionality
-  paths.on("mousedown", function(){
-
-    thisNode = d3.select(this)
-
-    //if the shift key is being pressed at the time of the click
-    if(shiftPressed == true){
-      //if nothing is currently selected
-      if(numSelected==0){
-        selectedTopic[0]=thisNode.attr("index");//replace selectedTopic[0] with that index
-        numSelected++; //add to the count of selected nodes
-        node1 = thisNode; //node1 is the current node
-        displayInfoBox(node1); //adding it to the bottom box
-        somethingSelected=true; 
-
-        //reset everything to deselected, select current node
-         paths.attr("opacity",0.5)
-          .attr("stroke","0");
-          node1.attr("opacity",1);
-          node1.attr("stroke","#000000");
-          node1.attr("stroke-width","1.5px");
-      }
-      //if something is selected
-      else if (numSelected==1){
-        selectedTopic[1]=thisNode.attr("index"); //replace selectedTopic[1] with that index
-        numSelected++;
-        node2 = thisNode;
-        displayCombinedInfoBox(node1,node2);
-        somethingSelected=true;
-
-        //select current node
-        node2.attr("opacity",1);
-        node2.attr("stroke","#000000");
-        node2.attr("stroke-width","1.5px");
-      }
-      //remove from selection if shift is held and it is re-pressed
-      else if($.inArray(thisNode.attr("index"),selectedTopic) > -1){
-        //deselect current node
-        thisNode.attr("opacity",0.5);
-        thisNode.attr("stroke","0");
-        //change it's value in selectedTopic back to -1
-        selectedTopic[$.inArray(thisNode.attr("index"),selectedTopic)]=-1;
-
-        //if -1 exists in selectedTopic[]
-        if($.inArray(-1,selectedTopic)>=0){
+  if(deselect0){
+      selectedTopic[0]=-1;
+    }
+    if(deselect1) {
+      selectedTopic[1]=-1;
+    }
+     if($.inArray(-1,selectedTopic)>=0){
           if(selectedTopic[0]==-1){
             if(selectedTopic[1]==-1){ //if both are -1, nothing is selected
               somethingSelected=false;
@@ -398,16 +443,125 @@ function highlightPath(num){
           }
 
         }
+    console.log("what is selected?");
+    console.log(selectedTopic);
+}
+
+  //---------------------------------clicking functionality to select paths ----------------->
+//selectedTopic w/2 elements to be replaced by topic number -- 2 paths can be highlighted at one time
+  // var selectedTopic = [-1,-1];
+  // var somethingSelected = false;
+  // var numSelected = 0;
+  // var node1;
+  // var node2;
+  // var stOne;
+  // var stTwo;
+
+
+
+
+  paths.on("mousedown", function(){
+
+    thisNode = d3.select(this)
+
+    //if the shift key is being pressed at the time of the click
+    if(shiftPressed == true){
+
+      //if nothing is currently selected
+      if(numSelected==0){
+        stOne= +thisNode.attr("index");
+
+       selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
+       console.log(selectedTopic);
+        numSelected++; //add to the count of selected nodes
+        node1 = thisNode; //node1 is the current node
+        displayInfoBox(node1); //adding it to the bottom box
+        somethingSelected=true; 
+
+        //reset everything to deselected, select current node
+         paths.attr("opacity",0.5)
+          .attr("stroke","0");
+          node1.attr("opacity",1);
+          node1.attr("stroke","#000000");
+          node1.attr("stroke-width","1.5px");
       }
+      //if something is selected
+      else if (numSelected==1 && !($.inArray(+thisNode.attr("index"),selectedTopic) > -1)){
+        console.log("it is getting through the if");
+        stTwo=+thisNode.attr("index");
+        if(!($.inArray(stTwo,selectedTopic)>-1)){
+          selectedTopic=[stOne,stTwo]; //replace selectedTopic[1] with that index
+          console.log(selectedTopic);
+          numSelected++;
+          node2 = thisNode;
+          displayCombinedInfoBox(node1,node2);
+          somethingSelected=true;
+
+          //select current node
+          node2.attr("opacity",1);
+          node2.attr("stroke","#000000");
+          node2.attr("stroke-width","1.5px");
+      }}
+
+      //remove from selection if shift is held and it is re-pressed
+      else if($.inArray(+thisNode.attr("index"),selectedTopic) > -1){
+
+        //deselect current node
+        console.log("inarray");
+        var loc=($.inArray(+thisNode.attr("index"),selectedTopic));
+        thisNode.attr("opacity",0.5);
+        thisNode.attr("stroke","0");
+        //change it's value in selectedTopic back to -1
+        selectedTopic[loc]=-1;
+
+        //if -1 exists in selectedTopic[]
+        if($.inArray(-1,selectedTopic)>=0){
+          if(selectedTopic[0]==-1){
+            if(selectedTopic[1]==-1){ //if both are -1, nothing is selected
+              somethingSelected=false;
+              numSelected=0;
+              console.log("0 selected");
+            }
+            else{ //if the second node is -1, one thing is selected
+              somethingSelected=true;
+              displayInfoBox(node2);
+              numSelected=1;
+            }
+          }
+          else if (selectedTopic[1]==-1){ 
+            if(selectedTopic[0]==-1){ //if both are -1, nothing is selected
+              somethingSelected=false;
+              numSelected=0;
+            }
+            else{ //if the first node is -1, one thing is selected
+              somethingSelected=true;
+              displayInfoBox(node1);
+              numSelected=1;
+            }
+          }
+
+        }
+      }
+      console.log($.inArray(thisNode.attr("index"),selectedTopic));
+      console.log(selectedTopic);
     }
     //if shift is not being currently pressed
     else{
       //if you're clicking a previously selected topic,
       //deselect it
-      if(thisNode.attr("index")==selectedTopic[0]){
+      if(+thisNode.attr("index")==selectedTopic[0]){
           thisNode.attr("opacity",0.5);
           thisNode.attr("stroke","0");
-          selectedTopic[0]=-1;
+          stOne=-1;
+          selectedTopic=[stOne,-1];
+          somethingSelected=false;
+          numSelected=0;
+        }
+      else if(+thisNode.attr("index")==selectedTopic[1]){
+          thisNode.attr("opacity",0.5);
+          thisNode.attr("stroke","0");
+          stTwo=-1;
+          selectedTopic=[stOne,stTwo];
           somethingSelected=false;
           numSelected=0;
         }
@@ -419,6 +573,9 @@ function highlightPath(num){
           thisNode.attr("opacity",1);
           thisNode.attr("stroke","#000000");
           thisNode.attr("stroke-width","1.5px");
+          
+          stOne= +thisNode.attr("index");
+          selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
           somethingSelected=true;
           displayInfoBox(thisNode);
           numSelected=1;
@@ -439,7 +596,6 @@ function highlightPath(num){
   //update the text at the bottom for the one selected node
   function displayInfoBox(node) {
       var num = node.attr("index");
-      selectedTopic = num;
       var tempTitle = "<h1>Topic " + num + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
       var tempContent = "Here is some temporary text about topic <b>" + num + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
       document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
@@ -455,7 +611,7 @@ function highlightPath(num){
       document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
   }
 
-//RESIZING WITH A WINDOW RESIZE----------------->
+//----------------------------------RESIZING WITH A WINDOW RESIZE----------------->
 
   window.onresize = function(event){
     var iw = $('body').innerWidth();
@@ -485,7 +641,8 @@ function highlightPath(num){
         .attr("width", windowWidth).attr("height", windowHeight);
   }
 
-  //------------------FOR CHANGING THE DATA WITH CHECKBOXES-----------------//
+
+  //---------------------------FOR CHANGING THE DATA WITH CHECKBOXES-----------------//
 
   function updateData(){
     var tempDataStr = ""
@@ -525,6 +682,9 @@ function highlightPath(num){
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
       });
 
+
+updateHighlightPath();
+updateSelectedTopics();
 //----------------FOR MAINTAINING MOUSEENTER/MOUSEDOWN AFTER CHECKBOX CHANGES--------------//
 
     paths.on("mouseenter", function(){
@@ -540,11 +700,6 @@ function highlightPath(num){
     document.getElementById("highlighted").innerHTML = "Topic " + num;
   });
 
-  var selectedTopic = [-1,-1];
-  var somethingSelected = false;
-  var numSelected = 0;
-  var node1;
-  var node2;
 
   paths.on("mousedown", function(){
 
@@ -554,7 +709,8 @@ function highlightPath(num){
     if(shiftPressed == true){
       console.log("Num selected:"+numSelected);
       if(numSelected==0){
-        selectedTopic[0]=thisNode.attr("index");
+        console.log("numSelected: 0"+thisNode.attr("index"));
+        selectedTopic[0]=+thisNode.attr("index");
         numSelected=1;
         console.log("ADDING TO NUMSELECTEDX");
         node1 = thisNode;
@@ -570,10 +726,10 @@ function highlightPath(num){
       }
       else if (numSelected==1){
 //        console.log("Clicked 2 in shift");
-        if(thisNode.attr("index")!=selectedTopic[0]){
+        if((+thisNode.attr("index"))!=selectedTopic[0]){
           if (selectedTopic[0]==-1){
             console.log("Filling sT 0")
-            selectedTopic[0]=thisNode.attr("index");
+            selectedTopic[0]=(+thisNode.attr("index"));
             numSelected=2;
             node2 = thisNode;
             displayCombinedInfoBox(node1,node2);
@@ -585,7 +741,7 @@ function highlightPath(num){
           }
           else if(selectedTopic[1]==-1){
             console.log("Filling sT 1")
-            selectedTopic[1]=thisNode.attr("index");
+            selectedTopic[1]=(+thisNode.attr("index"));
             numSelected=2;
             node2 = thisNode;
             displayCombinedInfoBox(node1,node2);
@@ -598,10 +754,10 @@ function highlightPath(num){
         }
       }
       //remove from selection if shift is held and it is re-pressed
-      else if($.inArray(thisNode.attr("index"),selectedTopic) > -1){
+      else if($.inArray((+thisNode.attr("index")),selectedTopic) > -1){
         thisNode.attr("opacity",0.5);
         thisNode.attr("stroke","0");
-        selectedTopic[$.inArray(thisNode.attr("index"),selectedTopic)]=-1;
+        selectedTopic[$.inArray((+thisNode.attr("index")),selectedTopic)]=-1;
         if($.inArray(-1,selectedTopic)>=0){
           if(selectedTopic[0]==-1){
             if(selectedTopic[1]==-1){
@@ -631,7 +787,7 @@ function highlightPath(num){
     }
     //if not shift pressed
     else{
-      if(thisNode.attr("index")==selectedTopic[0]){
+      if((+thisNode.attr("index"))==selectedTopic[0]){
           thisNode.attr("opacity",0.5);
           thisNode.attr("stroke","0");
           selectedTopic[0]=-1;
@@ -643,7 +799,7 @@ function highlightPath(num){
             numSelected=1;
           }
         }
-        else if(thisNode.attr("index")==selectedTopic[1]){
+        else if((+thisNode.attr("index")==selectedTopic[1])){
           thisNode.attr("opacity",0.5);
           thisNode.attr("stroke","0");
           selectedTopic[1]=-1;

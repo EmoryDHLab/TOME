@@ -4,18 +4,9 @@ path:hover{
     stroke-width:0.5px;
   }
 
-#topicdiv{
-  padding-left: 10px;
-  padding-top: 5px;
-  }
 
-#topicdiv:hover{
-    stroke:black;
-    border: solid 2px black;
-    margin: -2px;
-    stroke-width:0.5px;
-    border-top: 1px solid #000000;
-  }
+
+
   .sizeForm {
   font: 11px sans-serif;
   float:left;
@@ -26,10 +17,11 @@ path:hover{
     font: 16px sans-serif;
   }
 
-  svg{
-
-  }
-
+rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
   body{
     background-color:#ddd;
   }
@@ -87,6 +79,8 @@ path:hover{
   /*  background-color:#333;*/
     background-color:#efefef;
     height:300px;
+    cursor:move;
+    pointer-events:all;
   }
 
   #textBox{
