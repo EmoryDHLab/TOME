@@ -7,9 +7,9 @@ $( document ).ready(function() {
   var y = 10;
   var padding = 5;
   var topicData;
-  var zoomPathAdjustment = 200;
-  var pathWidth =windowWidth/zoomPathAdjustment; //this variable changes the xscale and how many columns shows on screen at once.
+  var pathWidth; //this variable changes the xscale and how many columns shows on screen at once.
   var paths;
+  var dates=[]; //an array of the dates used in the inputted data.
 
 
   //keeps track of the checked topics (what labels are selected) 
@@ -44,9 +44,7 @@ var parseDate = d3.time.format("%Y-%m").parse;
 var parseDate2 = d3.time.format("%Y-%m-%d").parse;
 var parseDate3= d3.time.format("%m/%d/%Y").parse;
 
-//date range for this dataset *********************Can do this more dynamically?****************
-var mindate = parseDate("1845-09"),
-  maxdate = parseDate("1861-05");
+var mindate, maxdate; //these will be set when the data is loaded
 
 
 var c = d3.scale.linear()
@@ -64,8 +62,9 @@ var yScale = d3.scale.linear()
 //xaxis
 var xAxis = d3.svg.axis()
     .scale(xScale)
-    .ticks(d3.time.years)
-    .orient("top");
+    .orient("top")
+    .tickSize(-height, 0)
+    .tickPadding(6);
 
     
 //topics selected as the most relevant in the data set, the data set (narrowed down to these)
@@ -84,18 +83,17 @@ var color = d3.scale.category20();
   ////zoom information////////////////
   var zoom = d3.behavior.zoom()
               .on("zoom", function(d){
-                console.log("draw");
                 draw();
 
               });
 
   function draw(){
-    console.log("zooming");
     svg.select("g.x.axis").call(xAxis);
     paths.attr("d", function(d) { 
           var currTopicArray = w["arr_topic" + d];        
 
           return draw_Paths(currTopicArray);})
+    pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
   }
 
  //append an svg to the designated div for containing the paths
@@ -114,19 +112,11 @@ var color = d3.scale.category20();
       .attr("width", windowWidth)
       .attr("height", windowHeight);
 
-  svg.append("path")
-      .attr("class", "area")
-      .attr("clip-path", "url(#clip)")
-      .style("fill", "url(#gradient)");
-
-  svg.append("path")
-      .attr("class", "line")
-      .attr("clip-path", "url(#clip)");
 
   svg.append("rect")
       .attr("class", "pane")
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", windowWidth)
+      .attr("height", 300)
       .call(zoom);
 
   //adds the x axis
@@ -238,11 +228,20 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 	topicData.forEach( function(d){
 
 			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
-		
-		})
+		  
 
+		})
+  topicData.forEach(function(d){
+      if(dates.indexOf(d.date) ==-1){
+        dates.push(d.date);
+      }
+  })
+  mindate=parseDate3(dates[0]);
+  maxdate=parseDate3(dates[dates.length-1]);
   xScale.domain([mindate, maxdate]);
   zoom.x(xScale);
+  pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
+ 
 
 
 
@@ -835,7 +834,9 @@ updateSelectedTopics();
 
   });
 
-}}
+}
+draw();
+}
 );
 
 });
