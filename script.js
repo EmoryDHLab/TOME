@@ -69,7 +69,7 @@ var xAxis = d3.svg.axis()
     
 //topics selected as the most relevant in the data set, the data set (narrowed down to these)
 //can be found in a-month-shorter3.csv
-var indices = [15,29,44,46,49,60,70,82,84,86,91];
+var indices= [15,29,44,46,49,60,70,82,84,86,91];
 var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when selecting/deselecting checkboxes
 
 //colorscale to color each path
@@ -82,10 +82,11 @@ var color = d3.scale.category20();
 
   ////zoom information////////////////
   var zoom = d3.behavior.zoom()
+              .scale(1)
               .on("zoom", function(d){
                 draw();
 
-              });
+              }).x(xScale).scaleExtent([1,38]);
 
   function draw(){
     svg.select("g.x.axis").call(xAxis);
@@ -102,6 +103,7 @@ var color = d3.scale.category20();
     .attr("height", windowHeight)
     .append("g")
       .attr("transform", "translate(0,0)")
+      .attr("transform","scale(1,1)")
       .call(zoom);
     
   svg.append("clipPath")
@@ -235,6 +237,11 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       if(dates.indexOf(d.date) ==-1){
         dates.push(d.date);
       }
+      // if(indices.indexOf(d.topicNum) ==-1){
+      //   indices.push(d.topicNum);
+      //   console.log(indices);
+      //   console.log(dataArray);
+      // }
   })
   mindate=parseDate3(dates[0]);
   maxdate=parseDate3(dates[dates.length-1]);
