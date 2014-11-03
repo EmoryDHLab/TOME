@@ -7,20 +7,20 @@ $( document ).ready(function() {
   var y = 10;
   var padding = 5;
   var topicData;
-  var pathWidth; //this variable changes the xscale and how many columns shows on screen at once.
+  var pathWidth; //this variable changes the xscale and how many columns show on screen at once.
   var paths;
-  var dates=[]; //an array of the dates used in the inputted data.
+  var dates=[]; //an array of the dates for current topic model data.
+  var w = window;
 
 
   //keeps track of the checked topics (what labels are selected) 
   var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
   var shiftPressed = false;
 
-  var width = (windowWidth/numTopics)*.75; //width of each column
-  var g = (windowWidth/numTopics)*.25; //space between columns	
-  var verticalGap = windowHeight/numTopics;
-  var height = verticalGap/(numTopics/2);
-  var oldScale = [1,1]; //initial X/Y scale is 1:1
+  
+   var verticalGap = windowHeight/numTopics;
+   var height = verticalGap/(numTopics/2);
+   var oldScale = [1,1]; //initial X/Y scale is 1:1
 
   //information for which topics are currently selected
   var selectedTopic = [-1,-1];
@@ -38,14 +38,13 @@ var thicknessScale = d3.scale.linear()
   .domain([0.9,70]) //work on scraping domain straight from data ***
   .range([2,50]);
 
-//two formats for parsing date-- one is for the ones that only have the year and month values,
-//the other is for the dates with year, month, and day values
+//three formats for parsing date-- one is for the ones that only have the year and month values,
+//the other two are for the dates with year, month, and day values
 var parseDate = d3.time.format("%Y-%m").parse;
 var parseDate2 = d3.time.format("%Y-%m-%d").parse;
 var parseDate3= d3.time.format("%m/%d/%Y").parse;
 
 var mindate, maxdate; //these will be set when the data is loaded
-
 
 var c = d3.scale.linear()
   .domain([0,11])
@@ -76,11 +75,8 @@ var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when select
 var color = d3.scale.category20();
 
 
-/////////////////////////////////////////////////////
+/////////////////////zoom information////////////////
 
-
-
-  ////zoom information////////////////
   var zoom = d3.behavior.zoom()
               .scale(1)
               .on("zoom", function(d){
@@ -88,13 +84,15 @@ var color = d3.scale.category20();
 
               }).x(xScale).scaleExtent([1,38]);
 
+  //draw function is called whenever the user zooms
+  //it updates the xScale and redraws the paths based off of the new scale
   function draw(){
     svg.select("g.x.axis").call(xAxis);
+    pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
     paths.attr("d", function(d) { 
           var currTopicArray = w["arr_topic" + d];        
 
           return draw_Paths(currTopicArray);})
-    pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
   }
 
  //append an svg to the designated div for containing the paths
@@ -165,8 +163,6 @@ svg.append("g")
       .duration(750)
       .attr("width", windowWidth).attr("height", windowHeight);
   }
-var w = window;
-
 
 
 
@@ -174,55 +170,107 @@ var w = window;
 for(i=0;i<indices.length;i++){
       w["arr_topic"+indices[i]] = [];
 }
+
+
+//createIndividualPaths takes in an array containing info on one topic
+//it returns an array of lines that create paths related to that one topic.
+function createIndividualPaths(topicArray){
+  var currPoints = [];
+  var lines= [];
+  var currPath=[];
+  var pathInProgress=0;
+  //iterate through all points in array
+  for(i=0; i<topicArray.length; i++){
+    //if data has relevance, create points in the path
+    if(topicArray[i][3].relevance !=''){
+      //if there was not a path in progress, set pathInProgress to 1 
+      if(pathInProgress == 0){
+        pathInProgress=1;
+      }
+      var tempX1 = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+      var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+      var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+      var tempY2 =  tempY1; 
+      currPath.push(i); //keep track of length of line and where in array data is coming from
+      currPoints.push([tempX1,tempY1]);
+      currPoints.push([tempX2,tempY2]);
+    }
+    else{
+      //if pathInProgress==1, path just ended.
+      //close up path and add the created line to lines[]
+      if(pathInProgress==1){
+        pathInProgress=0;
+        for(k=currPath.length-1; k>-1;k--){
+          //console.log("the location in the topicArray the data came from: "+ currPath[i]);
+          var j=currPath[k];
+          console.log(j);
+          var tempY1= y+(parseInt(topicArray[j][1].order)-1)*25+thicknessScale(topicArray[j][2].value); //minimum height of 10 px
+          var tempX1 =  x+xScale(parseDate3(topicArray[j][0].date))+pathWidth;
+          var tempX2 =  x+xScale(parseDate3(topicArray[j][0].date))-pathWidth;
+          var tempY2 = tempY1;
+          currPoints.push([tempX1, tempY1]);
+          currPoints.push([tempX2,tempY2]);
+        }
+        lines.push(d3.svg.line()(currPoints)); //push newly created path to the array of lines that will be returned. 
+        currPoints=[]; //clear currPoints[] so that a new set of points can be added to it.
+        currPath=[]; //clear currPath[] so that the next set of relevant points can be logged. 
+      }
+    }
+  }
+  return lines;
+}
+
+
+
+
+
+
 //draw_Paths takes in an array containing information on one topic
 //and returns the points for the entire path.
   function draw_Paths(topicArray){
 
       var points = [];
-      //making the points along the top of the path
 
+
+      //making the points along the top of the path
       for(i=0;i<topicArray.length;i++){
-        //var tempX = x + i*width + i*g;
-       // var tempX2 = x + (i+1)*width + i*g;
-       //console.log(parseDate3(topicArray[i][0].date));
-       if (topicArray[i][3].relevance !=''){
-     var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-      var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
-     var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-      var tempY2 =  tempY1;
-    }
-    else {
-     var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-      var tempY1 = windowHeight;
-     var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-      var tempY2 =  tempY1;
-    }
-      points.push([tempX,tempY1]); //the leftmost point in each column
+        if (topicArray[i][3].relevance !=''){
+           var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+           var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+           var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+           var tempY2 =  tempY1;
+        }
+        else {
+          var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+          var tempY1 = windowHeight;
+          var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+          var tempY2 =  tempY1;
+        }
+        points.push([tempX,tempY1]); //the leftmost point in each column
         points.push([tempX2,tempY2]); //the rightmost point in each column
-}
+      }
+
       //making the points along the bottom of the path to close off the shape
       for(i=topicArray.length-1;i>-1;i--){
-        //var randHeighttemp= i*1.5+10;
-        //var tempX = x + (i+1)*width + i*g;
-       // var tempX2 = x + i*width + i*g;
-       if(topicArray[i][3].relevance!=''){
-        var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
-        var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-        var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-        var tempY2 = tempY;
-      }
-    else{
-      var tempY = windowHeight; //minimum height of 10 px
-        var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-        var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-        var tempY2 = tempY;
-    }
+        if(topicArray[i][3].relevance!=''){
+          var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
+          var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+          var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+          var tempY2 = tempY;
+        }
+        else{
+          var tempY = windowHeight; //minimum height of 10 px
+          var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+          var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+          var tempY2 = tempY;
+        }
         points.push([tempX,tempY]);
         points.push([tempX2,tempY2]); 
       }
-      return d3.svg.line()(points);
       
+      return d3.svg.line()(points);   
   }
+
 //load the data and place it into an array where an array of data on each topic is located by looking
 //for w["arr_topic<number>"] where <number> is the topic number.
 d3.csv("a_month_shorter3.csv", function(error, data){
@@ -232,25 +280,25 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
 		  
 
-		})
+		});
+
+  //for each item in topicData, see if its date has been added to the dates array.
+  //if the date is not yet included in the dates array, add the date.
   topicData.forEach(function(d){
       if(dates.indexOf(d.date) ==-1){
         dates.push(d.date);
       }
-      // if(indices.indexOf(d.topicNum) ==-1){
-      //   indices.push(d.topicNum);
-      //   console.log(indices);
-      //   console.log(dataArray);
-      // }
-  })
+  });
+
+  //find the minimum and maximum dates in the data
   mindate=parseDate3(dates[0]);
   maxdate=parseDate3(dates[dates.length-1]);
+  //update xScale domain
   xScale.domain([mindate, maxdate]);
   zoom.x(xScale);
+  //determine the width of each column based on the distance between two dates in the current xScale
   pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
  
-
-
 
 
 
@@ -330,15 +378,14 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 
 //--------------------------------APPEND PATHS FOR FIRST TIME ------------------>
 
-  //iterate over dataArray and append that number of paths to the svg
+  // //iterate over dataArray and append that number of paths to the svg
    paths = svg.selectAll(".topicPaths")
     .data(indices) //adjust this to indicies
     .enter()
       .append("svg:path")
       .attr("class","topicPaths")
       .attr("d", function(d) { 
-      	var currTopicArray = w["arr_topic" + d];      	
-
+      	var currTopicArray = w["arr_topic" + d]; 
         return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
 
       .attr("fill", function(d) {
@@ -347,19 +394,54 @@ d3.csv("a_month_shorter3.csv", function(error, data){
       .attr("id", function(d){
       				var idTag= "topicPath"+d+"";
       				return idTag;}) //individual attribute for keeping track of each individual path
-      .attr("opacity",0.5)
-      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
-    });
+      .attr("opacity",0.5);
+
+
+//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
+
+//iterate through all indicies. 
+//for each indicie, make the paths associated to it.
+var paths2=[];
+var paths3 = [];
+
+indices.forEach( function(d){
+  var currColor = d.color = color(d);
+  var topicIndex =  d;
+  var idTag = "topicPath" + d + "";
+  var className = ".topicPath" + d + "";
+  var dataArrayOfcurrTopicPaths = createIndividualPaths(w["arr_topic"+d]);
+  var paths2=svg.selectAll(className)
+    .data(dataArrayOfcurrTopicPaths)
+    .enter()
+      .append("svg:path")
+      .attr("class", className)
+      .attr("d", function(d){return d;})
+      .attr("fill", currColor)
+      .attr("index", topicIndex)
+      .attr("id", idTag)
+      .attr("opacity", 0.5);
+
+paths3=paths3.concat(paths2);  
+}
+  );
+
+console.log(paths);
+console.log(paths3);
+
+// paths3.forEachon("mouseover",function(){
+//   console.log(d3.select(this));
+// });
 
   //mouseover functionality-- currently updates the text in the "highlighted" div to show
   //which topic is currently being moused over
-  paths.on("mouseenter", function(){
-    thisNode = d3.select(this)
-    var num = thisNode.attr("index");
-    document.getElementById("highlighted").innerHTML = "Topic " + num;
-  });
+  // paths.forEach(function(d){
+  //   d.on("mouseenter", function(){
 
-  
+  //   thisNode = d3.select(this)
+  //   var num = thisNode.attr("index");
+  //   document.getElementById("highlighted").innerHTML = "Topic " + num;
+  // });
+  // });
 
 
 //--------------------------------------------ON HOVER FUNCTIONALITY FOR LABELS---------------->
@@ -454,16 +536,6 @@ function updateSelectedTopics(){
 }
 
   //---------------------------------clicking functionality to select paths ----------------->
-//selectedTopic w/2 elements to be replaced by topic number -- 2 paths can be highlighted at one time
-  // var selectedTopic = [-1,-1];
-  // var somethingSelected = false;
-  // var numSelected = 0;
-  // var node1;
-  // var node2;
-  // var stOne;
-  // var stTwo;
-
-
 
 
   paths.on("mousedown", function(){
@@ -625,8 +697,6 @@ function updateSelectedTopics(){
     var tempWindowWidth = ww*0.8 - 10;
 
 
-      width = (windowWidth/numTopics)*.75;
-      g = (windowWidth/numTopics)*.25;   
       verticalGap = windowHeight/numTopics;
       height = verticalGap/(numTopics/2); 
    
@@ -691,6 +761,7 @@ function updateSelectedTopics(){
 
 updateHighlightPath();
 updateSelectedTopics();
+
 //----------------FOR MAINTAINING MOUSEENTER/MOUSEDOWN AFTER CHECKBOX CHANGES--------------//
 
     paths.on("mouseenter", function(){
@@ -848,82 +919,3 @@ draw();
 
 });
 
-
-
-
-
-//--------------THIS SECTION IS JUST FOR MAKING DUMMY DATA------------------//
-
-  // function shuffle(o){
-  //     for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-  //     return o;
-  // }
-
-  //   var arr0= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr1= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr2= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr3= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr4= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr5= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr6= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr7= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr8= [0,1,2,3,4,5,6,7,8,9];
-  //   var arr9= [0,1,2,3,4,5,6,7,8,9];
-
-  //   list = [arr0,arr1,arr2,arr3,arr4,arr5,arr6,arr7,arr8,arr9];
-
-  //   //shuffles list so that the "topics" are in various order
-  //   for(i=0;i<10;i++){
-  //     list[i]=shuffle(list[i]);
-  //   }
-
-  //   var tempArray = [];
-
-  //   var w = window;
-
-  //   //shuffles each topic's ordering 
-  //   for(i=0;i<10;i++){
-  //     w["arr_"+i] = [];
-  //   }
-  //   for(i=0;i<10;i++){
-  //     for(j=0;j<10;j++){
-  //         w["arr_"+i].push(list[j].indexOf(i));
-  //     }
-  //   } 
-
-//--------------------END DUMMY DATA SECTION----------------------//
-
-
-
-
-
-//function that takes in the "topic number" and spits out the associated path
-  // function flowChart(topicNum){
-
-  //     var points = [];
-
-  //     //making the points along the top of the path
-  //     for(i=0;i<10;i++){
-  //       var tempX = x + i*width + i*g;
-  //       var tempX2 = x + (i+1)*width + i*g;
-  //       var tempY = y+(w["arr_"+topicNum][i]*verticalGap); //Y value determined by the topic's order at "time" i
-  //       var tempY2 = tempY;
-  //       points.push([tempX,tempY]); //the leftmost point in each column
-  //       points.push([tempX2,tempY2]); //the rightmost point in each column
-  //     }
-  //     //making the points along the bottom of the path to close off the shape
-  //     for(i=9;i>-1;i--){
-  //       //var randHeighttemp= i*1.5+10;
-  //       var randHeight = thicknessScale(w["arr_"+topicNum][i]);
-  //     //  var randHeight = Math.floor((Math.random()*height)+10); //minimum height of 10 px
-  //       var tempX = x + (i+1)*width + i*g;
-  //       var tempX2 = x + i*width + i*g;
-  //       var tempY = y+(w["arr_"+topicNum][i]*verticalGap)+randHeight;
-  //       var tempY2 = tempY;
-  //       points.push([tempX,tempY]);
-  //       points.push([tempX2,tempY2]); 
-  //     }
-          
-  //     return d3.svg.line()(points);
-      
-  // }
