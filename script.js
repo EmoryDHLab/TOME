@@ -379,22 +379,22 @@ d3.csv("a_month_shorter3.csv", function(error, data){
 //--------------------------------APPEND PATHS FOR FIRST TIME ------------------>
 
   // //iterate over dataArray and append that number of paths to the svg
-   paths = svg.selectAll(".topicPaths")
-    .data(indices) //adjust this to indicies
-    .enter()
-      .append("svg:path")
-      .attr("class","topicPaths")
-      .attr("d", function(d) { 
-      	var currTopicArray = w["arr_topic" + d]; 
-        return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
+   // paths = svg.selectAll(".topicPaths")
+   //  .data(indices) //adjust this to indicies
+   //  .enter()
+   //    .append("svg:path")
+   //    .attr("class","topicPaths")
+   //    .attr("d", function(d) { 
+   //    	var currTopicArray = w["arr_topic" + d]; 
+   //      return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
 
-      .attr("fill", function(d) {
-           return d.color = color(d);}) //fills it with the corresponding color
-      .attr("index",function(d){return d;})
-      .attr("id", function(d){
-      				var idTag= "topicPath"+d+"";
-      				return idTag;}) //individual attribute for keeping track of each individual path
-      .attr("opacity",0.5);
+   //    .attr("fill", function(d) {
+   //         return d.color = color(d);}) //fills it with the corresponding color
+   //    .attr("index",function(d){return d;})
+   //    .attr("id", function(d){
+   //    				var idTag= "topicPath"+d+"";
+   //    				return idTag;}) //individual attribute for keeping track of each individual path
+   //    .attr("opacity",0.5);
 
 
 //------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
