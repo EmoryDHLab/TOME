@@ -12,15 +12,13 @@ $( document ).ready(function() {
   var dates=[]; //an array of the dates for current topic model data.
   var w = window;
 
-
   //keeps track of the checked topics (what labels are selected) 
   var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
   var shiftPressed = false;
-
   
-   var verticalGap = windowHeight/numTopics;
-   var height = verticalGap/(numTopics/2);
-   var oldScale = [1,1]; //initial X/Y scale is 1:1
+  var verticalGap = windowHeight/numTopics;
+  var height = verticalGap/(numTopics/2);
+  var oldScale = [1,1]; //initial X/Y scale is 1:1
 
   //information for which topics are currently selected
   var selectedTopic = [-1,-1];
@@ -75,49 +73,50 @@ var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when select
 var color = d3.scale.category20();
 
 
-/////////////////////zoom information////////////////
+/////////////////////////////////////////zoom information//////////////////////////////////////////////
 
-  var zoom = d3.behavior.zoom()
-              .scale(1)
-              .on("zoom", function(d){
-                draw();
-
+//function called when user double clicks or two finger zooms on mousepad
+var zoom = d3.behavior.zoom()
+            .scale(1)
+            .on("zoom", function(d){
+              draw();
               }).x(xScale).scaleExtent([1,38]);
 
-  //draw function is called whenever the user zooms
-  //it updates the xScale and redraws the paths based off of the new scale
-  function draw(){
-    svg.select("g.x.axis").call(xAxis);
-    pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
-    paths.attr("d", function(d) { 
-          var currTopicArray = w["arr_topic" + d];        
+//draw function is called whenever the user zooms
+//it updates the xScale and redraws the paths based off of the new scale
+function draw(){
+  svg.select("g.x.axis").call(xAxis);
+  pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
+  // paths.attr("d", function(d) { 
+  //       var currTopicArray = w["arr_topic" + d];        
+  //       return draw_Paths(currTopicArray);
+  //     })
+console.log(paths);
+}
 
-          return draw_Paths(currTopicArray);})
-  }
-
- //append an svg to the designated div for containing the paths
-  var svg = d3.select("#pathBox").append("svg")
+//append an svg to the designated div for containing the paths
+var svg = d3.select("#pathBox").append("svg")
+  .attr("width", windowWidth)
+  .attr("height", windowHeight)
+  .append("g")
+    .attr("transform", "translate(0,0)")
+    .attr("transform","scale(1,1)")
+    .call(zoom);
+  
+svg.append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("x", xScale(0))
+    .attr("y", 0)
     .attr("width", windowWidth)
-    .attr("height", windowHeight)
-    .append("g")
-      .attr("transform", "translate(0,0)")
-      .attr("transform","scale(1,1)")
-      .call(zoom);
-    
-  svg.append("clipPath")
-      .attr("id", "clip")
-    .append("rect")
-      .attr("x", xScale(0))
-      .attr("y", 0)
-      .attr("width", windowWidth)
-      .attr("height", windowHeight);
+    .attr("height", windowHeight);
 
 
-  svg.append("rect")
-      .attr("class", "pane")
-      .attr("width", windowWidth)
-      .attr("height", 300)
-      .call(zoom);
+svg.append("rect")
+    .attr("class", "pane")
+    .attr("width", windowWidth)
+    .attr("height", 300)
+    .call(zoom);
 
   //adds the x axis
 svg.append("g")
@@ -171,63 +170,7 @@ for(i=0;i<indices.length;i++){
       w["arr_topic"+indices[i]] = [];
 }
 
-
-//createIndividualPaths takes in an array containing info on one topic
-//it returns an array of lines that create paths related to that one topic.
-function createIndividualPaths(topicArray){
-  var currPoints = [];
-  var lines= [];
-  var currPath=[];
-  var pathInProgress=0;
-  //iterate through all points in array
-  for(i=0; i<topicArray.length; i++){
-    //if data has relevance, create points in the path
-    if(topicArray[i][3].relevance !=''){
-      //if there was not a path in progress, set pathInProgress to 1 
-      if(pathInProgress == 0){
-        pathInProgress=1;
-      }
-      var tempX1 = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-      var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
-      var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-      var tempY2 =  tempY1; 
-      currPath.push(i); //keep track of length of line and where in array data is coming from
-      currPoints.push([tempX1,tempY1]);
-      currPoints.push([tempX2,tempY2]);
-    }
-    else{
-      //if pathInProgress==1, path just ended.
-      //close up path and add the created line to lines[]
-      if(pathInProgress==1){
-        pathInProgress=0;
-        for(k=currPath.length-1; k>-1;k--){
-          //console.log("the location in the topicArray the data came from: "+ currPath[i]);
-          var j=currPath[k];
-          console.log(j);
-          var tempY1= y+(parseInt(topicArray[j][1].order)-1)*25+thicknessScale(topicArray[j][2].value); //minimum height of 10 px
-          var tempX1 =  x+xScale(parseDate3(topicArray[j][0].date))+pathWidth;
-          var tempX2 =  x+xScale(parseDate3(topicArray[j][0].date))-pathWidth;
-          var tempY2 = tempY1;
-          currPoints.push([tempX1, tempY1]);
-          currPoints.push([tempX2,tempY2]);
-        }
-        lines.push(d3.svg.line()(currPoints)); //push newly created path to the array of lines that will be returned. 
-        currPoints=[]; //clear currPoints[] so that a new set of points can be added to it.
-        currPath=[]; //clear currPath[] so that the next set of relevant points can be logged. 
-      }
-    }
-  }
-  return lines;
-}
-
-
-
-
-
-
-//draw_Paths takes in an array containing information on one topic
-//and returns the points for the entire path.
-  function draw_Paths(topicArray){
+function draw_Paths(topicArray){
 
       var points = [];
 
@@ -270,6 +213,113 @@ function createIndividualPaths(topicArray){
       
       return d3.svg.line()(points);   
   }
+//createIndividualPaths takes in an array containing info on one topic
+//it returns an array of lines that create paths related to that one topic.
+function createIndividualPaths(topicArray){
+  var currPoints = [];
+  var lines= [];
+  var currPath=[];
+  var pathInProgress=0;
+  //iterate through all points in array
+  for(i=0; i<topicArray.length; i++){
+    //if data has relevance, create points in the path
+    if(topicArray[i][3].relevance !=''){
+      //if there was not a path in progress, set pathInProgress to 1 
+      if(pathInProgress == 0){
+        pathInProgress=1;
+      }
+      var tempX1 = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+      var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+      var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+      var tempY2 =  tempY1; 
+      currPath.push(i); //keep track of length of line and where in array data is coming from
+      currPoints.push([tempX1,tempY1]);
+      currPoints.push([tempX2,tempY2]);
+    }
+    else{
+      //if pathInProgress==1, path just ended.
+      //close up path and add the created line to lines[]
+      if(pathInProgress==1){
+        pathInProgress=0;
+        for(k=currPath.length-1; k>-1;k--){
+          //console.log("the location in the topicArray the data came from: "+ currPath[i]);
+          var j=currPath[k];
+         // console.log(j);
+          var tempY1= y+(parseInt(topicArray[j][1].order)-1)*25+thicknessScale(topicArray[j][2].value); //minimum height of 10 px
+          var tempX1 =  x+xScale(parseDate3(topicArray[j][0].date))+pathWidth;
+          var tempX2 =  x+xScale(parseDate3(topicArray[j][0].date))-pathWidth;
+          var tempY2 = tempY1;
+          currPoints.push([tempX1, tempY1]);
+          currPoints.push([tempX2,tempY2]);
+        }
+        lines.push(d3.svg.line()(currPoints)); //push newly created path to the array of lines that will be returned. 
+        currPoints=[]; //clear currPoints[] so that a new set of points can be added to it.
+        currPath=[]; //clear currPath[] so that the next set of relevant points can be logged. 
+      }
+    }
+  }
+  return lines;
+}
+
+
+//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
+
+function drawIndividPaths(){
+//iterate through all indicies. 
+//for each index, make the paths associated to it.
+paths2=[];
+paths = [];
+
+
+indices.forEach( function(d,i){
+  var currColor = d.color = color(d);
+  var topicIndex =  d;
+  var idTag = "topicPath" + d + "";
+  var className = ".topicPath" + d + "";
+  var dataArrayOfcurrTopicPaths = createIndividualPaths(w["arr_topic"+d]);
+  var paths2=svg.selectAll(className)
+    .data(dataArrayOfcurrTopicPaths)
+    .enter()
+      .append("svg:path")
+      .attr("class", className)
+      .attr("d", function(d){return d;})
+      .attr("fill", currColor)
+      .attr("index", topicIndex)
+      .attr("id", idTag)
+      .attr("opacity", 0.5);
+  if (i==0){
+    paths=paths.concat(paths2);
+  }
+  else if(i>0){
+    paths2.forEach( function(d){
+      d.forEach(function(d){
+      paths[0].push(d);
+      })
+    })
+  }
+  });
+
+console.log(paths);
+//console.log(paths3);
+
+// paths3.forEachon("mouseover",function(){
+//   console.log(d3.select(this));
+// });
+
+  //mouseover functionality-- currently updates the text in the "highlighted" div to show
+  //which topic is currently being moused over
+  // paths.forEach(function(d){
+  //   d.on("mouseenter", function(){
+
+  //   thisNode = d3.select(this)
+  //   var num = thisNode.attr("index");
+  //   document.getElementById("highlighted").innerHTML = "Topic " + num;
+  // });
+  // });
+}
+
+
+
 
 //load the data and place it into an array where an array of data on each topic is located by looking
 //for w["arr_topic<number>"] where <number> is the topic number.
@@ -397,51 +447,7 @@ d3.csv("a_month_shorter3.csv", function(error, data){
    //    .attr("opacity",0.5);
 
 
-//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
-
-//iterate through all indicies. 
-//for each indicie, make the paths associated to it.
-var paths2=[];
-var paths3 = [];
-
-indices.forEach( function(d){
-  var currColor = d.color = color(d);
-  var topicIndex =  d;
-  var idTag = "topicPath" + d + "";
-  var className = ".topicPath" + d + "";
-  var dataArrayOfcurrTopicPaths = createIndividualPaths(w["arr_topic"+d]);
-  var paths2=svg.selectAll(className)
-    .data(dataArrayOfcurrTopicPaths)
-    .enter()
-      .append("svg:path")
-      .attr("class", className)
-      .attr("d", function(d){return d;})
-      .attr("fill", currColor)
-      .attr("index", topicIndex)
-      .attr("id", idTag)
-      .attr("opacity", 0.5);
-
-paths3=paths3.concat(paths2);  
-}
-  );
-
-console.log(paths);
-console.log(paths3);
-
-// paths3.forEachon("mouseover",function(){
-//   console.log(d3.select(this));
-// });
-
-  //mouseover functionality-- currently updates the text in the "highlighted" div to show
-  //which topic is currently being moused over
-  // paths.forEach(function(d){
-  //   d.on("mouseenter", function(){
-
-  //   thisNode = d3.select(this)
-  //   var num = thisNode.attr("index");
-  //   document.getElementById("highlighted").innerHTML = "Topic " + num;
-  // });
-  // });
+drawIndividPaths();
 
 
 //--------------------------------------------ON HOVER FUNCTIONALITY FOR LABELS---------------->
@@ -482,6 +488,10 @@ function updateHighlightPath(){
                 .attr("stroke-width","1.5px");
     }
 }
+
+
+
+
 
 function updateSelectedTopics(){
   var deselect0=true;
@@ -917,5 +927,11 @@ draw();
 }
 );
 
-});
 
+
+//draw_Paths takes in an array containing information on one topic
+//and returns the points for the entire path.
+//this is the old functionality for creating paths. Trying to create a new way that is cleaner.
+  
+
+});
