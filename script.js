@@ -91,7 +91,10 @@ function draw(){
   //       var currTopicArray = w["arr_topic" + d];        
   //       return draw_Paths(currTopicArray);
   //     })
-console.log(paths);
+  d3.selectAll("path").remove();
+  drawIndividPaths();
+//console.log(paths);
+
 }
 
 //append an svg to the designated div for containing the paths
@@ -263,6 +266,13 @@ function createIndividualPaths(topicArray){
 
 
 //------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
+
+// function updatePaths(path){
+//   path.attr("d", function(d){
+//     var pathUpdated = createIndividualPaths(d
+//   })
+// }
+
 
 function drawIndividPaths(){
 //iterate through all indicies. 
