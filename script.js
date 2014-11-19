@@ -1,4 +1,4 @@
-$( document ).ready(function() {
+ $( document ).ready(function() {
   var numTopics = 11;
   var windowHeight = 300;
   var windowWidth = $("#pathBox").width();
@@ -93,6 +93,7 @@ function draw(){
   //     })
   d3.selectAll("path").remove();
   drawIndividPaths();
+  updateSelectedPaths();
 //console.log(paths);
 
 }
@@ -308,48 +309,39 @@ indices.forEach( function(d,i){
 
 paths=paths[0];
 
-// paths=paths[0].forEachon("mouseover",function(){
-//   console.log(d3.select(this));
-// });
-
-  //mouseover functionality-- currently updates the text in the "highlighted" div to show
-  //which topic is currently being moused over
-  // paths.forEach(function(d){
-  //   d.on("mouseenter", function(){
-
-  //   thisNode = d3.select(this)
-  //   var num = thisNode.attr("index");
-  //   document.getElementById("highlighted").innerHTML = "Topic " + num;
-  // });
-  // });
 }
 
 
 function mouseoverFunction(thisN){
-  console.log("hover");
-  thisNode = thisN;
-  currId= thisNode.attr("id");
+  var thisNode = thisN;
+  var currId= thisNode.attr("id");
   currId= "#"+currId;
   var currTopic=d3.selectAll(currId);
-  console.log(currTopic);
+  var num = thisNode.attr("index");
+  document.getElementById("highlighted").innerHTML = "Topic " + num;
   currTopic.attr("opacity",1)
            .attr("stroke","#000000")
            .attr("stroke-width", "1.5px");
 }
+
 function mouseoutFunction(thisN){
   thisNode = thisN;
-  currId= thisNode.attr("id");
-  currId= "#"+currId;
-  var currTopic=d3.selectAll(currId);
-  currTopic.attr("opacity",0.5)
-           .attr("stroke","0")
-           .attr("stroke-width", "0px");
+  nodeIndex= thisNode.attr("index");
+  if(!($.inArray(+nodeIndex, selectedTopic)>-1)){
+    currId= thisNode.attr("id");
+    currId= "#"+currId;
+    var currTopic=d3.selectAll(currId);
+    currTopic.attr("opacity",0.5)
+             .attr("stroke","0")
+             .attr("stroke-width", "0px");
+  }
 }
-
 function pathsMousedownFunction(thisN){
     thisNode = thisN;
-    console.log(thisNode);
-    console.log(thisNode.attr("index"));
+    currId= thisNode.attr("id");
+    currId- "#" + currId;
+    var topicPaths= d3.selectAll(currId);
+    var allPaths=d3.selectAll(".topicPaths");
 
     //if the shift key is being pressed at the time of the click
     if(shiftPressed == true){
@@ -357,20 +349,15 @@ function pathsMousedownFunction(thisN){
       //if nothing is currently selected
       if(numSelected==0){
         stOne= +thisNode.attr("index");
-
-       selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
-       console.log(selectedTopic);
+        selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
         numSelected++; //add to the count of selected nodes
-        node1 = thisNode; //node1 is the current node
+        node1 =  thisNode; //node1 is the current node
         displayInfoBox(node1); //adding it to the bottom box
         somethingSelected=true; 
 
         //reset everything to deselected, select current node
-         paths.attr("opacity",0.5)
+         allPaths.attr("opacity",0.5)
           .attr("stroke","0");
-          node1.attr("opacity",1);
-          node1.attr("stroke","#000000");
-          node1.attr("stroke-width","1.5px");
       }
       //if something is selected
       else if (numSelected==1 && !($.inArray(+thisNode.attr("index"),selectedTopic) > -1)){
@@ -380,14 +367,9 @@ function pathsMousedownFunction(thisN){
           selectedTopic=[stOne,stTwo]; //replace selectedTopic[1] with that index
           console.log(selectedTopic);
           numSelected++;
-          node2 = thisNode;
+          node2 =  thisNode;
           displayCombinedInfoBox(node1,node2);
           somethingSelected=true;
-
-          //select current node
-          node2.attr("opacity",1);
-          node2.attr("stroke","#000000");
-          node2.attr("stroke-width","1.5px");
       }}
 
       //remove from selection if shift is held and it is re-pressed
@@ -396,8 +378,6 @@ function pathsMousedownFunction(thisN){
         //deselect current node
         console.log("inarray");
         var loc=($.inArray(+thisNode.attr("index"),selectedTopic));
-        thisNode.attr("opacity",0.5);
-        thisNode.attr("stroke","0");
         //change it's value in selectedTopic back to -1
         selectedTopic[loc]=-1;
 
@@ -407,11 +387,11 @@ function pathsMousedownFunction(thisN){
             if(selectedTopic[1]==-1){ //if both are -1, nothing is selected
               somethingSelected=false;
               numSelected=0;
-              console.log("0 selected");
             }
             else{ //if the second node is -1, one thing is selected
+              console.log("this is happening");
               somethingSelected=true;
-              displayInfoBox(node2);
+              displayInfoBox(node1);
               numSelected=1;
             }
           }
@@ -437,16 +417,12 @@ function pathsMousedownFunction(thisN){
       //if you're clicking a previously selected topic,
       //deselect it
       if(+thisNode.attr("index")==selectedTopic[0]){
-          thisNode.attr("opacity",0.5);
-          thisNode.attr("stroke","0");
           stOne=-1;
           selectedTopic=[stOne,-1];
           somethingSelected=false;
           numSelected=0;
         }
       else if(+thisNode.attr("index")==selectedTopic[1]){
-          thisNode.attr("opacity",0.5);
-          thisNode.attr("stroke","0");
           stTwo=-1;
           selectedTopic=[stOne,stTwo];
           somethingSelected=false;
@@ -455,12 +431,8 @@ function pathsMousedownFunction(thisN){
         //if it's not previously selected,
         //select it
         else{
-          paths.attr("opacity",0.5)
-          .attr("stroke","0");
-          thisNode.attr("opacity",1);
-          thisNode.attr("stroke","#000000");
-          thisNode.attr("stroke-width","1.5px");
-          
+          allPaths.attr("opacity",0.5)
+          .attr("stroke","0");          
           stOne= +thisNode.attr("index");
           selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
           somethingSelected=true;
@@ -469,31 +441,50 @@ function pathsMousedownFunction(thisN){
           node1=thisNode;
       }
     }
+   updateSelectedPaths();
     if(!somethingSelected){
       displayDefault(); 
     } 
+}
+
+
+function updateSelectedPaths(){
+   if(selectedTopic[0]!=-1){
+      var path= "#topicPath"+selectedTopic[0]+"";
+      var pathToHighlight=d3.selectAll(path);
+      pathToHighlight.attr("opacity",1)
+        .attr("stroke","#000000")
+        .attr("stroke-width","1.5px");
+    }
+    if(selectedTopic[1]!=-1){
+      var path= "#topicPath"+selectedTopic[0]+"";
+      var pathToHighlight=d3.selectAll(path);
+      pathToHighlight.attr("opacity",1)
+        .attr("stroke","#000000")
+        .attr("stroke-width","1.5px");
+    }
 }
 function displayDefault(){
     document.getElementById("textBoxInner").innerHTML = "<h1>Default text</h1><hr>";
   }
 
-  //update the text at the bottom for the one selected node
-  function displayInfoBox(node) {
-      var num = node.attr("index");
-      var tempTitle = "<h1>Topic " + num + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
-      var tempContent = "Here is some temporary text about topic <b>" + num + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
-      document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
-  }
+//update the text at the bottom for the one selected node
+function displayInfoBox(node) {
+    var num = node.attr("index");
+    var tempTitle = "<h1>Topic " + num + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
+    var tempContent = "Here is some temporary text about topic <b>" + num + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
+    document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
+}
 
-   //update the text at the bottom for both selected nodes
-  function displayCombinedInfoBox(n1,n2){
-      var num1 = n1.attr("index");
-      var num2 = n2.attr("index");
-      var tempTitle = "<h1>Topics " + num1 + " and " + num2 + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
-      var tempContent = "Here is some temporary text about topics <b> " + num1 + 
-      " and " + num2 + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
-      document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
-  }
+ //update the text at the bottom for both selected nodes
+function displayCombinedInfoBox(n1,n2){
+    var num1 = n1.attr("index");
+    var num2 = n2.attr("index");
+    var tempTitle = "<h1>Topics " + num1 + " and " + num2 + "</h1><button type='button'>Explore</button><button type='button'>Create Query</button><hr>";
+    var tempContent = "Here is some temporary text about topics <b> " + num1 + 
+    " and " + num2 + "</b>-- eventually it will be replaced by visualizations once there is actual data being input.";
+    document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
+}
 
 //load the data and place it into an array where an array of data on each topic is located by looking
 //for w["arr_topic<number>"] where <number> is the topic number.
@@ -647,6 +638,7 @@ function highlightPath(num){
 		.attr("stroke","#000000")
             .attr("stroke-width","1.5px");
 }
+
 function updateHighlightPath(){
     if(selectedTopic[0]!=-1 ) {
       var num1=selectedTopic[0];
@@ -665,9 +657,6 @@ function updateHighlightPath(){
                 .attr("stroke-width","1.5px");
     }
 }
-
-
-
 
 
 function updateSelectedTopics(){
@@ -800,19 +789,11 @@ updateSelectedTopics();
 
 //----------------FOR MAINTAINING MOUSEENTER/MOUSEDOWN AFTER CHECKBOX CHANGES--------------//
 
-    paths.on("mouseenter", function(){
-        thisNode = d3.select(this);
-        var num = thisNode.attr("index");
-        document.getElementById("highlighted").innerHTML = "Topic " + num;
-      });
-
-  paths.on("mouseenter", function(){
-    thisNode = d3.select(this)
-  //  displayInfoBox(thisNode);
-    var num = thisNode.attr("index");
-    document.getElementById("highlighted").innerHTML = "Topic " + num;
-  });
-
+    // paths.on("mouseenter", function(){
+    //     thisNode = d3.select(this);
+    //     var num = thisNode.attr("index");
+    //     document.getElementById("highlighted").innerHTML = "Topic " + num;
+    //   });
 
   paths.on("mousedown", function(){
 
