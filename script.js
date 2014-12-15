@@ -87,15 +87,9 @@ var zoom = d3.behavior.zoom()
 function draw(){
   svg.select("g.x.axis").call(xAxis);
   pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
-  // paths.attr("d", function(d) { 
-  //       var currTopicArray = w["arr_topic" + d];        
-  //       return draw_Paths(currTopicArray);
-  //     })
   d3.selectAll("path").remove();
   drawIndividPaths();
   updateSelectedPaths();
-//console.log(paths);
-
 }
 
 //append an svg to the designated div for containing the paths
@@ -131,92 +125,12 @@ svg.append("g")
         .style("font-size", "10px");
 
 
-  $(document).keydown(function (e) {
-    if(e.shiftKey) {
-      shiftPressed = true;
-      console.log(shiftPressed);
-    }
-  });
-
-  $(document).keyup(function (e) {
-      shiftPressed = false;
-  });
-  
-  function changeVals() {
-   
-    //resizes the paths based off window dimensions
-    var tempScaleX =  document.getElementById("windowW").value/windowWidth;
-    var tempScaleY = document.getElementById("windowH").value/windowHeight;
-    oldScale[0]=oldScale[0]*tempScaleX;
-    oldScale[1]=oldScale[1]*tempScaleY;
-    
-    //transitions the path to the new dimensions
-    paths
-      .transition()
-      .duration(750)
-      .attr("transform", "scale(" + oldScale[0] + " " + oldScale[1] +")");
-
-    //updates the variables
-    windowWidth = document.getElementById("windowW").value;
-    windowHeight = document.getElementById("windowH").value;
-
-    //transitions the svg element
-    svg
-      .transition()
-      .duration(750)
-      .attr("width", windowWidth).attr("height", windowHeight);
-  }
-
-
-
 //for each topic number in array indices, copy it to an array to keep track
 for(i=0;i<indices.length;i++){
       w["arr_topic"+indices[i]] = [];
 }
 
-function draw_Paths(topicArray){
-
-      var points = [];
-
-
-      //making the points along the top of the path
-      for(i=0;i<topicArray.length;i++){
-        if (topicArray[i][3].relevance !=''){
-           var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-           var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
-           var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-           var tempY2 =  tempY1;
-        }
-        else {
-          var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-          var tempY1 = windowHeight;
-          var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-          var tempY2 =  tempY1;
-        }
-        points.push([tempX,tempY1]); //the leftmost point in each column
-        points.push([tempX2,tempY2]); //the rightmost point in each column
-      }
-
-      //making the points along the bottom of the path to close off the shape
-      for(i=topicArray.length-1;i>-1;i--){
-        if(topicArray[i][3].relevance!=''){
-          var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
-          var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-          var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-          var tempY2 = tempY;
-        }
-        else{
-          var tempY = windowHeight; //minimum height of 10 px
-          var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
-          var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
-          var tempY2 = tempY;
-        }
-        points.push([tempX,tempY]);
-        points.push([tempX2,tempY2]); 
-      }
-      
-      return d3.svg.line()(points);   
-  }
+// 
 //createIndividualPaths takes in an array containing info on one topic
 //it returns an array of lines that create paths related to that one topic.
 function createIndividualPaths(topicArray){
@@ -266,7 +180,7 @@ function createIndividualPaths(topicArray){
 }
 
 
-//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED SECTIONS FOR EACH TOPIC--------------//
+//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED PATHS FOR EACH TOPIC--------------//
 
 
 function drawIndividPaths(){
@@ -311,7 +225,7 @@ paths=paths[0];
 
 }
 
-
+//**********************************************FUNCTIONALITY FOR PATHS ON MOUSEOVER/MOUSEOUT*******************************************//
 function mouseoverFunction(thisN){
   var thisNode = thisN;
   var currId= thisNode.attr("id");
@@ -336,6 +250,10 @@ function mouseoutFunction(thisN){
              .attr("stroke-width", "0px");
   }
 }
+
+
+//**********************************************FUNCTIONALITY FOR PATHS ON MOUSEDOWN/SELECTION*******************************************//
+
 function pathsMousedownFunction(thisN){
     thisNode = thisN;
     currId= thisNode.attr("id");
@@ -457,13 +375,15 @@ function updateSelectedPaths(){
         .attr("stroke-width","1.5px");
     }
     if(selectedTopic[1]!=-1){
-      var path= "#topicPath"+selectedTopic[0]+"";
+      var path= "#topicPath"+selectedTopic[1]+"";
       var pathToHighlight=d3.selectAll(path);
       pathToHighlight.attr("opacity",1)
         .attr("stroke","#000000")
         .attr("stroke-width","1.5px");
     }
 }
+
+//***************************************************FUNCTIONS THAT DISPLAY TEXT WHEN PATHS ARE SELECTED***************************************//
 function displayDefault(){
     document.getElementById("textBoxInner").innerHTML = "<h1>Default text</h1><hr>";
   }
@@ -486,59 +406,29 @@ function displayCombinedInfoBox(n1,n2){
     document.getElementById("textBoxInner").innerHTML = tempTitle + "<br>" + tempContent;
 }
 
-//load the data and place it into an array where an array of data on each topic is located by looking
-//for w["arr_topic<number>"] where <number> is the topic number.
-d3.csv("a_month_shorter3.csv", function(error, data){
-	topicData=data;
-	topicData.forEach( function(d){
 
-			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
-		  
-
-		});
-
-  //for each item in topicData, see if its date has been added to the dates array.
-  //if the date is not yet included in the dates array, add the date.
-  topicData.forEach(function(d){
-      if(dates.indexOf(d.date) ==-1){
-        dates.push(d.date);
-      }
-  });
-
-  //find the minimum and maximum dates in the data
-  mindate=parseDate3(dates[0]);
-  maxdate=parseDate3(dates[dates.length-1]);
-  //update xScale domain
-  xScale.domain([mindate, maxdate]);
-  zoom.x(xScale);
-  //determine the width of each column based on the distance between two dates in the current xScale
-  pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
- 
-
-
-
-//-------------------------------------CREATE LABELS FOR CONTROL PANEL---------------------->
+//********************************************* CREATE LABELS FOR CONTROL PANEL**************************************************//
 
   //create labels in d3 related to each topic. 
   var topicDivs = d3.select("#toggleContainer").append("div")
-  						.selectAll(".topicDiv")
-  						.data(indices)
-  							.enter()
-  							.append('div')
-  							.attr("class", "topicdiv");
+              .selectAll(".topicDiv")
+              .data(indices)
+                .enter()
+                .append('div')
+                .attr("class", "topicdiv");
 
   var topicLabels = topicDivs.selectAll('.topicLabel')
-  						.data(function(d){return [d];})
-  						.enter().append('label')
-  						.attr("class", "topicLabel");
+              .data(function(d){return [d];})
+              .enter().append('label')
+              .attr("class", "topicLabel");
  
 
 
     //here, give each topic a color
-  	topicDivs.style("background-color", function(d){
-  			var c = d3.rgb(color(d));
-  			var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
-  			return newColor;})
+    topicDivs.style("background-color", function(d){
+        var c = d3.rgb(color(d));
+        var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
+        return newColor;})
         //when you hover over a label
         .on("mouseover", function(d){
                   d3.select(this).transition()
@@ -553,111 +443,67 @@ d3.csv("a_month_shorter3.csv", function(error, data){
                     }
                 })
         //when the mouse stops hovering over a label
-  			.on("mouseout", function(d){
-  							d3.select(this).transition()
-  								.style("background-color", function(d){
-	  								var c = d3.rgb(color(d));
-	  								var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
-	  								return newColor;}) //opacity is 0.5 again
-  								.style("border", "3px solid rgba(0,0,0,0)"); //remove border
-  					            var a= dataArray.indexOf(d);
-  					            if(topicChecked[a]){
-  									deHighlightPath(d); //dehighlight corresponding path
-  									}
-  							})
-  			.style("border", "3px solid rgba(0,0,0,0)")					
-  			.style("height", "16px")
-  			.style()
-  			.on("click", function(d){
-				var a= dataArray.indexOf(d);
-				var tempChecked = topicChecked[a];
-				topicChecked[a] = !tempChecked;
-				labelChecked(); //if the label is clicked, update which paths should be shown
-			})
-			.style("padding-left","10px")
-			.style("padding-top","3px");
-  					
-  	
-  	//give each label text values.
-  	topicLabels.attr("value", function(d){
-  									return d;
-  					})
-  					.style("opacity",1)
-  					.style("height", "20px")
-  					.html( function(d){
-  							var finalText = "<b>Topic Number: " + d + "</b> ";
-  							return finalText;
-  					});
+        .on("mouseout", function(d){
+                d3.select(this).transition()
+                  .style("background-color", function(d){
+                    var c = d3.rgb(color(d));
+                    var newColor = "rgba("+ c.r + "," + c.g + "," + c.b +"," +0.5 +")";
+                    return newColor;}) //opacity is 0.5 again
+                  .style("border", "3px solid rgba(0,0,0,0)"); //remove border
+                        var a= dataArray.indexOf(d);
+                        if(topicChecked[a]){
+                    deHighlightPath(d); //dehighlight corresponding path
+                    }
+                })
+        .style("border", "3px solid rgba(0,0,0,0)")         
+        .style("height", "16px")
+        .style()
+        .on("click", function(d){
+        var a= dataArray.indexOf(d);
+        var tempChecked = topicChecked[a];
+        topicChecked[a] = !tempChecked;
+        labelChecked(); //if the label is clicked, update which paths should be shown
+      })
+      .style("padding-left","10px")
+      .style("padding-top","3px");
+            
+    
+    //give each label text values.
+    topicLabels.attr("value", function(d){
+                    return d;
+            })
+            .style("opacity",1)
+            .style("height", "20px")
+            .html( function(d){
+                var finalText = "<b>Topic Number: " + d + "</b> ";
+                return finalText;
+            });
 
-
-
-//--------------------------------APPEND PATHS FOR FIRST TIME ------------------>
-
-  // //iterate over dataArray and append that number of paths to the svg
-//    paths5 = svg.selectAll(".topicPaths")
-//     .data(indices) //adjust this to indicies
-//     .enter()
-//       .append("svg:path")
-//       .attr("class","topicPaths")
-//       .attr("d", function(d) { 
-//       	var currTopicArray = w["arr_topic" + d]; 
-//         return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
-
-//       .attr("fill", function(d) {
-//            return d.color = color(d);}) //fills it with the corresponding color
-//       .attr("index",function(d){return d;})
-//       .attr("id", function(d){
-//       				var idTag= "topicPath"+d+"";
-//       				return idTag;}) //individual attribute for keeping track of each individual path
-//       .attr("opacity",0.5);
-
-// console.log(paths5);
-
-drawIndividPaths();
-
-var paths= svg.selectAll(".topicPaths");
-console.log("paths2");
-console.log(paths);
-//--------------------------------------------ON HOVER FUNCTIONALITY FOR LABELS---------------->
-
-//highligting paths when hovering over a label.
-function deHighlightPath(num){
-  if(!($.inArray(num,selectedTopic) > -1)){
-  	var text="path#topicPath"+num+"";
-  	var object= d3.selectAll(text);
-  	object.transition().attr("opacity",0.5)
-  			.attr("stroke","#000000")
-              .attr("stroke-width","0px");
-}
-}
-
-function highlightPath(num){
-	var text="path#topicPath"+num+"";
-	var object= d3.selectAll(text);
-	object.transition().attr("opacity",1)
-		.attr("stroke","#000000")
-            .attr("stroke-width","1.5px");
-}
-
-function updateHighlightPath(){
-    if(selectedTopic[0]!=-1 ) {
-      var num1=selectedTopic[0];
-      var text="path#topicPath"+num1+"";
-      var object= d3.selectAll(text);
-      object.transition().attr("opacity",1)
-        .attr("stroke","#000000")
-                .attr("stroke-width","1.5px");
+//****************************************FUNCTIONALITY WHEN A LABEL IS SELECTED*********************************************//
+  function updateData(){
+    var tempDataStr = ""
+    for(i=0;i<dataArray.length;i++){ //for the length of the data array (always the number of topics)
+      if(topicChecked[i]){ //if in the topicChecked array, the topic is checked
+        if (tempDataStr == ""){
+          tempDataStr += dataArray[i];
+        }
+        else{
+          tempDataStr= tempDataStr + "," + dataArray[i];  //add that topic to tempDataStr
+        } 
+      }
     }
-    if(selectedTopic[1]!=-1) {
-      var num1=selectedTopic[1];
-      var text="path#topicPath"+num1+"";
-      var object= d3.selectAll(text);
-      object.transition().attr("opacity",1)
-        .attr("stroke","#000000")
-                .attr("stroke-width","1.5px");
-    }
-}
+    var tempArrayd = tempDataStr.split(","); 
+    indices= tempArrayd; //set the indices array to reflect which topics are actually checked "true" currently
+  }
 
+    //updates things if a label gets "checked" or selected
+    function labelChecked(){
+      updateData(); //update the topic/path numbers in the array indicies.
+      svg.selectAll("path").remove(); //removes all previous paths
+      drawIndividPaths();//draws new paths (based off of which are selected)
+      updateSelectedPaths(); //highlights any paths that are currently selected
+      updateSelectedTopics();
+}
 
 function updateSelectedTopics(){
   var deselect0=true;
@@ -707,15 +553,52 @@ function updateSelectedTopics(){
           }
 
         }
-    console.log("what is selected?");
-    console.log(selectedTopic);
+}
+
+//*********************************************************ON HOVER FUNCTIONALITY FOR LABELS***************************************///
+
+//highligting paths when hovering over a label.
+function deHighlightPath(num){
+  if(!($.inArray(num,selectedTopic) > -1)){
+    var text="path#topicPath"+num+"";
+    var object= d3.selectAll(text);
+    object.transition().attr("opacity",0.5)
+        .attr("stroke","#000000")
+              .attr("stroke-width","0px");
+}
+}
+
+function highlightPath(num){
+  var text="path#topicPath"+num+"";
+  var object= d3.selectAll(text);
+  object.transition().attr("opacity",1)
+    .attr("stroke","#000000")
+            .attr("stroke-width","1.5px");
+}
+
+function updateHighlightPath(){
+    if(selectedTopic[0]!=-1 ) {
+      var num1=selectedTopic[0];
+      var text="path#topicPath"+num1+"";
+      var object= d3.selectAll(text);
+      object.transition().attr("opacity",1)
+        .attr("stroke","#000000")
+                .attr("stroke-width","1.5px");
+    }
+    if(selectedTopic[1]!=-1) {
+      var num1=selectedTopic[1];
+      var text="path#topicPath"+num1+"";
+      var object= d3.selectAll(text);
+      object.transition().attr("opacity",1)
+        .attr("stroke","#000000")
+                .attr("stroke-width","1.5px");
+    }
 }
 
 
 
 
-//----------------------------------RESIZING WITH A WINDOW RESIZE----------------->
-
+//**********************************RESIZE ON WINDOW RESIZE ***************************************//
   window.onresize = function(event){
     var iw = $('body').innerWidth();
     var ww = $(window).width();
@@ -724,15 +607,6 @@ function updateSelectedTopics(){
 
       verticalGap = windowHeight/numTopics;
       height = verticalGap/(numTopics/2); 
-   
-      var tempScaleX =  tempWindowWidth/windowWidth;
-
-      oldScale[0]=oldScale[0]*tempScaleX;
-
-      paths
-        .transition()
-        .duration(250)
-        .attr("transform", "scale(" + oldScale[0] + " 1)");
 
       windowWidth = tempWindowWidth;
 
@@ -742,197 +616,111 @@ function updateSelectedTopics(){
         .attr("width", windowWidth).attr("height", windowHeight);
   }
 
-
-  //---------------------------FOR CHANGING THE DATA WITH CHECKBOXES-----------------//
-
-  function updateData(){
-    var tempDataStr = ""
-    for(i=0;i<dataArray.length;i++){ //for the length of the data array (always the number of topics)
-      if(topicChecked[i]){ //if in the topicChecked array, the topic is checked
-        if (tempDataStr == ""){
-          tempDataStr += dataArray[i];
-        }
-        else{
-          tempDataStr= tempDataStr + "," + dataArray[i];  //add that topic to tempDataStr
-        } 
-      }
+//***********************************************UPDATE SHIFTPRESSED VARIABLE ON KEYDOWN***************************************//
+ $(document).keydown(function (e) {
+    if(e.shiftKey) {
+      shiftPressed = true;
     }
-    var tempArrayd = tempDataStr.split(","); 
-    indices= tempArrayd; //set the indices array to reflect which topics are actually checked "true" currently
-  }
-
-  	//updates things if a label gets "checked" or selected
-    function labelChecked(){
-
-    //update the paths in the div
-    updateData();
-    svg.selectAll("path").remove(); //removes all paths
-    paths = svg.selectAll("path")
-    .data(indices) //takes updated indices array
-    .enter()
-      .append("svg:path")
-      .attr("d", function(d) { 
-      	var currTopicArray = w["arr_topic" + d];
-      return draw_Paths(currTopicArray);}) //redraws paths
-      .attr("fill", function(d) {return d.color = color(d);})
-      .attr("index",function(d){return d;})
-      .attr("id", function(d){
-      				var idTag= "topicPath"+d+"";
-      				return idTag;})
-      .attr("opacity",0.5)
-      .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"
-      });
-
-
-updateHighlightPath();
-updateSelectedTopics();
-
-//----------------FOR MAINTAINING MOUSEENTER/MOUSEDOWN AFTER CHECKBOX CHANGES--------------//
-
-    // paths.on("mouseenter", function(){
-    //     thisNode = d3.select(this);
-    //     var num = thisNode.attr("index");
-    //     document.getElementById("highlighted").innerHTML = "Topic " + num;
-    //   });
-
-  paths.on("mousedown", function(){
-
-    console.log("Clicked a path");
-    thisNode = d3.select(this)
-    
-    if(shiftPressed == true){
-      console.log("Num selected:"+numSelected);
-      if(numSelected==0){
-        console.log("numSelected: 0"+thisNode.attr("index"));
-        selectedTopic[0]=+thisNode.attr("index");
-        numSelected=1;
-        console.log("ADDING TO NUMSELECTEDX");
-        node1 = thisNode;
-        displayInfoBox(node1);
-        somethingSelected=true;
-//        console.log("Clicked 1 in shift");
-
-         paths.attr("opacity",0.5)
-          .attr("stroke","0");
-          node1.attr("opacity",1);
-          node1.attr("stroke","#000000");
-          node1.attr("stroke-width","1.5px");
-      }
-      else if (numSelected==1){
-//        console.log("Clicked 2 in shift");
-        if((+thisNode.attr("index"))!=selectedTopic[0]){
-          if (selectedTopic[0]==-1){
-            console.log("Filling sT 0")
-            selectedTopic[0]=(+thisNode.attr("index"));
-            numSelected=2;
-            node2 = thisNode;
-            displayCombinedInfoBox(node1,node2);
-            somethingSelected=true;
-
-            node2.attr("opacity",1);
-            node2.attr("stroke","#000000");
-            node2.attr("stroke-width","1.5px");
-          }
-          else if(selectedTopic[1]==-1){
-            console.log("Filling sT 1")
-            selectedTopic[1]=(+thisNode.attr("index"));
-            numSelected=2;
-            node2 = thisNode;
-            displayCombinedInfoBox(node1,node2);
-            somethingSelected=true;
-
-            node2.attr("opacity",1);
-            node2.attr("stroke","#000000");
-            node2.attr("stroke-width","1.5px");
-          }
-        }
-      }
-      //remove from selection if shift is held and it is re-pressed
-      else if($.inArray((+thisNode.attr("index")),selectedTopic) > -1){
-        thisNode.attr("opacity",0.5);
-        thisNode.attr("stroke","0");
-        selectedTopic[$.inArray((+thisNode.attr("index")),selectedTopic)]=-1;
-        if($.inArray(-1,selectedTopic)>=0){
-          if(selectedTopic[0]==-1){
-            if(selectedTopic[1]==-1){
-              somethingSelected=false;
-              numSelected=0;
-            }
-            else{
-              somethingSelected=true;
-              displayInfoBox(node2);
-              numSelected=1;
-            }
-          }
-          else if (selectedTopic[1]==-1){
-            if(selectedTopic[0]==-1){
-              somethingSelected=false;
-              numSelected=0;
-            }
-            else{
-              somethingSelected=true;
-              displayInfoBox(node1);
-              numSelected=1;
-            }
-          }
-
-        }
-      }
-    }
-    //if not shift pressed
-    else{
-      if((+thisNode.attr("index"))==selectedTopic[0]){
-          thisNode.attr("opacity",0.5);
-          thisNode.attr("stroke","0");
-          selectedTopic[0]=-1;
-          if(selectedTopic[1]=-1){
-            numSelected=0;
-            somethingSelected=false;
-          }
-          else{
-            numSelected=1;
-          }
-        }
-        else if((+thisNode.attr("index")==selectedTopic[1])){
-          thisNode.attr("opacity",0.5);
-          thisNode.attr("stroke","0");
-          selectedTopic[1]=-1;
-          if(selectedTopic[0]=-1){
-            numSelected=0;
-            somethingSelected=false;
-          }
-          else{
-            numSelected=1;
-          }
-        }
-        else{
-          paths.attr("opacity",0.5)
-          .attr("stroke","0");
-          thisNode.attr("opacity",1);
-          thisNode.attr("stroke","#000000");
-          thisNode.attr("stroke-width","1.5px");
-          somethingSelected=true;
-          displayInfoBox(thisNode);
-          numSelected=1;
-          node1=thisNode;
-          selectedTopic[0]=node1.attr("index");
-      }
-    }
-    if(!somethingSelected){
-      displayDefault();
-      paths.attr("opacity",0.5)
-          .attr("stroke","0");
-    }
-    console.log(selectedTopic);
-    console.log("Something selected? " + somethingSelected);
-      console.log("Num selected? " + numSelected);
-
   });
 
-}
+  $(document).keyup(function (e) {
+      shiftPressed = false;
+  });
+
+//******************************************************LOAD DATA***************************************************//
+//load the data and place it into an array where an array of data on each topic is located by looking
+//for w["arr_topic<number>"] where <number> is the topic number.
+d3.csv("a_month_shorter3.csv", function(error, data){
+	topicData=data;
+	topicData.forEach( function(d){
+
+			w["arr_" + d.topicNum].push([{date:d.date},{order:d.order},{value: d.value}, {relevance:d.relevance}, {topicNum:d.topicNum}]);
+		  
+
+		});
+
+  //for each item in topicData, see if its date has been added to the dates array.
+  //if the date is not yet included in the dates array, add the date.
+  topicData.forEach(function(d){
+      if(dates.indexOf(d.date) ==-1){
+        dates.push(d.date);
+      }
+  });
+
+  //find the minimum and maximum dates in the data
+  mindate=parseDate3(dates[0]);
+  maxdate=parseDate3(dates[dates.length-1]);
+  //update xScale domain
+  xScale.domain([mindate, maxdate]);
+  zoom.x(xScale);
+  //determine the width of each column based on the distance between two dates in the current xScale
+  pathWidth = ((xScale(parseDate3(dates[1]))- xScale(parseDate3(dates[0])))*.75)/2;
+ 
+
+drawIndividPaths();
 draw();
 }
 );
+});
+
+
+
+//--------------------------------APPEND PATHS FOR FIRST TIME ------------------>
+
+  // //iterate over dataArray and append that number of paths to the svg
+//    paths5 = svg.selectAll(".topicPaths")
+//     .data(indices) //adjust this to indicies
+//     .enter()
+//       .append("svg:path")
+//       .attr("class","topicPaths")
+//       .attr("d", function(d) { 
+//       	var currTopicArray = w["arr_topic" + d]; 
+//         return draw_Paths(currTopicArray);}) //d--the path for topic number (d)
+
+//       .attr("fill", function(d) {
+//            return d.color = color(d);}) //fills it with the corresponding color
+//       .attr("index",function(d){return d;})
+//       .attr("id", function(d){
+//       				var idTag= "topicPath"+d+"";
+//       				return idTag;}) //individual attribute for keeping track of each individual path
+//       .attr("opacity",0.5);
+
+// console.log(paths5);
+
+
+
+// var paths= svg.selectAll(".topicPaths");
+// console.log("paths2");
+// console.log(paths);
+
+
+
+
+
+  // function changeVals() {
+   
+  //   //resizes the paths based off window dimensions
+  //   var tempScaleX =  document.getElementById("windowW").value/windowWidth;
+  //   var tempScaleY = document.getElementById("windowH").value/windowHeight;
+  //   oldScale[0]=oldScale[0]*tempScaleX;
+  //   oldScale[1]=oldScale[1]*tempScaleY;
+    
+  //   //transitions the path to the new dimensions
+  //   paths
+  //     .transition()
+  //     .duration(750)
+  //     .attr("transform", "scale(" + oldScale[0] + " " + oldScale[1] +")");
+
+  //   //updates the variables
+  //   windowWidth = document.getElementById("windowW").value;
+  //   windowHeight = document.getElementById("windowH").value;
+
+  //   //transitions the svg element
+  //   svg
+  //     .transition()
+  //     .duration(750)
+  //     .attr("width", windowWidth).attr("height", windowHeight);
+  // }
 
 
 
@@ -941,4 +729,184 @@ draw();
 //this is the old functionality for creating paths. Trying to create a new way that is cleaner.
   
 
-});
+
+
+ // //----------------FOR MAINTAINING MOUSEENTER/MOUSEDOWN AFTER CHECKBOX CHANGES--------------//
+
+
+//   paths.on("mousedown", function(){
+
+//     console.log("Clicked a path");
+//     thisNode = d3.select(this)
+    
+//     if(shiftPressed == true){
+//       console.log("Num selected:"+numSelected);
+//       if(numSelected==0){
+//         console.log("numSelected: 0"+thisNode.attr("index"));
+//         selectedTopic[0]=+thisNode.attr("index");
+//         numSelected=1;
+//         console.log("ADDING TO NUMSELECTEDX");
+//         node1 = thisNode;
+//         displayInfoBox(node1);
+//         somethingSelected=true;
+// //        console.log("Clicked 1 in shift");
+
+//          paths.attr("opacity",0.5)
+//           .attr("stroke","0");
+//           node1.attr("opacity",1);
+//           node1.attr("stroke","#000000");
+//           node1.attr("stroke-width","1.5px");
+//       }
+//       else if (numSelected==1){
+// //        console.log("Clicked 2 in shift");
+//         if((+thisNode.attr("index"))!=selectedTopic[0]){
+//           if (selectedTopic[0]==-1){
+//             console.log("Filling sT 0")
+//             selectedTopic[0]=(+thisNode.attr("index"));
+//             numSelected=2;
+//             node2 = thisNode;
+//             displayCombinedInfoBox(node1,node2);
+//             somethingSelected=true;
+
+//             node2.attr("opacity",1);
+//             node2.attr("stroke","#000000");
+//             node2.attr("stroke-width","1.5px");
+//           }
+//           else if(selectedTopic[1]==-1){
+//             console.log("Filling sT 1")
+//             selectedTopic[1]=(+thisNode.attr("index"));
+//             numSelected=2;
+//             node2 = thisNode;
+//             displayCombinedInfoBox(node1,node2);
+//             somethingSelected=true;
+
+//             node2.attr("opacity",1);
+//             node2.attr("stroke","#000000");
+//             node2.attr("stroke-width","1.5px");
+//           }
+//         }
+//       }
+//       //remove from selection if shift is held and it is re-pressed
+//       else if($.inArray((+thisNode.attr("index")),selectedTopic) > -1){
+//         thisNode.attr("opacity",0.5);
+//         thisNode.attr("stroke","0");
+//         selectedTopic[$.inArray((+thisNode.attr("index")),selectedTopic)]=-1;
+//         if($.inArray(-1,selectedTopic)>=0){
+//           if(selectedTopic[0]==-1){
+//             if(selectedTopic[1]==-1){
+//               somethingSelected=false;
+//               numSelected=0;
+//             }
+//             else{
+//               somethingSelected=true;
+//               displayInfoBox(node2);
+//               numSelected=1;
+//             }
+//           }
+//           else if (selectedTopic[1]==-1){
+//             if(selectedTopic[0]==-1){
+//               somethingSelected=false;
+//               numSelected=0;
+//             }
+//             else{
+//               somethingSelected=true;
+//               displayInfoBox(node1);
+//               numSelected=1;
+//             }
+//           }
+
+//         }
+//       }
+//     }
+//     //if not shift pressed
+//     else{
+//       if((+thisNode.attr("index"))==selectedTopic[0]){
+//           thisNode.attr("opacity",0.5);
+//           thisNode.attr("stroke","0");
+//           selectedTopic[0]=-1;
+//           if(selectedTopic[1]=-1){
+//             numSelected=0;
+//             somethingSelected=false;
+//           }
+//           else{
+//             numSelected=1;
+//           }
+//         }
+//         else if((+thisNode.attr("index")==selectedTopic[1])){
+//           thisNode.attr("opacity",0.5);
+//           thisNode.attr("stroke","0");
+//           selectedTopic[1]=-1;
+//           if(selectedTopic[0]=-1){
+//             numSelected=0;
+//             somethingSelected=false;
+//           }
+//           else{
+//             numSelected=1;
+//           }
+//         }
+//         else{
+//           paths.attr("opacity",0.5)
+//           .attr("stroke","0");
+//           thisNode.attr("opacity",1);
+//           thisNode.attr("stroke","#000000");
+//           thisNode.attr("stroke-width","1.5px");
+//           somethingSelected=true;
+//           displayInfoBox(thisNode);
+//           numSelected=1;
+//           node1=thisNode;
+//           selectedTopic[0]=node1.attr("index");
+//       }
+//     }
+//     if(!somethingSelected){
+//       displayDefault();
+//       paths.attr("opacity",0.5)
+//           .attr("stroke","0");
+//     }
+//     console.log(selectedTopic);
+//     console.log("Something selected? " + somethingSelected);
+//       console.log("Num selected? " + numSelected);
+
+//   });
+
+// function draw_Paths(topicArray){
+
+//       var points = [];
+
+//       //making the points along the top of the path
+//       for(i=0;i<topicArray.length;i++){
+//         if (topicArray[i][3].relevance !=''){
+//            var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+//            var tempY1 = y+ (parseInt(topicArray[i][1].order)-1)*25
+//            var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+//            var tempY2 =  tempY1;
+//         }
+//         else {
+//           var tempX = x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+//           var tempY1 = windowHeight;
+//           var tempX2 = x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+//           var tempY2 =  tempY1;
+//         }
+//         points.push([tempX,tempY1]); //the leftmost point in each column
+//         points.push([tempX2,tempY2]); //the rightmost point in each column
+//       }
+
+//       //making the points along the bottom of the path to close off the shape
+//       for(i=topicArray.length-1;i>-1;i--){
+//         if(topicArray[i][3].relevance!=''){
+//           var tempY = y+(parseInt(topicArray[i][1].order)-1)*25+thicknessScale(topicArray[i][2].value); //minimum height of 10 px
+//           var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+//           var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+//           var tempY2 = tempY;
+//         }
+//         else{
+//           var tempY = windowHeight; //minimum height of 10 px
+//           var tempX =  x+xScale(parseDate3(topicArray[i][0].date))+pathWidth;
+//           var tempX2 =  x+xScale(parseDate3(topicArray[i][0].date))-pathWidth;
+//           var tempY2 = tempY;
+//         }
+//         points.push([tempX,tempY]);
+//         points.push([tempX2,tempY2]); 
+//       }
+      
+//       return d3.svg.line()(points);   
+//   }
