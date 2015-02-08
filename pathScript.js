@@ -159,7 +159,8 @@ var lineData;
 //iterates through the CSV and creates lines, and putting
 //the line at the very bottom if it doesn't have a relevance
 
-d3.csv("a-month-shorter3.csv", function(d) {
+d3.csv("a_month_shorter3.csv", function(d) {
+  console.log("loading data");
   var tempEnd = d.date + "-15"; //adding -15 to the date is saying day 15, which is halfway through the month
   var tx1 = xScale(parseDate(d.date));
   var tx2= xScale(parseDate(d.date))+30;
@@ -290,12 +291,14 @@ function pathPiece(d){
 
 function draw_events(){
       //iterates through all rows in the CSV file
-      d3.csv("a-month-shorter3.csv", function(data){
+      d3.csv("a_month_shorter3.csv", function(data){
+        console.log(data);
       var articles = svg.selectAll("path.article").data(data)
       articles.enter()
         .append("path")
           .attr("d", function(d) { 
               if(d.relevance!=""){
+                console.log(d);
                 return pathPiece(d);
               }
             })

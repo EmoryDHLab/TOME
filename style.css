@@ -1,8 +1,11 @@
-path:hover{
+/*path:hover{
     opacity: 1;
     stroke:black;
     stroke-width:0.5px;
   }
+*/
+
+
 
   .sizeForm {
   font: 11px sans-serif;
@@ -14,10 +17,11 @@ path:hover{
     font: 16px sans-serif;
   }
 
-  svg{
-
-  }
-
+rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
   body{
     background-color:#ddd;
   }
@@ -65,7 +69,7 @@ path:hover{
   #highlighted{
     font: 14px sans-serif;
     float:left;
-    width:50px;
+    width:65px;
     height:20px;
     background-color:#FFB94E;
   }
@@ -75,6 +79,8 @@ path:hover{
   /*  background-color:#333;*/
     background-color:#efefef;
     height:300px;
+    cursor:move;
+    pointer-events:all;
   }
 
   #textBox{
@@ -115,7 +121,12 @@ path:hover{
   label{display:block;}
 
   #toggleContainer{
-    overflow:auto;
-    height:100px;
+    overflow: auto;
+    margin-top: 20px;
+    height: 170px;
     background-color: #fff;
+  }
+
+  path.domain{
+    stroke-width: 1px;
   }

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3-zoom-pan-extent.js"></script>
+
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' type='text/javascript' charset='utf-8'></script>
+ <style>
+
+  #timeline{
+    background-color:#eee;
+  }
+
+
+.xaxis path,
+.xaxis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+rect.article:hover{
+  opacity:1;
+}
+
+rect.article.activeRect{
+  opacity: 1;
+}
+
+  </style>
+</head>
+<body>
+<div id="timeline"></div>
+<button onclick="zoomFunction()">Zoom In</button>
+<button onclick="zoomFunction()">Zoom Out</button>
+<script>
+var w = 1200,
+    h = 500,
+    parseDate = d3.time.format("%Y-%m-%d").parse;
+var padding = 5;
+
+/*
+
+var zoomLevel_years = 0.5;
+var zoomLevel_months = 2.3;
+var zoomLevel_weeks = 9.6;
+var zoomLevel_days = 20;
+*/
+var zoomLevel = 0;
+
+
+var yearlyTopic = {};
+
+
+svg = d3.select("#timeline")
+  .append("svg")
+  .attr("width", w)
+  .attr("height", h);
+
+
+function zoomFunction(){
+  zoomLevel++;
+  if(zoomLevel==1){
+    zoom()
+  }
+}
+  var parseDate = d3.time.format("%Y-%m").parse;
+    
+  var mindate = parseDate("1845-09"),
+    maxdate = parseDate("1861-05");
+
+  var xScale = d3.time.scale()
+    .domain([mindate, maxdate])
+    .range([padding, w - padding * 2]);
+
+     var oScale = d3.time.scale()
+    .domain([0, 8])
+    .range([0.2,1]);
+
+  var yScale = d3.scale.linear()
+                .domain([250, 2200])
+                .range([2, 20]);
+
+    var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .orient("bottom");
+  var thicknessScale = d3.scale.linear()
+    .domain([0.9,70])
+    .range([1,40]);
+
+
+/////////
+
+////////////
+var zoom = d3.behavior.zoom()
+  .on("zoom", function(){
+
+      //if
+      svg.select("g").call(xAxis).selectAll("text").style("font-size", "10px");
+      update_events();
+      //svg.selectAll(".item").attr("transform", "translate(" + d3.event.translate[0]+", 0)scale(" + d3.event.scale+", 1)");
+  }).x(xScale)
+  .scaleExtent([0.5, 100])
+//                    .xExtent([mindate,maxdate]);
+
+
+var rect = svg.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("class","poop")
+                .attr("width", w-100)
+                .attr("height", h)
+                .attr("opacity", 0)
+                .call(zoom);
+
+svg.append("g")
+    .attr("class", "xaxis")
+    .attr("transform","translate(0,450)")
+    .call(xAxis)
+
+    .selectAll("text")
+        .style("font-size", "10px");
+
+
+var labels=[];
+for (var i=0;i<100;i++){
+  labels[i]="topic"+i;
+}
+
+var nums=[];
+for (var i=0;i<11;i++){
+  nums[i]=i;
+}
+
+var indices = [15,29,44,46,49,60,70,82,84,86,91];
+
+//console.log(labels);
+var colours = ["#6363FF", "#6373FF", "#63A3FF", "#63E3FF", "#63FFFB", "#63FFCB",
+               "#63FF9B", "#63FF6B", "#7BFF63", "#BBFF63", "#DBFF63", "#FBFF63", 
+               "#FFD363", "#FFB363", "#FF8363", "#FF7363", "#FF6364"];
+var heatmapColour = d3.scale.linear()
+  .domain(d3.range(0, 1, 1.0 / (colours.length - 1)))
+  .range(colours);
+
+var c = d3.scale.linear()
+  .domain([0,11])
+  .range([0,1]);
+
+//console.log(heatmapColour(1));
+var jsonStr="";
+/*
+
+  $.getJSON('a-month-relevancy.json',function(data){
+    jsonStr=data;
+  });
+      
+function getObject(obj, key, val) 
+{
+    var newObj = false; 
+    $.each(obj, function()
+    {
+        var testObject = this; 
+        $.each(testObject, function(k,v)
+        {
+            //alert(k);
+            if(val == v && k == key)
+            {
+                newObj = testObject;
+            }
+        });
+    });
+
+    return newObj;
+}*/
+
+
+function draw_events(){
+        
+    for(var i=0;i<10;i++){
+      var tempNum
+      d3.csv("a-month-shorter3.csv", function(data){
+      //console.log("HI");
+      var articles = svg.selectAll("rect.article").data(data)
+      articles.enter()
+        .append("rect")
+          .attr("class", "article")
+          .attr("class", function(d){return "article " +d.topicNum;})
+          .attr("x", function(d){return xScale(parseDate(d.date));})//d.month
+          .attr("y", function(d){ 
+
+            /*var tempInt = d.topicNum;
+            tempInt = tempInt.replace("topic","");
+            tempInt = parseInt(tempInt);
+            return (indices.indexOf(tempInt))*40;*/
+            return ((parseInt(d.order)-1)*40);
+          })
+          .attr("width", 30)
+          .attr("height", function(d){
+            if(d.relevance==""){
+              return 0;
+            }
+            else{
+              return thicknessScale(d.value)
+            }
+            
+          }) //thicknessScale(d.topic0)
+          .attr("topic",function(d){return d.topicNum;})
+          .style("fill", function(d){
+            var tempInt = d.topicNum;
+            tempInt = tempInt.replace("topic","");
+            tempInt = parseInt(tempInt);
+            return heatmapColour(c(indices.indexOf(tempInt)));
+//              return "#ccc";
+          })
+          .style("opacity", function(d){
+            /*
+            if(d.relevance!=""){
+              return oScale(d.relevance);
+            }
+            else{
+              return 0.2;
+            }*/
+              return 0.5;
+            })
+          .on("mouseover", function(d){
+              d3.select(this).style({opacity:'1',})
+          })
+          .on("mouseout", function(d){
+              d3.select(this).style({opacity:'0.5',})
+          })
+          .on("click",function(d){
+              clickFunction(d);
+          })
+      articles.exit()
+            .remove();
+
+    });
+    }
+    
+
+}
+
+function update_events(){
+//  console.log(zoom.scale());
+    return svg.selectAll("rect.article")
+        .attr("x", function(d){return xScale(parseDate(d.date))})    
+}
+
+function clickFunction(d){
+
+  var tempStr = ".article." + d.topicNum;
+  //$(tempStr).addClass("activeRect");
+  $(tempStr).css("opacity","1");
+  
+
+}
+
+draw_events();
+
+//draw_events(flights)
+</script>
+
+</body>
+</html>
