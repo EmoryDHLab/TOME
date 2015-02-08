@@ -2,26 +2,20 @@
   var numTopics = 11;
   var windowHeight = 300;
   var windowWidth = $("#pathBox").width();
-  //top/left margins for the paths
-  var x = 10;
+  var x = 10;//top/left margins for the paths
   var y = 10;
   var padding = 5;
   var topicData;
   var pathWidth; //this variable changes the xscale and how many columns show on screen at once.
   var paths;
   var dates=[]; //an array of the dates for current topic model data.
-  var w = window;
-
-  //keeps track of the checked topics (what labels are selected) 
-  var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];
+  var w = window; 
+  var topicChecked = [true, true, true, true, true, true, true, true, true, true,true];//keeps track of the checked topics (what labels are selected) 
   var shiftPressed = false;
-  
   var verticalGap = windowHeight/numTopics;
   var height = verticalGap/(numTopics/2);
   var oldScale = [1,1]; //initial X/Y scale is 1:1
-
-  //information for which topics are currently selected
-  var selectedTopic = [-1,-1];
+  var selectedTopic = [-1,-1]; //information for which topics are currently selected
   var somethingSelected = false;
   var numSelected = 0;
   var node1;
@@ -73,8 +67,7 @@ var dataArray = [15,29,44,46,49,60,70,82,84,86,91]; //dataArray used when select
 var color = d3.scale.category20();
 
 
-/////////////////////////////////////////zoom information//////////////////////////////////////////////
-
+//*********************************************************************ZOOM FUNCTIONALITY*********************************//
 //function called when user double clicks or two finger zooms on mousepad
 var zoom = d3.behavior.zoom()
             .scale(1)
@@ -130,7 +123,8 @@ for(i=0;i<indices.length;i++){
       w["arr_topic"+indices[i]] = [];
 }
 
-// 
+//************************************************************************CREATE PATHS FOR EACH TOPIC**********************************//
+
 //createIndividualPaths takes in an array containing info on one topic
 //it returns an array of lines that create paths related to that one topic.
 function createIndividualPaths(topicArray){
@@ -179,8 +173,7 @@ function createIndividualPaths(topicArray){
   return lines;
 }
 
-
-//------------------------------------APPEND PATHS FOR FIRST TIME WITH SEPARATED BUT LINKED PATHS FOR EACH TOPIC--------------//
+//*************************************************APPEND PATH GROUPS FOR FIRST TIME **************************************//
 
 
 function drawIndividPaths(){
@@ -234,7 +227,7 @@ function mouseoverFunction(thisN){
   var num = thisNode.attr("index");
   document.getElementById("highlighted").innerHTML = "Topic " + num;
   currTopic.attr("opacity",1)
-           .attr("stroke","#000000")
+           //.attr("stroke","#000000")
            .attr("stroke-width", "1.5px");
 }
 
@@ -246,7 +239,7 @@ function mouseoutFunction(thisN){
     currId= "#"+currId;
     var currTopic=d3.selectAll(currId);
     currTopic.attr("opacity",0.5)
-             .attr("stroke","0")
+            // .attr("stroke","0")
              .attr("stroke-width", "0px");
   }
 }
@@ -275,7 +268,7 @@ function pathsMousedownFunction(thisN){
 
         //reset everything to deselected, select current node
          allPaths.attr("opacity",0.5)
-          .attr("stroke","0");
+         // .attr("stroke","0");
       }
       //if something is selected
       else if (numSelected==1 && !($.inArray(+thisNode.attr("index"),selectedTopic) > -1)){
@@ -350,7 +343,7 @@ function pathsMousedownFunction(thisN){
         //select it
         else{
           allPaths.attr("opacity",0.5)
-          .attr("stroke","0");          
+         // .attr("stroke","0");          
           stOne= +thisNode.attr("index");
           selectedTopic= [stOne,-1];//replace selectedTopic[0] with that index
           somethingSelected=true;
@@ -371,14 +364,14 @@ function updateSelectedPaths(){
       var path= "#topicPath"+selectedTopic[0]+"";
       var pathToHighlight=d3.selectAll(path);
       pathToHighlight.attr("opacity",1)
-        .attr("stroke","#000000")
+       // .attr("stroke","#000000")
         .attr("stroke-width","1.5px");
     }
     if(selectedTopic[1]!=-1){
       var path= "#topicPath"+selectedTopic[1]+"";
       var pathToHighlight=d3.selectAll(path);
       pathToHighlight.attr("opacity",1)
-        .attr("stroke","#000000")
+       // .attr("stroke","#000000")
         .attr("stroke-width","1.5px");
     }
 }
@@ -563,7 +556,7 @@ function deHighlightPath(num){
     var text="path#topicPath"+num+"";
     var object= d3.selectAll(text);
     object.transition().attr("opacity",0.5)
-        .attr("stroke","#000000")
+      //  .attr("stroke","#000000")
               .attr("stroke-width","0px");
 }
 }
@@ -572,7 +565,7 @@ function highlightPath(num){
   var text="path#topicPath"+num+"";
   var object= d3.selectAll(text);
   object.transition().attr("opacity",1)
-    .attr("stroke","#000000")
+  //  .attr("stroke","#000000")
             .attr("stroke-width","1.5px");
 }
 
@@ -582,7 +575,7 @@ function updateHighlightPath(){
       var text="path#topicPath"+num1+"";
       var object= d3.selectAll(text);
       object.transition().attr("opacity",1)
-        .attr("stroke","#000000")
+       // .attr("stroke","#000000")
                 .attr("stroke-width","1.5px");
     }
     if(selectedTopic[1]!=-1) {
@@ -590,7 +583,7 @@ function updateHighlightPath(){
       var text="path#topicPath"+num1+"";
       var object= d3.selectAll(text);
       object.transition().attr("opacity",1)
-        .attr("stroke","#000000")
+      //  .attr("stroke","#000000")
                 .attr("stroke-width","1.5px");
     }
 }
@@ -616,7 +609,7 @@ function updateHighlightPath(){
         .attr("width", windowWidth).attr("height", windowHeight);
   }
 
-//***********************************************UPDATE SHIFTPRESSED VARIABLE ON KEYDOWN***************************************//
+//***********************************************UPDATE SHIFTPRESSED VARIABLE ON KEYDOWN/UP***************************************//
  $(document).keydown(function (e) {
     if(e.shiftKey) {
       shiftPressed = true;
