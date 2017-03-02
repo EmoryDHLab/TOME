@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>News Stuff</title>
+    </head>
+
+
+
+    <body>
+        <p>Hey, want some news?</p>
+        <p>We got {{news_len}} articles here for ya.</p>
+        <ol>
+        {% for newspaper in newspaper_list %}
+            <li>{{newspaper.title}}, Started on {{newspaper.date_started}},
+                <a href="{% url 'news:detail' newspaper.id %}">See More</a>
+            </li>
+        {%endfor%}
+        </ol>
+    </body>
+</html>
