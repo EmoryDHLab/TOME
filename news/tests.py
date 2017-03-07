@@ -35,6 +35,7 @@ class IssueModelTests(TestCase):
         paper.save()
         issue = Issue(newspaper=paper, editor='', date_published=today())
         self.assertRaises(ValidationError, issue.save)
+
     def test_editor_is_editor(self):
         ed = "James Jameserson"
         descTest("The editor name is consistent with the one given")
@@ -43,29 +44,31 @@ class IssueModelTests(TestCase):
         issue = Issue(date_published=today(), editor=ed, newspaper=paper)
         issue.save()
         self.assertEquals(issue.editor, Issue.objects.get(pk=issue.pk).editor)
+
     def test_pub_date_in_newspaper_timespan(self):
         ed = "James Jameserson"
         descTest("The publication date must be inside the newspaper's lifetime")
         paper = Newspaper(title="hello", date_started=today())
         paper.save()
         issue = Issue(date_published=yesterday(), editor=ed, newspaper=paper)
-        self.assertRaisesRegex(ValidationError, PUB_TIME_ERROR_TEXT, issue.save)
+        self.assertRaisesRegex(ValidationError, PUB_TIME_ERROR, issue.save)
+
     def test_one_issue_per_date_per_paper(self):
         descTest("Publications in the same newspaper should not occur on the same date")
-        paper = Newspaper(title="hello", date_started=today())
+        paper = Newspaper(title="hello", date_started=yesterday())
         paper.save()
         issue1 = Issue(date_published=yesterday(), editor="T", newspaper=paper)
         issue2 = Issue(date_published=yesterday(), editor="T2", newspaper=paper)
         issue1.save()
         self.assertRaisesRegex(ValidationError, ISSUE_OVERLAP_ERROR, issue2.save)
+
     def test_multiple_issues_same_date_diff_paper(self):
         descTest("Publications in different newspapers can occur on the same date")
-        paper = Newspaper(title="hello", date_started=today())
+        paper = Newspaper(title="hello", date_started=yesterday())
         paper.save()
-        paper2 = Newspaper(title="hi", date_started=today())
+        paper2 = Newspaper(title="hi", date_started=yesterday())
         paper2.save()
         issue1 = Issue(date_published=yesterday(), editor="T", newspaper=paper)
         issue2 = Issue(date_published=yesterday(), editor="T2", newspaper=paper2)
         issue1.save()
         issue2.save()
-    

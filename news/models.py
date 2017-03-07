@@ -2,19 +2,37 @@ from Tome.helpers.model_helpers import *
 from Tome.helpers.time_helpers import *
 from django.utils.translation import ugettext_lazy as _
 
+class Location(models.Model):
+    city = models.CharField(max_length=200, default="Testville")
+    state = models.CharField(max_length=200, default="Montigania")
+
+    class Meta:
+        unique_together = ("city","state")
+
+    def __str__(self):
+        return "{0}, {1}".format(self.city, self.state)
+
+
 class Newspaper(models.Model):
     # Has a title
     title = models.CharField(max_length=200)
 
-    #!!! Newspaper has a following newspaper (can be null)
-    #!!! Newspaper has a previous (can be null)
+    # Location
+    # Has a location object
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, default=1)
+
+    # Newspaper has a previous (can be null)
+    prev_paper = models.ForeignKey('self', related_name="+", default=None,
+        null=True, blank=True)
+    # Newspaper has a following newspaper (can be null)
+    next_paper = models.ForeignKey('self', related_name="+", default=None,
+        null=True, blank=True)
 
     # Has a start date:
     date_started = models.DateField('date started', null=False)
     # Has an end date
     date_ended = models.DateField('date ended', null=True, blank=True)
-    # Has a location object
-    #location =
+
     def __str__(self):
         return "Newspaper: {0} Started: {1} Ended: {2}".format(self.title,
         self.date_started, self.date_ended)
@@ -40,6 +58,7 @@ class Newspaper(models.Model):
             if (date > self.date_ended):
                 return False
         return True
+
 # Issue belongs to Newspaper
 class Issue(models.Model):
     # has a date of publication
@@ -52,8 +71,8 @@ class Issue(models.Model):
     def clean(self):
         if (self.newspaper != None):
             if (not self.newspaper.isInTimeline(self.date_published)):
-                raise ValidationError(_(PUB_TIME_ERROR_TEXT))
-            if (len(self.newspaper.issue_set.count(date_published=self.date_published)) > 0):
+                raise ValidationError(_(PUB_TIME_ERROR))
+            if (len(self.newspaper.issue_set.filter(date_published=self.date_published)) > 0):
                 raise ValidationError(_(ISSUE_OVERLAP_ERROR))
     def __str__(self):
         return "{0}, Issue: {1} \nDate: {2}".format(self.newspaper.title,
@@ -61,6 +80,7 @@ class Issue(models.Model):
 
     def getDate(self):
         return str(self.date_published)
+        
 # Belongs to issue
 class Article(models.Model):
     # Title of article

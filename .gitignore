@@ -1,9 +1,11 @@
 tomeenv/
 __pycache__/
+.cache/
+
+# Mac Stuff
 # Folder view configuration files
 .DS_Store
 Desktop.ini
-
 # Thumbnail cache files
 ._*
 Thumbs.db
