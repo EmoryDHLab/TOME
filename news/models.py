@@ -15,7 +15,7 @@ class Location(models.Model):
 
 class Newspaper(models.Model):
     # Has a title
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=500)
 
     # Location
     # Has a location object
@@ -32,6 +32,20 @@ class Newspaper(models.Model):
     date_started = models.DateField('date started', null=False)
     # Has an end date
     date_ended = models.DateField('date ended', null=True, blank=True)
+
+    WEEKLY = "WK"
+    MONTHLY = "MN"
+    OTHER = "OT"
+    FREQUENCY_CHOICES = (
+        (WEEKLY, 'weekly'),
+        (MONTHLY, 'monthly'),
+        (OTHER, 'other'),
+    )
+    frequency = models.CharField(
+        max_length=2,
+        choices=FREQUENCY_CHOICES,
+        default=OTHER,
+    )
 
     def __str__(self):
         return "Newspaper: {0} Started: {1} Ended: {2}".format(self.title,
@@ -80,17 +94,27 @@ class Issue(models.Model):
 
     def getDate(self):
         return str(self.date_published)
-        
+
 # Belongs to issue
 class Article(models.Model):
     # Title of article
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=500)
 
     # Link to article text
-    link = models.TextField()
+    link = models.URLField(max_length=500)
 
     # Issue has many articles
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
 
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.id, self.title)
+
+# Has an belongs to many Articles
+class Author(models.Model):
+    # Author's Name
+    name = models.CharField(max_length=200)
+
+    articles = models.ManyToManyField(Article)
+
+    def __str__(self):
+        return "Author: " + name

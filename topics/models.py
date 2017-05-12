@@ -27,24 +27,24 @@ class Topic(models.Model):
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    rank = models.DecimalField(max_digits=5, decimal_places=5)
+    score = models.DecimalField(max_digits=5, decimal_places=5)
 
     class Meta:
-        ordering = ('rank',)
+        ordering = ('score',)
         unique_together = ('word', 'topic')
 
     def __str__(self):
-        return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) + " | Rank: " + str(self.rank)
+        return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) + " | Score: " + str(self.score)
 
 class ArticleTopicRank(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    rank = models.DecimalField(max_digits=5, decimal_places=5)
+    score = models.DecimalField(max_digits=5, decimal_places=5)
 
     class Meta:
-        ordering = ('rank',)
+        ordering = ('score',)
         unique_together = ('article', 'topic')
 
     def __str__(self):
-        return "Article: {0} | Topic: {1} | Rank: {2}".format(self.article.title,
-            self.topic.getFormattedTopWords(3), self.rank)
+        return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.title,
+            self.topic.getFormattedTopWords(3), self.score)
