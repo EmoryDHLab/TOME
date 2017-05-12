@@ -25,7 +25,7 @@ SECRET_KEY = '3cbi^ni_kwszxas8yh(4l*uzw+t7@&l#+%madc5&zly_w5*-np'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['tome.lmc.gatech.edu']
+ALLOWED_HOSTS = ['tome.lmc.gatech.edu', 'localhost']
 
 
 # Application definition
@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ['tome.lmc.gatech.edu']
 INSTALLED_APPS = [
     'news.apps.NewsConfig',
     'topics.apps.TopicsConfig',
+    'Tome',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -125,4 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'Tome', 'static'),
+)
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

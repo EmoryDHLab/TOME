@@ -116,5 +116,17 @@ class Author(models.Model):
 
     articles = models.ManyToManyField(Article)
 
+    def getArticleTitles(self, ct = 0):
+        s = "["
+        articles = self.articles.all()
+        for i in range(len(articles)):
+            if (i >= ct):
+                break
+            s += "<" + str(articles[i]) + ">"
+            if (i != len(articles) - 1):
+                s += ", "
+        s += "]"
+        return s
+
     def __str__(self):
-        return "Author: " + name
+        return "Author: " + self.name + " Articles: " +self.getArticleTitles(3)

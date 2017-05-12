@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from topics import views
 
-app_name = 'news'
+app_name = 'topics'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^(?P<topic_id>[0-9]+)/', views.detail, name='detail'),
