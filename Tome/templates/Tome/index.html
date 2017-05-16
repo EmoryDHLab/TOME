@@ -4,11 +4,71 @@
         <meta charset="utf-8">
         <title>News Stuff</title>
         {% load static %}
-        <script src="{% static "Tome/js/d3.min.js" %}"></script>
-        <link href="{% static "Tome/css/main.css" %}" rel="stylesheet" type="text/css"/>
+        <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
+          type="text/css"/>
     </head>
-
     <body>
-      <h1>HOME PAGE!</h1>
+      <div class="wrapper">
+        <header>
+          <h1>Interactive TOpic Model and MEtadata Visualization</h1>
+          <hr>
+          <ul id="headNav">
+            <li><h4>OVERVIEW</h4></li>
+            <li><h4>TOPIC DETAILS</h4></h4></h4></li>
+            <li><h4>DOCUMENT DETAILS</h4></h4></li>
+            <li><h4>NOTES</h4></li>
+          </ul>
+          <hr>
+        </header>
+
+        <div id="dataset-header">
+          <!-- TODO: Fill in with actual DB information. -->
+          <h2>Dataset Title</h2>
+          <button id="change-dataset" class="btn-dark">Change Dataset</button>
+          <p>
+            <span class='summary'>Dataset Summary</span>
+            <br/>
+            <span class='timeframe'>Date Started - Date Ended</span>
+            <br/>
+            <span class='editors'>Editors:</span>
+          </p>
+          <hr>
+        </div>
+        <div id="search" class="flex-container flex-center">
+          <h2>Search keyword(s):</h2>
+          <input name="keyword" type="text"/>
+        </div>
+
+        <div class="flex-container">
+          <div id="topics" class='flex-col-25'>
+            <h2>Topics</h2>
+            <h4>
+              View
+              <button id="topic-count" class=btn-dark>100</button>
+              topics
+            </h4>
+            <ol id="topic-list" class="scroll">
+              {% for i in "x"|rjust:"100"  %}
+              <li>
+                Lorem ipsum dolor sit amet
+              </li>
+              {% endfor %}
+            </ol>
+            <button id="clear-selected" name="clear-selected" class="btn-dark">
+              Clear Selected
+            </button>
+          </div>
+          <div id="vis-wrap" class='flex-col-75'>
+            <h2>Topics ranked by % of entire corpus</h2>
+            <div id="corpus-topic-rank" class="vis"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scripts -->
+      <script src="{% static "Tome/js/d3.min.js" %}"></script>
+      <script src="{% static "Tome/js/d3-selection-multi.min.js" %}"></script>
+      <script src="{% static "Tome/js/d3-scale.min.js" %}"></script>
+      <script src="{% static "Tome/js/script.js" %}"></script>
     </body>
 </html>
