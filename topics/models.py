@@ -27,7 +27,7 @@ class Topic(models.Model):
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=5, decimal_places=5)
+    score = models.DecimalField(max_digits=10, decimal_places=10)
 
     class Meta:
         ordering = ('score',)
@@ -39,7 +39,7 @@ class WordTopicRank(models.Model):
 class ArticleTopicRank(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=5, decimal_places=5)
+    score = models.DecimalField(max_digits=10, decimal_places=10)
 
     class Meta:
         ordering = ('score',)
