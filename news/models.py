@@ -98,7 +98,7 @@ class Issue(models.Model):
 # Belongs to issue
 class Article(models.Model):
     # Title of article
-    title = models.CharField(max_length=500)
+    title = models.CharField(max_length=500, default="",blank=True,null=True)
 
     # Link to article text
     link = models.URLField(max_length=500)

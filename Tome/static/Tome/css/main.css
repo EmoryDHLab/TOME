@@ -170,7 +170,7 @@ header ul li{
 .slider-handle {
   width: 20px;
   height: 20px;
-  border-radius: 10px;
+  border-radius: 50%;
   background-color: #4a4a4a;
   display: block;
   position: absolute;
