@@ -1,5 +1,247 @@
+@import url('https://fonts.googleapis.com/css?family=Cabin:700|Inconsolata|Poppins');
+
+/* ---------------------- Overall Page Styles ---------------------- */
+
+.wrapper {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.flex-container {
+  display: flex;
+}
+
+.flex-col-25 {
+  flex: .25;
+}
+
+.flex-col-75 {
+  flex: .75;
+}
+
+.flex-center{
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
 h1 {
   margin-left: auto;
   margin-right: auto;
   text-align: center;
+  font-family: 'Inconsolata', monospace;
+  font-weight: normal;
+  font-size: 36px;
 }
+h1 + hr {
+  border-color: black;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Cabin', sans-serif;
+}
+
+h4 {
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+button,
+input[role='button']:hover,
+input[type='submit']:hover,
+input[type='reset']:hover,
+input[type='button']:hover{
+  cursor: pointer;
+}
+.btn-dark {
+  border-radius: 2px;
+  background-color: #4a4a4a;
+  font-family: 'Cabin', sans-serif;
+  font-size: 14px;
+  color: white;
+  border:none;
+  padding: 2px 5px;
+}
+
+/* ---------------------- End Overall Page Styles ---------------------- */
+
+/* ---------------------- Header Styles ---------------------- */
+
+#head-nav {
+  background-color: #fff;
+  z-index: 100;
+}
+
+#head-nav ul {
+  text-align: center;
+  margin: 0 auto;
+  width:60%;
+  display:flex;
+  padding-left:0;
+}
+
+#head-nav li{
+  list-style: none;
+  white-space: nowrap;
+  opacity: .5;
+  flex:1;
+}
+
+.head-nav-scrolled {
+  padding-top: 10px;
+  position: fixed;
+  width:100%;
+  top: 0;
+  left: 0;
+}
+.head-nav-scrolled hr {
+  margin-bottom: 0;
+}
+
+.active {
+  text-decoration: underline;
+}
+
+#head-nav li.available {
+  opacity: 1;
+}
+
+/* ---------------------- End Header Styles ---------------------- */
+
+/* ---------------------- Dataset Styles ---------------------- */
+
+#dataset-header {
+  text-align: center;
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+#change-dataset {
+  width: 130px;
+  height: 30px;
+  position: absolute;
+  top:0px;
+  right: 0px;
+}
+
+/* ---------------------- End Dataset Styles ---------------------- */
+
+/* ---------------------- Search Styles ---------------------- */
+
+#search h2 {
+  margin-right:1em;
+  white-space: nowrap;
+}
+#search input {
+  flex:1;
+  height:50px;
+  font-size: 24px;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+  border: solid 1px #979797;
+  padding: 0px 5px;
+}
+#search input:focus{
+  outline: none !important;
+  border-color: #719ECE;
+  box-shadow: 0 0 5px #719ECE;
+}
+
+/* ---------------------- End Search Styles ---------------------- */
+
+/* ---------------------- Topic/Vis Styles ---------------------- */
+
+#topic-list {
+  height: 580px;
+  overflow-y: auto;
+  background-color: rgba(241, 241, 241, 0.58);;
+}
+
+.vert-slide-wrap {
+  display: inline-block;
+  height: 700px;
+  width:5px;
+  position: relative;
+  top:0;
+  margin-right: 20px;
+  margin-left: 10px;
+}
+
+.slider-tray{
+  background-color: #d4d4d4;
+  border-radius: 8px;
+  position: relative;
+}
+
+.horizontal .slider-tray {
+  transform: translateY(50%);
+}
+.vertical .slider-tray {
+  transform: translateX(-50%);
+}
+
+.slider-handle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #4a4a4a;
+  display: block;
+  position: absolute;
+  transform: translate(-50%,-50%);
+}
+
+.vis-wrap {
+  position: relative;
+}
+
+.chart-wrap {
+  position: absolute;
+  display: inline-block;
+}
+
+.horiz-slide-wrap {
+  position: relative;
+  width: 700px;
+}
+
+/* ---------------------- Slider Styles ---------------------- */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  border-radius: 8px;
+  height: 5px;
+  background-color: #4a4a4a;
+}
+input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	background-color: #4a4a4a;
+	width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+input[type='range'].vertical {
+  -webkit-transform:rotate(90deg);
+  -moz-transform:rotate(90deg);
+  -ms-transform:rotate(90deg);
+  -o-transform:rotate(90deg);
+  transform:rotate(90deg);
+  position: absolute;
+  top: 0;
+  left: 100%;
+  -webkit-transform-origin: left top;
+  width: 700px;
+}*/
+
+/* ---------------------- End Slider Styles ---------------------- */
+
+/* ---------------------- End Topic Menu Styles ---------------------- */
