@@ -7,15 +7,56 @@ for ( var i = 0; i < 100; i++) {
   }
   rectdata.push(temp);
 }
-var height = 650,
-    width = 650,
-    offset = 1.5;
+var height = 850,
+    width = 850,
+    offset = 3;
 
 var getRectWidth = function() {
   return (width - (99 * offset))/100;
 }
 var getRectHeight = function() {
   return (height - (99 * offset))/100;
+}
+
+var updateCorpusChart = function(val, isVert, isMax) {
+  console.log("--------" + val + "-------");
+  // val is 0-99 for slider position
+  // if it is horiz, then select by data-j
+  var iOrJ = (isVert) ? "i" : "j";
+  // if it is vert, then select by data-i
+  $('rect[data-' + iOrJ + ']').filter(function () {
+    if (isMax) {
+      // if it is max, then select all < val
+      if (isVert) {
+        return $(this).data(iOrJ) < val;
+      } else {
+        return $(this).data(iOrJ) > val;
+      }
+    } else {
+      // if it is min, then select all > val
+      if (isVert) {
+        return $(this).data(iOrJ) > val;
+      } else {
+        return $(this).data(iOrJ) < val;
+      }
+    }
+  }).css("opacity",".1");
+  $('rect[data-' + iOrJ + ']').filter(function () {
+    if (isMax) {
+      if (isVert) {
+        return $(this).data(iOrJ) >= val;
+      } else {
+        return $(this).data(iOrJ) <= val;
+      }
+    } else {
+      // if it is min, then select all > val
+      if (isVert) {
+        return $(this).data(iOrJ) <= val;
+      } else {
+        return $(this).data(iOrJ) >= val;
+      }
+    }
+  }).css("opacity","1");
 }
 
 var myChart = d3.select('#corpus-chart').append('svg')
@@ -130,6 +171,7 @@ function appendSlider(selector, vertical = false) {
 }
 dispatch.on('maxChange', function(target, value) {
   value = Math.round(value);
+  coreVal = value;
   console.log(value);
   value = sY(value);
   var p = d3.select(target.parentNode);
@@ -137,10 +179,12 @@ dispatch.on('maxChange', function(target, value) {
   if (p.classed('vertical')) {
     if (value < parseInt(min.style('top').replace("px",""))) {
       d3.select(target).style('top', Math.round(value) + "px")
+      updateCorpusChart(coreVal, true, true);
     }
   } else {
     if (value > parseInt(min.style('left').replace("px",""))) {
       d3.select(target).style('left', Math.round(value) + "px")
+      updateCorpusChart(coreVal, false, true);
     }
   }
 });
@@ -154,12 +198,12 @@ dispatch.on('minChange', function(target, value) {
   if (p.classed('vertical')) {
     if (value > parseInt(max.style('top').replace("px",""))) {
       d3.select(target).style('top', Math.round(value) + "px")
+      updateCorpusChart(coreVal, true, false);
     }
-    //TODO: implement this function
-    //adjustVert(coreVal, true, true);
   } else {
     if (value < parseInt(max.style('left').replace("px",""))) {
       d3.select(target).style('left', Math.round(value) + "px")
+      updateCorpusChart(coreVal, false, false);
     }
   }
 });
