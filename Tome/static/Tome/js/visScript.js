@@ -1,60 +1,70 @@
-var bardata = [];
+var rectdata = [];
 
 for ( var i = 0; i < 100; i++) {
   temp = [];
   for ( var j = 0; j < 100; j++) {
     temp.push(j);
   }
-  bardata.push(temp);
+  rectdata.push(temp);
 }
+var height = 650,
+    width = 650,
+    offset = 1.5;
 
-var height = 700,
-    width = 700,
-    side = 5,
-    offset = 2;
+var getRectWidth = function() {
+  return (width - (99 * offset))/100;
+}
+var getRectHeight = function() {
+  return (height - (99 * offset))/100;
+}
 
 var myChart = d3.select('#corpus-chart').append('svg')
   .attr({
     height: height,
     width: width,
   })
-  .selectAll('g').data(bardata)
+  .selectAll('g').data(rectdata)
   .enter().append('g')
   .selectAll('rect').data(function(d, i) { return d; })
   .enter().append('rect')
     .attr({
-      width: side,
-      height: side,
+      width: getRectWidth(),
+      height: getRectHeight(),
       fill: '#d8d8d8',
       x: function(d, i, j) {
-        return j * (side + offset);
+        return j * (getRectWidth() + offset);
       },
       y: function(d, i, j) {
-        return i * (side + offset);
-      }
+        return i * (getRectHeight() + offset);
+      },
+    })
+    .attr('data-i', function(d,i,j) {
+      return i;
+    })
+    .attr('data-j', function(d, i, j) {
+      return j;
     })
     .on('mouseover', function(d, i, j) {
         d3.select(this)
           .attr({
             stroke: '#000'
-          })
+          });
     })
     .on('mouseout', function(d, i, j) {
         d3.select(this)
           .attr({
             stroke: 'none'
-          })
+          });
     })
 
-var sLength = 700,
-    sThickness = 5;
+var sThickness = 5;
 
 var sY = d3.scale.linear()
-  .domain([1,100])
-  .range([0,sLength])
+  .domain([0,99])
+  .range([0,width])
   .clamp(true);
 
-var dispatch = d3.dispatch('maxChange','minChange');
+var dispatch = d3.dispatch('maxChange','minChange', 'rescale');
 function appendSlider(selector, vertical = false) {
   var styles = {
     len: 'width',
@@ -75,7 +85,7 @@ function appendSlider(selector, vertical = false) {
 
   var sliderTray = slider.append("div")
     .attr('class',"slider-tray")
-    .style(styles.len, sLength + 'px')
+    .style(styles.len, width + 'px')
     .style(styles.thick, sThickness + 'px');
 
   var sliderHandleMax = slider.append("div")
@@ -119,41 +129,40 @@ function appendSlider(selector, vertical = false) {
   );
 }
 dispatch.on('maxChange', function(target, value) {
+  value = Math.round(value);
+  console.log(value);
   value = sY(value);
   var p = d3.select(target.parentNode);
   var min = p.select('.min-handle');
-  console.log(min);
   if (p.classed('vertical')) {
-    console.log(value,min.style('top'))
     if (value < parseInt(min.style('top').replace("px",""))) {
       d3.select(target).style('top', Math.round(value) + "px")
     }
   } else {
-    console.log(value,min.style('left'))
     if (value > parseInt(min.style('left').replace("px",""))) {
       d3.select(target).style('left', Math.round(value) + "px")
     }
   }
-})
+});
 dispatch.on('minChange', function(target, value) {
+  value = Math.round(value);
+  coreVal = value;
+  console.log(value);
   value = sY(value);
   var p = d3.select(target.parentNode);
   var max = p.select('.max-handle');
   if (p.classed('vertical')) {
-    console.log(value,max.style('top'))
     if (value > parseInt(max.style('top').replace("px",""))) {
       d3.select(target).style('top', Math.round(value) + "px")
     }
+    //TODO: implement this function
+    //adjustVert(coreVal, true, true);
   } else {
     if (value < parseInt(max.style('left').replace("px",""))) {
       d3.select(target).style('left', Math.round(value) + "px")
     }
   }
-})
+});
+
 appendSlider("#vertical-slide", true);
 appendSlider("#horizontal-slide");
-
-
-
-
-//

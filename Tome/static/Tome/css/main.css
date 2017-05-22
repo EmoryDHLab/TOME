@@ -167,7 +167,6 @@ input[type='button']:hover{
 
 .vert-slide-wrap {
   display: inline-block;
-  height: 700px;
   width:5px;
   position: relative;
   top:0;
@@ -189,13 +188,16 @@ input[type='button']:hover{
 }
 
 .slider-handle {
+  position: absolute;
+  transform: translate(-50%,-50%);
+}
+
+.slider-handle-icon {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background-color: #4a4a4a;
   display: block;
-  position: absolute;
-  transform: translate(-50%,-50%);
 }
 
 .vis-wrap {
@@ -209,7 +211,7 @@ input[type='button']:hover{
 
 .horiz-slide-wrap {
   position: relative;
-  width: 700px;
+  margin-top: 10px;
 }
 
 /* ---------------------- Slider Styles ---------------------- */
