@@ -12,18 +12,20 @@
         <header>
           <h1>Interactive TOpic Model and MEtadata Visualization</h1>
           <hr>
-          <ul id="headNav">
-            <li><h4>OVERVIEW</h4></li>
-            <li><h4>TOPIC DETAILS</h4></h4></h4></li>
-            <li><h4>DOCUMENT DETAILS</h4></h4></li>
-            <li><h4>NOTES</h4></li>
+        </header>
+        <nav id="head-nav">
+          <ul>
+            <li class="available active"><h4>OVERVIEW</h4></li>
+            <li class=""><h4>TOPIC DETAILS</h4></h4></h4></li>
+            <li class=""><h4>DOCUMENT DETAILS</h4></h4></li>
+            <li class="available"><h4>NOTES</h4></li>
           </ul>
           <hr>
-        </header>
+        </nav>
 
         <div id="dataset-header">
           <!-- TODO: Fill in with actual DB information. -->
-          <h2>Dataset Title</h2>
+          <h2>The National Anti-Slavery Standard</h2>
           <!--
           <button id="change-dataset" class="btn-dark">Change Dataset</button>
           -->
@@ -75,6 +77,7 @@
 
       <!-- Scripts -->
       <script src="{% static "Tome/js/d3.min.js" %}"></script>
+      <script src="{% static "Tome/js/visScript.js" %}"></script>
       <script src="{% static "Tome/js/script.js" %}"></script>
     </body>
 </html>

@@ -73,11 +73,12 @@ input[type='button']:hover{
 
 /* ---------------------- Header Styles ---------------------- */
 
-header {
-  font-family: 'Poppins', sans-serif;
+#head-nav {
+  background-color: #fff;
+  z-index: 100;
 }
 
-header ul {
+#head-nav ul {
   text-align: center;
   margin: 0 auto;
   width:60%;
@@ -85,10 +86,30 @@ header ul {
   padding-left:0;
 }
 
-header ul li{
+#head-nav li{
   list-style: none;
   white-space: nowrap;
+  opacity: .5;
   flex:1;
+}
+
+.head-nav-scrolled {
+  padding-top: 10px;
+  position: fixed;
+  width:100%;
+  top: 0;
+  left: 0;
+}
+.head-nav-scrolled hr {
+  margin-bottom: 0;
+}
+
+.active {
+  text-decoration: underline;
+}
+
+#head-nav li.available {
+  opacity: 1;
 }
 
 /* ---------------------- End Header Styles ---------------------- */
