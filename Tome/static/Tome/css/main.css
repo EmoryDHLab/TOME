@@ -214,6 +214,10 @@ input[type='button']:hover{
   margin-top: 10px;
 }
 
+.out {
+  opacity: .1;
+}
+
 /* ---------------------- Slider Styles ---------------------- */
 input[type=range] {
   -webkit-appearance: none;
