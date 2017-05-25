@@ -7,9 +7,9 @@ for ( var i = 0; i < 100; i++) {
   }
   rectdata.push(temp);
 }
-var height = 850,
-    width = 850,
-    offset = 3
+var height = window.innerHeight - 150,
+    width = height,
+    offset = width/500,
     m = 100,
     n = 100;
 
