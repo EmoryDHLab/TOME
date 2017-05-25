@@ -215,7 +215,7 @@ input[type='button']:hover{
 }
 
 .out {
-  opacity: .1;
+  opacity: 0;
 }
 
 /* ---------------------- Slider Styles ---------------------- */

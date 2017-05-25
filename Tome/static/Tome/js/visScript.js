@@ -10,36 +10,44 @@ for ( var i = 0; i < 100; i++) {
 var height = 850,
     width = 850,
     offset = 3
-    heightOut = 0,
-    widthOut = 0;
+    m = 100,
+    n = 100;
 
 var getRectWidth = function() {
-  console.log(widthOut);
-  return (width - ((99 - widthOut) * offset)) / (100 - widthOut);
+  return (width - (offset * (n - 1))) / n;
 }
 var getRectHeight = function() {
-  console.log(heightOut);
-  return (height - ((99 - heightOut) * offset)) / (100 - heightOut);
+  return (height - (offset * (m - 1))) / m;
 }
 
 var resizeCorpusChart = function() {
-  d3.selectAll("#corpus-chart rect")
+  d3.selectAll("#corpus-chart rect:not(.out)")
     .attr("width", getRectWidth())
     .attr("height", getRectHeight())
-    .attr("transform", "translate(" + corpusSliders.x.getShift()
-      + ", " + corpusSliders.y.getShift() + ")")
+    .attr("x", function(){
+      var j = gridMap.get(this.id).j;
+      var newJ = j - corpusSliders.x.minVal;
+      return newJ * (getRectWidth() + offset);
+    })
+    .attr("y", function(){
+      var i = gridMap.get(this.id).i;
+      var newI = i - corpusSliders.y.maxVal;
+      return newI * (getRectHeight() + offset);
+    })
+
 }
 
 var updateCorpusChart = function() {
-  console.log(corpusSliders);
-  heightOut = 0;
-  widthOut = 0;
+  m = 100;
+  n = 100;
+  var mCount = 0,
+      nCount = 0;
   $(".out").removeClass("out");
   // if it is vert, then select by data-i
   $('rect[data-j]').filter(function () {
     var vx = false, vn = false, hx = false, hn = false;
-    var yval = $(this).data('i');
-    var xval = $(this).data('j');
+    var yval = gridMap.get(this.id).i;
+    var xval = gridMap.get(this.id).j;
     if (yval > corpusSliders.y.minVal) {
       vn = true;
     }
@@ -53,18 +61,22 @@ var updateCorpusChart = function() {
       hn = true;
     }
     if (vn || vx) {
-      heightOut++;
+      if (mCount%100 == 0){
+        m--;
+      }
+      mCount++;
     }
     if (hn || hx) {
-      widthOut++;
+      if (nCount%100 == 0){
+        n--;
+      }
+      nCount++;
     }
     return vn || vx || hn || hx;
   }).addClass("out");
-  widthOut/=100;
-  heightOut/=100;
   resizeCorpusChart();
 }
-
+var gridMap = new Map;
 var myChart = d3.select('#corpus-chart').append('svg')
   .attr({
     height: height,
@@ -78,6 +90,11 @@ var myChart = d3.select('#corpus-chart').append('svg')
       width: getRectWidth(),
       height: getRectHeight(),
       fill: '#d8d8d8',
+      id: function(d, i, j) {
+        var idTemp = "i" + i + "-j" + j;
+        gridMap.put(idTemp,{ i:i, j:j })
+        return idTemp;
+      },
       x: function(d, i, j) {
         return j * (getRectWidth() + offset);
       },
@@ -163,6 +180,10 @@ function appendSlider(selector, vertical = false) {
       dispatch.minChange(this,
         sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
     })
+    .on("dragend", function(){
+      updateCorpusChart();
+      d3.event.sourceEvent.preventDefault();
+    })
   );
 
   sliderHandleMax.call(d3.behavior.drag()
@@ -174,6 +195,10 @@ function appendSlider(selector, vertical = false) {
     .on("drag", function() {
       dispatch.maxChange(this,
         sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
+    })
+    .on("dragend", function(){
+      updateCorpusChart();
+      d3.event.sourceEvent.preventDefault();
     })
   );
 }
@@ -188,13 +213,11 @@ dispatch.on('maxChange', function(target, value) {
     if (value < parseInt(min.style('top').replace("px",""))) {
       corpusSliders.y.maxVal = coreVal;
       d3.select(target).style('top', Math.round(value) + "px")
-      updateCorpusChart();
     }
   } else {
     if (value > parseInt(min.style('left').replace("px",""))) {
       corpusSliders.x.maxVal = coreVal;
       d3.select(target).style('left', Math.round(value) + "px")
-      updateCorpusChart();
     }
   }
 });
@@ -209,13 +232,11 @@ dispatch.on('minChange', function(target, value) {
     if (value > parseInt(max.style('top').replace("px",""))) {
       corpusSliders.y.minVal = coreVal;
       d3.select(target).style('top', Math.round(value) + "px")
-      updateCorpusChart();
     }
   } else {
     if (value < parseInt(max.style('left').replace("px",""))) {
       corpusSliders.x.minVal = coreVal;
       d3.select(target).style('left', Math.round(value) + "px")
-      updateCorpusChart();
     }
   }
 });
@@ -224,15 +245,15 @@ var corpusSliders = {
   x:{
       maxVal: 99,
       minVal: 0,
-      getShift: function() {
-        return -(this.minVal + 99 - this.maxVal) * (getRectWidth() + offset);
+      getShift: function(i) {
+        return -((100 - n) * getRectWidth() + (99 - n) * offset);
       }
     },
   y:{
       maxVal:0,
       minVal:99,
-      getShift: function() {
-        return -(this.maxVal + 99 - this.minVal) * (getRectWidth() + offset);
+      getShift: function(i) {
+        return 0;
       }
     }
 }
