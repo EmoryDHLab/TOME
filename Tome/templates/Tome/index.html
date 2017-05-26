@@ -1,87 +1,99 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>News Stuff</title>
-        {% load static %}
-        <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
-          type="text/css"/>
-    </head>
-    <body>
-      <div class="wrapper">
-        <header>
-          <h1>Interactive TOpic Model and MEtadata Visualization</h1>
-          <hr>
-        </header>
-        <nav id="head-nav">
-          <ul>
-            <li class="available active"><h4>OVERVIEW</h4></li>
-            <li class=""><h4>TOPIC DETAILS</h4></h4></h4></li>
-            <li class=""><h4>DOCUMENT DETAILS</h4></h4></li>
-            <li class="available"><h4>NOTES</h4></li>
-          </ul>
-          <hr>
-        </nav>
+  <head>
+    <meta charset="utf-8">
+    <title>News Stuff</title>
+    {% load static %}
+    <link
+      href="{% static "Tome/font-awesome-4.7.0/css/font-awesome.min.css" %}"
+      rel="stylesheet" type="text/css"/>
 
-        <div id="dataset-header">
-          <!-- TODO: Fill in with actual DB information. -->
-          <h2>The National Anti-Slavery Standard</h2>
-          <!--
-          <button id="change-dataset" class="btn-dark">Change Dataset</button>
-          -->
-          <p>
-            <span class='summary'>Dataset Summary</span>
-            <br/>
-            <span class='timeframe'>Earliest Date - Latest Date</span>
-          </p>
-          <hr>
-        </div>
-        <div id="search" class="flex-container flex-center">
-          <h2>Search keyword(s):</h2>
-          <input name="keyword" type="text"/>
-        </div>
+    <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
+      type="text/css"/>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Interactive TOpic Model and MEtadata Visualization</h1>
+        <hr>
+      </header>
+      <nav id="head-nav">
+        <ul>
+          <li class="available active"><h4>OVERVIEW</h4></li>
+          <li class=""><h4>TOPIC DETAILS</h4></h4></h4></li>
+          <li class=""><h4>DOCUMENT DETAILS</h4></h4></li>
+          <li class="available"><h4>NOTES</h4></li>
+        </ul>
+        <hr>
+      </nav>
 
-        <div class="flex-container">
-          <div id="topics" class='flex-col-25'>
-            <h2>Topics</h2>
-            <h4>
-              View
-              <button id="topic-count" class=btn-dark>100</button>
-              topics
-            </h4>
-            <ol id="topic-list" class="scroll">
-              {% for i in "x"|rjust:"100"  %}
-              <li>
-                Lorem ipsum dolor sit amet
-              </li>
-              {% endfor %}
-            </ol>
-            <button id="clear-selected" name="clear-selected" class="btn-dark">
-              Clear Selected
-            </button>
-          </div>
-          <div id="vis-wrap" class='flex-col-75'>
-            <h2 id="chart-title">Topics ranked by % of entire corpus</h2>
-            <div id="vis-no-title">
-              <div class="vert-slide-wrap">
-                <div id="vertical-slide" class="slider-range vertical"></div>
+      <div id="dataset-header">
+        <!-- TODO: Fill in with actual DB information. -->
+        <h2>The National Anti-Slavery Standard</h2>
+        <!--
+        <button id="change-dataset" class="btn-dark">Change Dataset</button>
+        -->
+        <p>
+          <span class='summary'>Dataset Summary</span>
+          <br/>
+          <span class='timeframe'>Earliest Date - Latest Date</span>
+        </p>
+        <hr>
+      </div>
+      <div id="search" class="flex-container flex-center">
+        <h2>Search keyword(s):</h2>
+        <input name="keyword" type="text"/>
+      </div>
+
+      <div class="flex-container">
+        <div class='topics flex-col-25'>
+            <h2>Topics
+              <button class="btn-dark topic-sort">
+                <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
+              </button>
+              <div class="view-ten-wrap">
+                <button class="btn-dark view-ten">100</button>
               </div>
-              <div class="chart-wrap">
-                <div id="corpus-chart" ></div>
-                <div class="horiz-slide-wrap">
-                  <div id="horizontal-slide" class="slider-range"></div>
-                </div>
+          </h2>
+          <ol class="topic-list scroll">
+            {% for i in "x"|rjust:"100"  %}
+            <li>
+              Lorem ipsum dolor sit amet
+            </li>
+            {% endfor %}
+          </ol>
+          <button id="clear-selected" name="clear-selected" class="btn-dark">
+            Clear Selected
+          </button>
+        </div>
+        <div class='vis-wrap flex-col-75'>
+          <h2 class="chart-title">Topics ranked by % of entire corpus</h2>
+          <div class="vis-no-title">
+            <div class="vert-slide-wrap">
+              <label class="vertical-label">
+                RANK
+              </label>
+              <div id="vertical-slide" class="slider-range vertical"></div>
+            </div>
+            <div class="chart-wrap">
+              <div id="corpus-chart" ></div>
+              <div class="horiz-slide-wrap">
+                <div id="horizontal-slide" class="slider-range"></div>
+                <label class="horizontal-label">
+                  YEAR
+                </label>
               </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Scripts -->
-      <script src="{% static "Tome/js/d3.min.js" %}"></script>
-      <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
-      <script src="{% static "Tome/js/map.js" %}"></script>
-      <script src="{% static "Tome/js/visScript.js" %}"></script>
-      <script src="{% static "Tome/js/script.js" %}"></script>
-    </body>
+    <!-- Scripts -->
+    <script src="{% static "Tome/js/d3.min.js" %}"></script>
+    <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
+    <script src="{% static "Tome/js/map.js" %}"></script>
+    <script src="{% static "Tome/js/visScript.js" %}"></script>
+    <script src="{% static "Tome/js/script.js" %}"></script>
+  </body>
 </html>

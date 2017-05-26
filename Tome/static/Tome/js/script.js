@@ -13,3 +13,8 @@ window.onscroll = function() {
     mn.className = "";
   }
 };
+
+d3.selectAll(".topic-list")
+  .style('height', function() {
+    return d3.select("#corpus-chart").style('height');
+  })

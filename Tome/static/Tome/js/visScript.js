@@ -137,6 +137,10 @@ function appendSlider(selector, vertical = false) {
     move: 'left',
     mouse: 0
   }
+
+  var minimumVal = (vertical) ? 99 : 0,
+      maximumVal = (vertical) ? 0 : 99;
+
   if (vertical) {
     styles.move = 'top';
     styles.len = 'height';
@@ -154,7 +158,7 @@ function appendSlider(selector, vertical = false) {
 
   var sliderHandleMax = slider.append("div")
     .attr('class', 'slider-handle max-handle')
-    .attr('data-value', (vertical) ? 0 : 99);
+    .attr('data-value', maximumVal);
 
   if (vertical) {
     sliderHandleMax.style("top","0");
@@ -164,11 +168,19 @@ function appendSlider(selector, vertical = false) {
 
   var sliderHandleMin = slider.append("div")
     .attr('class', 'slider-handle min-handle')
-    .attr('data-value', (vertical) ? 99 : 0);
+    .attr('data-value', minimumVal);
+
   sliderHandleMax.append("div")
     .attr("class", "slider-handle-icon")
+  sliderHandleMax.append("div")
+    .attr("class", "slider-handle-label")
+    .html(maximumVal + 1);
+
   sliderHandleMin.append("div")
-    .attr("class", "slider-handle-icon")
+    .attr("class", "slider-handle-icon");
+  sliderHandleMin.append("div")
+    .attr("class", "slider-handle-label")
+    .html(minimumVal + 1);
 
   sliderHandleMin.call(d3.behavior.drag()
     .on("dragstart", function(){
@@ -213,11 +225,15 @@ dispatch.on('maxChange', function(target, value) {
     if (value < parseInt(min.style('top').replace("px",""))) {
       corpusSliders.y.maxVal = coreVal;
       d3.select(target).style('top', Math.round(value) + "px")
+      d3.select(target).select(".slider-handle-label")
+      .html(coreVal + 1);
     }
   } else {
     if (value > parseInt(min.style('left').replace("px",""))) {
       corpusSliders.x.maxVal = coreVal;
       d3.select(target).style('left', Math.round(value) + "px")
+      d3.select(target).select(".slider-handle-label")
+      .html(coreVal + 1);
     }
   }
 });
@@ -231,12 +247,16 @@ dispatch.on('minChange', function(target, value) {
   if (p.classed('vertical')) {
     if (value > parseInt(max.style('top').replace("px",""))) {
       corpusSliders.y.minVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px")
+      d3.select(target).style('top', Math.round(value) + "px");
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
     }
   } else {
     if (value < parseInt(max.style('left').replace("px",""))) {
       corpusSliders.x.minVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px")
+      d3.select(target).style('left', Math.round(value) + "px");
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
     }
   }
 });
