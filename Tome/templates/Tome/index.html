@@ -48,11 +48,20 @@
       <div class="flex-container">
         <div class='topics flex-col-25'>
             <h2>Topics
-              <button class="btn-dark topic-sort">
-                <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
-              </button>
+              <div class="pop-up-wrap">
+                <button class="btn-dark topic-sort">
+                  <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
+                </button>
+                <ul class="pop-up sort-menu">
+                  <li><h5>SORT BY</h5></li>
+                  <li><span>Highest % of corpus</span></li>
+                  <li><span>Highest % of corpus</span></li>
+                  <li><span>Most similar to selected</span></li>
+                  <li><span>Selected at top</span></li>
+                </ul>
+              </div>
               <div class="view-ten-wrap">
-                <button class="btn-dark view-ten">100</button>
+                <button class="btn-dark view-ten">View 10</button>
               </div>
           </h2>
           <ol class="topic-list scroll">
