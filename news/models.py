@@ -2,9 +2,20 @@ from Tome.helpers.model_helpers import *
 from Tome.helpers.time_helpers import *
 from django.utils.translation import ugettext_lazy as _
 
+# validates a model's date ranges
+def vali_date(m):
+    # Don't allow start date to exceed end date
+    if (m.date_ended != None):
+        if (m.date_started >= m.date_ended):
+            raise ValidationError(_('Start date must be ' +
+            'before end date'))
+    # Newspapers can't start in the future
+    if (m.date_started > datetime.date.today()):
+        raise ValidationError(_("Start_date can't be in the future"))
+
 class Location(models.Model):
-    city = models.CharField(max_length=200, default="Testville")
-    state = models.CharField(max_length=200, default="Montigania")
+    city = models.CharField(max_length=200, default="New York")
+    state = models.CharField(max_length=200, default="New York")
 
     class Meta:
         unique_together = ("city","state")
@@ -12,8 +23,46 @@ class Location(models.Model):
     def __str__(self):
         return "{0}, {1}".format(self.city, self.state)
 
+class Corpus(models.Model):
+    # has a title
+    title = models.CharField(max_length=500)
+
+    # has a description
+    description = models.TextField()
+
+    # has a date range
+    date_started = models.DateField("date started", null=False, blank=True)
+    date_ended = models.DateField("date ended", null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+    def getTopicByRank(self, rank):
+        if (rank > 100 or rank < 1):
+            raise
+        else:
+            return self.topic_set.all()[rank-1]
+
+    def getTopicsByRank(self, start, end):
+        if (start > 100 or start < 1 or end > 100 or end < 1 or start > end):
+            raise
+        else:
+            return self.topic_set.all()[start-1:end]
+
+    def clean(self):
+        # Validate the dates
+        vali_date(self)
+        # Don't allow corpus to exist without title
+        if (self.title == "" or self.title == None):
+            raise ValidationError(_('Newspaper must have a title'))
 
 class Newspaper(models.Model):
+    # custom id for loading stuff right
+    key = models.IntegerField(unique=True, null=True)
+    # Belongs to a Corpus
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE,
+        null=True, blank=True)
+
     # Has a title
     title = models.CharField(max_length=500)
 
@@ -52,14 +101,8 @@ class Newspaper(models.Model):
         self.date_started, self.date_ended)
 
     def clean(self):
-        # Don't allow start date to exceed end date
-        if (self.date_ended != None):
-            if (self.date_started >= self.date_ended):
-                raise ValidationError(_('Newspaper start date must not end ' +
-                'before end date'))
-        # Newspapers can't start in the future
-        if (self.date_started > datetime.date.today()):
-            raise ValidationError(_("Newspapers can't start in the future"))
+        # Validate the dates
+        vali_date(self)
         # Don't allow paper to exist without title
         if (self.title == "" or self.title == None):
             raise ValidationError(_('Newspaper must have a title'))
@@ -78,7 +121,7 @@ class Issue(models.Model):
     # has a date of publication
     date_published = models.DateField('date published')
     # one editor per Issue -- need better data
-    editor = models.CharField(max_length=200)
+    editor = models.CharField(max_length=200, null=True, blank=True)
     # Newspaper has many issues
     newspaper = models.ForeignKey(Newspaper, on_delete=models.CASCADE)
 
@@ -90,13 +133,15 @@ class Issue(models.Model):
                 raise ValidationError(_(ISSUE_OVERLAP_ERROR))
     def __str__(self):
         return "{0}, Issue: {1} \nDate: {2}".format(self.newspaper.title,
-        self.id, self.getDate())
+        self.pk, self.getDate())
 
     def getDate(self):
         return str(self.date_published)
 
 # Belongs to issue
 class Article(models.Model):
+    # custom id for loading stuff right
+    key = models.IntegerField(unique=True, null=True)
     # Title of article
     title = models.CharField(max_length=500, default="",blank=True,null=True)
 
@@ -107,7 +152,7 @@ class Article(models.Model):
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Article: {0} \nTitle: {1}".format(self.id, self.title)
+        return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
 
 # Has an belongs to many Articles
 class Author(models.Model):

@@ -1,5 +1,5 @@
 from Tome.helpers.model_helpers import *
-from news.models import Article
+from news.models import Article, Corpus
 from django.utils.translation import ugettext_lazy as _
 
 class Word(models.Model):
@@ -9,8 +9,20 @@ class Word(models.Model):
         return self.text
 
 class Topic(models.Model):
+    #every topic belongs to a corpus
+    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE,
+        null=True, blank=True)
+
+    # custom id for loading stuff right
+    key = models.IntegerField(unique=True, null=True)
+
+    score = models.DecimalField(max_digits=10, decimal_places=10, default=0)
+
     articles = models.ManyToManyField(Article, through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
+
+    class Meta:
+        ordering = ('-score',)
 
     def getFormattedTopWords(self, max_words):
         words = self.words.all()
@@ -21,6 +33,16 @@ class Topic(models.Model):
             words_out.append(str(words[i]))
         return " [" + ", ".join(words_out) +"]"
 
+    def calculateScore(self):
+        scores = self.articletopicrank_set.all()
+        ct = len(scores)
+        if (ct % 2 == 0):
+            i1 = ct // 2
+            i2 = i1 - 1
+            self.score = (scores[i1].score + scores[i2].score)/2
+        else:
+            self.score = scores[ct//2].score
+        print(self.score)
     def __str__(self):
         return "ID: " + str(self.pk) +  self.getFormattedTopWords(5)
 
@@ -30,7 +52,7 @@ class WordTopicRank(models.Model):
     score = models.DecimalField(max_digits=10, decimal_places=10)
 
     class Meta:
-        ordering = ('score',)
+        ordering = ('-score',)
         unique_together = ('word', 'topic')
 
     def __str__(self):
@@ -42,7 +64,7 @@ class ArticleTopicRank(models.Model):
     score = models.DecimalField(max_digits=10, decimal_places=10)
 
     class Meta:
-        ordering = ('score',)
+        ordering = ('-score',)
         unique_together = ('article', 'topic')
 
     def __str__(self):

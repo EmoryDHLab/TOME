@@ -13,3 +13,16 @@ window.onscroll = function() {
     mn.className = "";
   }
 };
+
+d3.selectAll(".topic-list")
+  .style('height', function() {
+    return d3.select("#corpus-chart").style('height');
+  })
+
+
+d3.selectAll(".topic-sort").on('click', function(){
+  d3.select(this.parentNode).select('.sort-menu')
+    .style("display", function(){
+      return (d3.select(this).style("display") == "none") ? "block" : "none";
+    });
+})
