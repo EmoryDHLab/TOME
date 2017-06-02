@@ -55,7 +55,7 @@ class Topic(models.Model):
         print(self.articletopicrank_set.all().order_by('article__issue__date_published')[0])
 
     def __str__(self):
-        return "ID: " + str(self.pk) +  self.getFormattedTopWords(5)
+        return "Rank: " + str(self.score) +  self.getFormattedTopWords(5)
 
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
