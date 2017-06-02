@@ -29,14 +29,21 @@
 
       <div id="dataset-header">
         <!-- TODO: Fill in with actual DB information. -->
-        <h2>The National Anti-Slavery Standard</h2>
+        <h2>{{corpus.title}}</h2>
         <!--
         <button id="change-dataset" class="btn-dark">Change Dataset</button>
         -->
         <p>
-          <span class='summary'>Dataset Summary</span>
+          <span class='summary'>{{corpus.description}}</span>
           <br/>
-          <span class='timeframe'>Earliest Date - Latest Date</span>
+          <span class='timeframe'>
+            {{corpus.date_started}} -
+            {% if corpus.date_ended %}
+              {{corpus.date_ended}}
+            {% else %}
+              Present
+            {% endif %}
+          </span>
         </p>
         <hr>
       </div>
@@ -54,10 +61,9 @@
                 </button>
                 <ul class="pop-up sort-menu">
                   <li><h5>SORT BY</h5></li>
-                  <li><span>Highest % of corpus</span></li>
-                  <li><span>Highest % of corpus</span></li>
-                  <li><span>Most similar to selected</span></li>
-                  <li><span>Selected at top</span></li>
+                  <li><span>Most Prevalent in Corpus</span></li>
+                  <li><span>Most Similar to Selected</span></li>
+                  <li><span>Selected at Top</span></li>
                 </ul>
               </div>
               <div class="view-ten-wrap">
@@ -65,9 +71,9 @@
               </div>
           </h2>
           <ol class="topic-list scroll">
-            {% for i in "x"|rjust:"100"  %}
+            {% for t in topics %}
             <li>
-              Lorem ipsum dolor sit amet
+              {{t.topFive}}
             </li>
             {% endfor %}
           </ol>

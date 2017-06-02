@@ -88,20 +88,22 @@ input[type='button']:hover{
 
 .sort-menu {
   font-weight:200;
-  width: 190px;
+  width: 200px;
   top: 50%;
   left: 50%;
   list-style: none;
   background-color: white;
   border: 1px solid black;
   padding: 0;
+  z-index: 100;
 }
+
 .sort-menu li {
   font-family: 'Poppins', sans-serif;
   font-size: 14px;
 }
 
-.sort-menu li *{
+.sort-menu li * {
   padding: 2px 10px;
 }
 
@@ -169,6 +171,13 @@ input[type='button']:hover{
   position: relative;
 }
 
+#dataset-header h2 {
+  margin-bottom: 10px;
+}
+
+#dataset-header p {
+  margin-top: 0;
+}
 /* ---------------------- End Dataset Styles ---------------------- */
 
 /* ---------------------- Search Styles ---------------------- */
@@ -234,6 +243,8 @@ input[type='button']:hover{
   border-radius: 50%;
   background-color: #4a4a4a;
   display: block;
+  position: relative;
+  z-index: 99;
 }
 
 .slider-handle-label {
@@ -245,6 +256,8 @@ input[type='button']:hover{
   top: 50%;
   left: 50%;
   transform: translate(-50%,50%);
+  z-index: 98;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .vertical .slider-handle-label {
@@ -252,6 +265,9 @@ input[type='button']:hover{
   left:-50%;
   transform: translate(-50%,-50%);
   padding-right: 10px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 98;
 }
 
 #horizontal-slide {
@@ -260,6 +276,7 @@ input[type='button']:hover{
   margin: auto;
   top:50%;
   transform: translateY(50%);
+  z-index: 99;
 }
 .horizontal .slider-tray {
   transform: translateY(-50%);

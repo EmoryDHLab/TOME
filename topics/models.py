@@ -21,17 +21,24 @@ class Topic(models.Model):
     articles = models.ManyToManyField(Article, through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
 
+    @property
+    def topFive(self):
+        return self.getFormattedTopWords(5, False)
+
     class Meta:
         ordering = ('-score',)
 
-    def getFormattedTopWords(self, max_words):
+    def getFormattedTopWords(self, max_words, bracket=True):
         words = self.words.all()
         words_out = []
+        brk = ("","")
         for i in range(max_words):
             if (i >= len(words)):
                 break
             words_out.append(str(words[i]))
-        return " [" + ", ".join(words_out) +"]"
+        if (bracket):
+            brk = (" [","]")
+        return brk[0] + ", ".join(words_out) + brk[1]
 
     def calculateScore(self):
         scores = self.articletopicrank_set.all()
@@ -43,6 +50,10 @@ class Topic(models.Model):
         else:
             self.score = scores[ct//2].score
         print(self.score)
+
+    def calculate100Years(self):
+        print(self.articletopicrank_set.all().order_by('article__issue__date_published')[0])
+
     def __str__(self):
         return "ID: " + str(self.pk) +  self.getFormattedTopWords(5)
 
