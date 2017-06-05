@@ -2,6 +2,9 @@ tomeenv/
 __pycache__/
 .cache/
 
+# Settings file (to avoid overriding server defaults)
+settings.py
+
 # Mac Stuff
 # Folder view configuration files
 .DS_Store

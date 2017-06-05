@@ -1,4 +1,5 @@
 from Tome.helpers.model_helpers import *
+from Tome.helpers.maths import median
 from news.models import Article, Corpus
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,6 +21,7 @@ class Topic(models.Model):
 
     articles = models.ManyToManyField(Article, through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
+    # years = models.ManyToManyField()
 
     @property
     def topFive(self):
@@ -41,18 +43,25 @@ class Topic(models.Model):
         return brk[0] + ", ".join(words_out) + brk[1]
 
     def calculateScore(self):
-        scores = self.articletopicrank_set.all()
-        ct = len(scores)
-        if (ct % 2 == 0):
-            i1 = ct // 2
-            i2 = i1 - 1
-            self.score = (scores[i1].score + scores[i2].score)/2
-        else:
-            self.score = scores[ct//2].score
+        scores = self.articletopicrank_set.all().values('score')
+        self.score = median(scores)
         print(self.score)
 
-    def calculate100Years(self):
-        print(self.articletopicrank_set.all().order_by('article__issue__date_published')[0])
+    def calculateByYears(self):
+        atrs = self.articletopicrank_set.all()
+        years = {}
+        final_scores = {}
+        for atr in atrs:
+            yr = atr.article.issue.date_published.year
+            if (not(yr in years)):
+                years[yr] = [atr.score]
+            else:
+                years[yr].append(atr.score)
+
+        for (year,scores) in years.items():
+            final_scores[year] = median(scores)
+
+        return final_scores
 
     def __str__(self):
         return "Rank: " + str(self.score) +  self.getFormattedTopWords(5)
