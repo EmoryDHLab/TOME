@@ -52,6 +52,13 @@ h4 {
   padding: 0;
   font-family: 'Poppins', sans-serif;
 }
+
+label {
+  padding-bottom: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-style: italic;
+}
+
 button,
 input[role='button']:hover,
 input[type='submit']:hover,
@@ -69,6 +76,44 @@ input[type='button']:hover{
   padding: 2px 5px;
 }
 
+.pop-up-wrap {
+  display: inline;
+  position: relative;
+}
+
+.pop-up {
+  position: absolute;
+  display: none;
+}
+
+.sort-menu {
+  font-weight:200;
+  width: 200px;
+  top: 50%;
+  left: 50%;
+  list-style: none;
+  background-color: white;
+  border: 1px solid black;
+  padding: 0;
+  z-index: 100;
+}
+
+.sort-menu li {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+}
+
+.sort-menu li * {
+  padding: 2px 10px;
+}
+
+.sort-menu li h5 {
+  font-weight: 900;
+  border-bottom: 1px solid black;
+  font-size: 1em;
+  margin-top: 0;
+  margin-bottom: 0;
+}
 /* ---------------------- End Overall Page Styles ---------------------- */
 
 /* ---------------------- Header Styles ---------------------- */
@@ -91,6 +136,7 @@ input[type='button']:hover{
   white-space: nowrap;
   opacity: .5;
   flex:1;
+  cursor: default;
 }
 
 .head-nav-scrolled {
@@ -109,6 +155,7 @@ input[type='button']:hover{
 }
 
 #head-nav li.available {
+  cursor: pointer;
   opacity: 1;
 }
 
@@ -124,14 +171,13 @@ input[type='button']:hover{
   position: relative;
 }
 
-#change-dataset {
-  width: 130px;
-  height: 30px;
-  position: absolute;
-  top:0px;
-  right: 0px;
+#dataset-header h2 {
+  margin-bottom: 10px;
 }
 
+#dataset-header p {
+  margin-top: 0;
+}
 /* ---------------------- End Dataset Styles ---------------------- */
 
 /* ---------------------- Search Styles ---------------------- */
@@ -159,16 +205,31 @@ input[type='button']:hover{
 
 /* ---------------------- Topic/Vis Styles ---------------------- */
 
-#topic-list {
-  height: 580px;
+.topic-list {
   overflow-y: auto;
-  background-color: rgba(241, 241, 241, 0.58);;
+  background-color: rgba(241, 241, 241, 0);;
 }
 
-.slider-tray{
+.view-ten-wrap {
+  display: inline-block;
+  float: right;
+}
+
+#clear-selected {
+  float: right;
+}
+
+/* ---------------------- End Topic Styles ----------------------- */
+
+.slider-tray {
   background-color: #d4d4d4;
   border-radius: 8px;
   position: relative;
+}
+
+.range-bar {
+  position: absolute;
+  background-color: #4a4a4a;
 }
 
 .slider-handle {
@@ -182,6 +243,31 @@ input[type='button']:hover{
   border-radius: 50%;
   background-color: #4a4a4a;
   display: block;
+  position: relative;
+  z-index: 99;
+}
+
+.slider-handle-label {
+  position: absolute;
+  padding: 2px 3px;
+}
+
+.horizontal .slider-handle-label {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,50%);
+  z-index: 98;
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.vertical .slider-handle-label {
+  top: 50%;
+  left:-50%;
+  transform: translate(-50%,-50%);
+  padding-right: 10px;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.9);
+  z-index: 98;
 }
 
 #horizontal-slide {
@@ -190,6 +276,7 @@ input[type='button']:hover{
   margin: auto;
   top:50%;
   transform: translateY(50%);
+  z-index: 99;
 }
 .horizontal .slider-tray {
   transform: translateY(-50%);
@@ -202,6 +289,13 @@ input[type='button']:hover{
   position: relative;
   height:20px;
   margin-top: 10px;
+}
+
+.horizontal-label {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
 }
 
 #vertical-slide {
@@ -217,24 +311,38 @@ input[type='button']:hover{
   position: relative;
   top:0;
   margin-right: 10px;
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
-#vis-wrap {
+.vertical-label {
+  display: block;
+  position: absolute;
+  top: 50%;
+  transform: rotate(-90deg);
+  left: -100%;
+}
+.vis-wrap {
   position: relative;
   margin-left: auto;
 }
 
-#vis-no-title {
+.vis-no-title {
   display: inline-block;
+  position: relative;
+}
+
+.chart-title {
+  padding-left: 50px;
 }
 
 .chart-wrap {
-  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 60px;
 }
 
 .out {
-  opacity: 0;
+  display: none;
 }
 
 /* ---------------------- Slider Styles ---------------------- */

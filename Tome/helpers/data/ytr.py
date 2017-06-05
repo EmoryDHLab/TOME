@@ -13,7 +13,7 @@ def generateYTRs():
     for t in topics:
         print(ct,"/ 100")
         for date in dates:
-            addYTR(date.year,t,c)
+            addYTR(date.year,t,corpus)
         ct += 1
 
 def addYTR(y,t,c):

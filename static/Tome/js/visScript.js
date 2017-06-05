@@ -7,7 +7,10 @@ for ( var i = 0; i < 100; i++) {
   }
   rectdata.push(temp);
 }
-var height = window.innerHeight - 150,
+
+var vertMax = window.innerHeight - 150,
+    horzMax = $(".flex-container").innerWidth() - $(".topics").outerWidth(true);
+var height = (vertMax < horzMax) ? vertMax : horzMax,
     width = height,
     offset = width/500,
     m = 100,
@@ -137,6 +140,10 @@ function appendSlider(selector, vertical = false) {
     move: 'left',
     mouse: 0
   }
+
+  var minimumVal = (vertical) ? 99 : 0,
+      maximumVal = (vertical) ? 0 : 99;
+
   if (vertical) {
     styles.move = 'top';
     styles.len = 'height';
@@ -152,9 +159,14 @@ function appendSlider(selector, vertical = false) {
     .style(styles.len, width + 'px')
     .style(styles.thick, sThickness + 'px');
 
+  var rangeBar = sliderTray.append("div")
+    .attr('class', 'range-bar')
+    .style(styles.len, width + 'px')
+    .style(styles.thick, sThickness + 'px');
+
   var sliderHandleMax = slider.append("div")
     .attr('class', 'slider-handle max-handle')
-    .attr('data-value', (vertical) ? 0 : 99);
+    .attr('data-value', maximumVal);
 
   if (vertical) {
     sliderHandleMax.style("top","0");
@@ -164,11 +176,19 @@ function appendSlider(selector, vertical = false) {
 
   var sliderHandleMin = slider.append("div")
     .attr('class', 'slider-handle min-handle')
-    .attr('data-value', (vertical) ? 99 : 0);
+    .attr('data-value', minimumVal);
+
   sliderHandleMax.append("div")
     .attr("class", "slider-handle-icon")
+  sliderHandleMax.append("div")
+    .attr("class", "slider-handle-label")
+    .html(maximumVal + 1);
+
   sliderHandleMin.append("div")
-    .attr("class", "slider-handle-icon")
+    .attr("class", "slider-handle-icon");
+  sliderHandleMin.append("div")
+    .attr("class", "slider-handle-label")
+    .html(minimumVal + 1);
 
   sliderHandleMin.call(d3.behavior.drag()
     .on("dragstart", function(){
@@ -210,14 +230,24 @@ dispatch.on('maxChange', function(target, value) {
   var p = d3.select(target.parentNode);
   var min = p.select('.min-handle');
   if (p.classed('vertical')) {
-    if (value < parseInt(min.style('top').replace("px",""))) {
+    var mnVal = parseInt(min.style('top').replace("px",""));
+    if (value < mnVal) {
       corpusSliders.y.maxVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px")
+      d3.select(target).style('top', Math.round(value) + "px");
+      p.select(".range-bar").style('top', Math.round(value) + "px")
+        .style('height', Math.abs(mnVal - value) + 'px');
+      d3.select(target).select(".slider-handle-label")
+      .html(coreVal + 1);
     }
   } else {
-    if (value > parseInt(min.style('left').replace("px",""))) {
+    var mnVal = parseInt(min.style('left').replace("px",""));
+    if (value > mnVal) {
       corpusSliders.x.maxVal = coreVal;
       d3.select(target).style('left', Math.round(value) + "px")
+      p.select(".range-bar").style('left', Math.round(mnVal) + "px")
+        .style('width', Math.abs(mnVal - value) + "px");
+      d3.select(target).select(".slider-handle-label")
+      .html(coreVal + 1);
     }
   }
 });
@@ -229,14 +259,24 @@ dispatch.on('minChange', function(target, value) {
   var p = d3.select(target.parentNode);
   var max = p.select('.max-handle');
   if (p.classed('vertical')) {
-    if (value > parseInt(max.style('top').replace("px",""))) {
+    mxVal = parseInt(max.style('top').replace("px",""));
+    if (value > mxVal) {
       corpusSliders.y.minVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px")
+      d3.select(target).style('top', Math.round(value) + "px");
+      p.select(".range-bar").style('top', Math.round(mxVal) + "px")
+        .style('height', Math.abs(mxVal - value) + 'px');
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
     }
   } else {
-    if (value < parseInt(max.style('left').replace("px",""))) {
+    var mxVal = parseInt(max.style('left').replace("px",""));
+    if (value < mxVal) {
       corpusSliders.x.minVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px")
+      d3.select(target).style('left', Math.round(value) + "px");
+      p.select(".range-bar").style('left', Math.round(value) + "px")
+        .style('width', Math.abs(mxVal - value) + "px");
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
     }
   }
 });
@@ -260,3 +300,6 @@ var corpusSliders = {
 
 appendSlider("#vertical-slide", true);
 appendSlider("#horizontal-slide");
+
+d3.select(".vis-no-title")
+  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px")
