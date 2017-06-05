@@ -1,8 +1,6 @@
 from Tome.helpers.model_helpers import *
 from Tome.helpers.maths import median
-from news.models import Article, Corpus
 from django.utils.translation import ugettext_lazy as _
-
 class Word(models.Model):
     text = models.CharField(max_length=200, unique=True)
 
@@ -10,16 +8,12 @@ class Word(models.Model):
         return self.text
 
 class Topic(models.Model):
-    #every topic belongs to a corpus
-    corpus = models.ForeignKey(Corpus, on_delete=models.CASCADE,
-        null=True, blank=True)
-
     # custom id for loading stuff right
     key = models.IntegerField(unique=True, null=True)
 
     score = models.DecimalField(max_digits=10, decimal_places=10, default=0)
 
-    articles = models.ManyToManyField(Article, through='ArticleTopicRank')
+    articles = models.ManyToManyField('news.Article', through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
 
     @property
@@ -42,7 +36,7 @@ class Topic(models.Model):
         return brk[0] + ", ".join(words_out) + brk[1]
 
     def calculateScore(self):
-        scores = self.articletopicrank_set.all().values('score')
+        scores = self.articletopicrank_set.all().values_list('score',flat=True)
         self.score = median(scores)
         print(self.score)
 
@@ -62,7 +56,7 @@ class WordTopicRank(models.Model):
         return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) + " | Score: " + str(self.score)
 
 class ArticleTopicRank(models.Model):
-    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    article = models.ForeignKey('news.Article', on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     score = models.DecimalField(max_digits=10, decimal_places=10)
 
@@ -75,6 +69,8 @@ class ArticleTopicRank(models.Model):
             self.topic.getFormattedTopWords(3), self.score)
 
 class YearTopicRank(models.Model):
+    #every YTR belongs to a corpus
+    corpus = models.ForeignKey('news.Corpus', on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     year = models.IntegerField()
     score = models.DecimalField(max_digits=10, decimal_places=10)
@@ -85,6 +81,9 @@ class YearTopicRank(models.Model):
 
     def calculateScore(self):
         scores = self.topic.articletopicrank_set.filter(
-            article__issue__date_published__year=self.year).values('score')
-        print(scores)
+            article__issue__date_published__year=self.year).values_list('score',
+            flat=True)
         self.score = median(scores)
+
+    def __str__(self):
+        return str(self.year) + ": " + str(self.score)

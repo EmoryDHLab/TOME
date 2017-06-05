@@ -8,6 +8,6 @@ from news.models import *
 def index(request):
     data = {}
     data["corpus"] = Corpus.objects.all()[0]
-    data["topics"] = Topic.objects.all()
+    data["topics"] = data["corpus"].getTopicsByRank()
     data["topics_js"] = None
     return render(request,'Tome/index.html', data)

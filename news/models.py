@@ -27,6 +27,8 @@ class Corpus(models.Model):
     # has a title
     title = models.CharField(max_length=500)
 
+    topics = models.ManyToManyField('topics.Topic', through='topics.YearTopicRank')
+
     # has a description
     description = models.TextField()
 
@@ -41,14 +43,21 @@ class Corpus(models.Model):
         if (rank > 100 or rank < 1):
             raise
         else:
-            return self.topic_set.all()[rank-1]
+            return self.getTopics()[rank-1]
 
-    def getTopicsByRank(self, start, end):
+    def getTopicsByRank(self, start=1, end=100):
         if (start > 100 or start < 1 or end > 100 or end < 1 or start > end):
             raise
         else:
-            return self.topic_set.all()[start-1:end]
+            return self.getTopics()[start-1:end]
 
+    def getTopics(self):
+        return self.topics.distinct()
+
+    def getTopicsByYear(self, yr):
+        ytrs = self.yeartopicrank_set.filter(year=yr)
+        topics = ytrs.values_list("topic", flat=True)
+        return topics
     def clean(self):
         # Validate the dates
         vali_date(self)
@@ -138,6 +147,9 @@ class Issue(models.Model):
     def getDate(self):
         return str(self.date_published)
 
+    class Meta:
+        ordering = ('date_published',)
+
 # Belongs to issue
 class Article(models.Model):
     # custom id for loading stuff right
@@ -151,6 +163,8 @@ class Article(models.Model):
     # Issue has many articles
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ('issue__date',)
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
 
