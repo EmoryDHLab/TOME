@@ -21,7 +21,6 @@ class Topic(models.Model):
 
     articles = models.ManyToManyField(Article, through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
-    # years = models.ManyToManyField()
 
     @property
     def topFive(self):
@@ -46,22 +45,6 @@ class Topic(models.Model):
         scores = self.articletopicrank_set.all().values('score')
         self.score = median(scores)
         print(self.score)
-
-    def calculateByYears(self):
-        atrs = self.articletopicrank_set.all()
-        years = {}
-        final_scores = {}
-        for atr in atrs:
-            yr = atr.article.issue.date_published.year
-            if (not(yr in years)):
-                years[yr] = [atr.score]
-            else:
-                years[yr].append(atr.score)
-
-        for (year,scores) in years.items():
-            final_scores[year] = median(scores)
-
-        return final_scores
 
     def __str__(self):
         return "Rank: " + str(self.score) +  self.getFormattedTopWords(5)
@@ -90,3 +73,18 @@ class ArticleTopicRank(models.Model):
     def __str__(self):
         return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.title,
             self.topic.getFormattedTopWords(3), self.score)
+
+class YearTopicRank(models.Model):
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    score = models.DecimalField(max_digits=10, decimal_places=10)
+
+    class Meta:
+        ordering = ("year","score")
+        unique_together = ('year','topic')
+
+    def calculateScore(self):
+        scores = self.topic.articletopicrank_set.filter(
+            article__issue__date_published__year=self.year).values('score')
+        print(scores)
+        self.score = median(scores)
