@@ -1,6 +1,7 @@
 from Tome.helpers.model_helpers import *
 from Tome.helpers.maths import median
 from django.utils.translation import ugettext_lazy as _
+
 class Word(models.Model):
     text = models.CharField(max_length=200, unique=True)
 

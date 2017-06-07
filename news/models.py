@@ -170,7 +170,7 @@ class Article(models.Model):
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE)
 
     class Meta:
-        ordering = ('issue__date',)
+        ordering = ('issue__date_published',)
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
 
