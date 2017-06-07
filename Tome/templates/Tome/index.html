@@ -71,9 +71,9 @@
                 <button class="btn-dark view-ten">View 10</button>
               </div>
           </h2>
-          <ol class="topic-list scroll">
+          <ol id="corpus-topics" class="topic-list scroll">
             {% for t in topics %}
-            <li>
+            <li data-topic="{{t.key}}">
               {{t.topFive}}
             </li>
             {% endfor %}

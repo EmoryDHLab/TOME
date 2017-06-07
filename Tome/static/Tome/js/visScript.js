@@ -1,5 +1,50 @@
 var rectdata = []
 
+topics = {
+  count : 0,
+  colors : [
+    "#d0011b", //red
+    "#f6a623", //orange
+    "#8b572a", //brown
+    "#4990e2", //blue
+    "#bd0fe1", //violet
+    "#f33dd3", //pink
+    "#417505", //green
+    "#9012fe", //purple
+    "#7ed321", //light-green
+    "#50e3c2"  //teal?
+  ],
+  selected : [],
+  addToSelected: function(k) {
+    if (this.selected.indexOf(k) != -1) {
+      return;
+    }
+    if (this.count == 10){
+      return;
+    }
+    if (this.count < this.selected.length){
+      for (i = 0; i < this.selected.length; i++) {
+        if (selected[i] == undefined) {
+          selected[i] = k;
+          break;
+        }
+      }
+    } else {
+      this.selected.push(k);
+    }
+    this.count++;
+    return this.colors[this.count - 1];
+  },
+  nextColor: function() {
+    return this.colors[this.count];
+  },
+  removeSelected: function(k) {
+    i = this.selected.indexOf(k);
+    if (i > -1) {
+        this.selected[i] = undefined;
+    }
+  }
+}
 for (i = data_start_year; i < data_end_year+1; i++) {
   rectdata.push(topic_data[i])
 }
@@ -330,3 +375,27 @@ appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
 
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px")
+
+$("#corpus-topics li").on("mouseover", function(){
+  var t = this.dataset.topic;
+  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+    .attr("fill",topics.nextColor())
+    .style("opacity",".5");
+})
+$("#corpus-topics li").on("mouseout", function(){
+  var t = this.dataset.topic;
+  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+    .attr("fill","#d8d8d8")
+    .style("opacity","1");
+})
+// $("#corpus-topics li").on("click", function(){
+//   var t = this.dataset.topic;
+//   var add = ! d3.select(this).classed("selected");
+//   if (add) {
+//     d3.select(this).classed("selected", true)
+//       .style("background-color", topics);
+//   }
+//   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+//     .attr("fill",topics.nextColor())
+//     .style("opacity",".5");
+// })
