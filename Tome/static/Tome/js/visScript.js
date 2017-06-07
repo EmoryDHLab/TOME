@@ -1,12 +1,9 @@
-var rectdata = [];
+var rectdata = []
 
-for ( var i = 0; i < 100; i++) {
-  temp = [];
-  for ( var j = 0; j < 100; j++) {
-    temp.push(j);
-  }
-  rectdata.push(temp);
+for (i = data_start_year; i < data_end_year+1; i++) {
+  rectdata.push(topic_data[i])
 }
+
 
 var vertMax = window.innerHeight - 150,
     horzMax = $(".flex-container").innerWidth() - $(".topics").outerWidth(true);
@@ -14,7 +11,7 @@ var height = (vertMax < horzMax) ? vertMax : horzMax,
     width = height,
     offset = width/500,
     m = 100,
-    n = 100;
+    n = data_n_range;
 
 var getRectWidth = function() {
   return (width - (offset * (n - 1))) / n;
@@ -37,20 +34,20 @@ var resizeCorpusChart = function() {
       var newI = i - corpusSliders.y.maxVal;
       return newI * (getRectHeight() + offset);
     })
-
 }
 
 var updateCorpusChart = function() {
   m = 100;
-  n = 100;
+  n = data_n_range;
   var mCount = 0,
       nCount = 0;
   $(".out").removeClass("out");
-  // if it is vert, then select by data-i
   $('rect[data-j]').filter(function () {
     var vx = false, vn = false, hx = false, hn = false;
     var yval = gridMap.get(this.id).i;
     var xval = gridMap.get(this.id).j;
+    console.log(corpusSliders.x.minVal, xval);
+    console.log(corpusSliders.x.maxVal, xval);
     if (yval > corpusSliders.y.minVal) {
       vn = true;
     }
@@ -64,14 +61,15 @@ var updateCorpusChart = function() {
       hn = true;
     }
     if (vn || vx) {
-      if (mCount%100 == 0){
+      if (mCount % 100 == 0){
         m--;
       }
       mCount++;
     }
     if (hn || hx) {
-      if (nCount%100 == 0){
+      if (nCount % 100 == 0){
         n--;
+
       }
       nCount++;
     }
@@ -111,6 +109,12 @@ var myChart = d3.select('#corpus-chart').append('svg')
     .attr('data-j', function(d, i, j) {
       return j;
     })
+    .attr('data-year', function(d, i, j) {
+      return j + data_start_year;
+    })
+    .attr('data-topic', function(d, i, j) {
+      return d;
+    })
     .on('mouseover', function(d, i, j) {
         d3.select(this)
           .attr({
@@ -126,13 +130,20 @@ var myChart = d3.select('#corpus-chart').append('svg')
 
 var sThickness = 5;
 
-var sY = d3.scale.linear()
-  .domain([0,99])
+var sX = d3.scale.linear()
+  .domain([0,data_n_range - 1])
   .range([0,width])
   .clamp(true);
 
+var sY = d3.scale.linear()
+  .domain([0,99])
+  .range([0,height])
+  .clamp(true);
+
+var TEST = undefined;
+
 var dispatch = d3.dispatch('maxChange','minChange', 'rescale');
-function appendSlider(selector, vertical = false) {
+function appendSlider(selector, vertical = false, slideRange=[0,99]) {
   var styles = {
     len: 'width',
     thick: 'height',
@@ -141,8 +152,8 @@ function appendSlider(selector, vertical = false) {
     mouse: 0
   }
 
-  var minimumVal = (vertical) ? 99 : 0,
-      maximumVal = (vertical) ? 0 : 99;
+  var minimumVal = (vertical) ? slideRange[1] : slideRange[0],
+      maximumVal = (vertical) ? slideRange[0] : slideRange[1];
 
   if (vertical) {
     styles.move = 'top';
@@ -192,13 +203,19 @@ function appendSlider(selector, vertical = false) {
 
   sliderHandleMin.call(d3.behavior.drag()
     .on("dragstart", function(){
+      var vert = this.parentNode.classList.contains("vertical");
+      var scl = (vert) ? sY : sX;
       dispatch.minChange(this,
-        sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
+        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
+      var vert = this.parentNode.classList.contains("vertical");
+      var scl = (vert) ? sY : sX;
       dispatch.minChange(this,
-        sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
+        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        scl);
     })
     .on("dragend", function(){
       updateCorpusChart();
@@ -208,13 +225,19 @@ function appendSlider(selector, vertical = false) {
 
   sliderHandleMax.call(d3.behavior.drag()
     .on("dragstart", function(){
+      var vert = this.parentNode.classList.contains("vertical");
+      var scl = (vert) ? sY : sX;
       dispatch.maxChange(this,
-        sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
+        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
+      var vert = this.parentNode.classList.contains("vertical");
+      var scl = (vert) ? sY : sX;
       dispatch.maxChange(this,
-        sY.invert(d3.mouse(sliderTray.node())[styles.mouse]));
+        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        scl);
     })
     .on("dragend", function(){
       updateCorpusChart();
@@ -222,10 +245,10 @@ function appendSlider(selector, vertical = false) {
     })
   );
 }
-dispatch.on('maxChange', function(target, value) {
+dispatch.on('maxChange', function(target, value, scl) {
   value = Math.round(value);
   coreVal = value;
-  value = sY(value);
+  value = scl(value);
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
   var min = p.select('.min-handle');
@@ -247,14 +270,14 @@ dispatch.on('maxChange', function(target, value) {
       p.select(".range-bar").style('left', Math.round(mnVal) + "px")
         .style('width', Math.abs(mnVal - value) + "px");
       d3.select(target).select(".slider-handle-label")
-      .html(coreVal + 1);
+      .html(corpusSliders.x.getAdjustedMax());
     }
   }
 });
-dispatch.on('minChange', function(target, value) {
+dispatch.on('minChange', function(target, value, scl) {
   value = Math.round(value);
   coreVal = value;
-  value = sY(value);
+  value = scl(value);
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
   var max = p.select('.max-handle');
@@ -276,17 +299,21 @@ dispatch.on('minChange', function(target, value) {
       p.select(".range-bar").style('left', Math.round(value) + "px")
         .style('width', Math.abs(mxVal - value) + "px");
       d3.select(target).select(".slider-handle-label")
-        .html(coreVal + 1);
+        .html(corpusSliders.x.getAdjustedMin());
     }
   }
 });
 
 var corpusSliders = {
   x:{
-      maxVal: 99,
+      shift: data_start_year,
+      maxVal: data_n_range - 1,
       minVal: 0,
+      getAdjustedMin: function(){ return this.shift + this.minVal; },
+      getAdjustedMax: function(){ return this.shift + this.maxVal; },
       getShift: function(i) {
-        return -((100 - n) * getRectWidth() + (99 - n) * offset);
+        return -((data_n_range - n) * getRectWidth()
+          + (data_n_range - 1 - n) * offset);
       }
     },
   y:{
@@ -299,7 +326,7 @@ var corpusSliders = {
 }
 
 appendSlider("#vertical-slide", true);
-appendSlider("#horizontal-slide");
+appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
 
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px")
