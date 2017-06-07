@@ -1,7 +1,7 @@
 tomeenv/
 __pycache__/
 .cache/
-
+db.json
 # Settings file (to avoid overriding server defaults)
 settings.py
 

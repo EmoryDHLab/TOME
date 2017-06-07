@@ -76,7 +76,7 @@ class YearTopicRank(models.Model):
     score = models.DecimalField(max_digits=10, decimal_places=10)
 
     class Meta:
-        ordering = ("year","score")
+        ordering = ("year","-score")
         unique_together = ('year','topic')
 
     def calculateScore(self):
