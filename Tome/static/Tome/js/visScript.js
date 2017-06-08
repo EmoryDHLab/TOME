@@ -14,41 +14,62 @@ topics = {
     "#7ed321", //light-green
     "#50e3c2"  //teal?
   ],
+  defaultColor : "#d8d8d8",
   selected : [],
   addToSelected: function(k) {
     if (this.selected.indexOf(k) != -1) {
+      console.log("Already in it.");
       return;
     }
     if (this.count == 10){
+      console.log("Too many.");
       return;
     }
     if (this.count < this.selected.length){
       for (i = 0; i < this.selected.length; i++) {
-        if (selected[i] == undefined) {
-          selected[i] = k;
+        if (this.selected[i] == undefined) {
+          this.selected[i] = k;
+          console.log("placed");
           break;
         }
       }
     } else {
+      console.log("placed");
       this.selected.push(k);
     }
     this.count++;
     return this.colors[this.count - 1];
   },
+  full: function() {
+    return this.count == 10;
+  },
   nextColor: function() {
-    return this.colors[this.count];
+    ind = 0;
+    if (this.count < this.selected.length){
+      for (i = 0; i < this.selected.length; i++) {
+        if (this.selected[i] == undefined) {
+          ind = i;
+          break;
+        }
+      }
+    } else {
+      ind = this.count;
+    }
+    return this.colors[ind];
   },
   removeSelected: function(k) {
     i = this.selected.indexOf(k);
+    console.log(i);
     if (i > -1) {
         this.selected[i] = undefined;
+        this.count--;
     }
   }
 }
+
 for (i = data_start_year; i < data_end_year+1; i++) {
   rectdata.push(topic_data[i])
 }
-
 
 var vertMax = window.innerHeight - 150,
     horzMax = $(".flex-container").innerWidth() - $(".topics").outerWidth(true);
@@ -61,6 +82,7 @@ var height = (vertMax < horzMax) ? vertMax : horzMax,
 var getRectWidth = function() {
   return (width - (offset * (n - 1))) / n;
 }
+
 var getRectHeight = function() {
   return (height - (offset * (m - 1))) / m;
 }
@@ -91,13 +113,15 @@ var updateCorpusChart = function() {
     var vx = false, vn = false, hx = false, hn = false;
     var yval = gridMap.get(this.id).i;
     var xval = gridMap.get(this.id).j;
-    console.log(corpusSliders.x.minVal, xval);
-    console.log(corpusSliders.x.maxVal, xval);
     if (yval > corpusSliders.y.minVal) {
+      console.log(corpusSliders.y.minVal, yval);
       vn = true;
+      console.log("vn: " + vn + "----------------");
     }
     if (yval < corpusSliders.y.maxVal) {
+      console.log(corpusSliders.y.maxVal, yval);
       vx = true;
+      console.log("vx: " + vx + "----------------");
     }
     if (xval > corpusSliders.x.maxVal) {
       hx = true;
@@ -106,7 +130,8 @@ var updateCorpusChart = function() {
       hn = true;
     }
     if (vn || vx) {
-      if (mCount % 100 == 0){
+      console.log(mCount);
+      if (mCount % data_n_range == 0){
         m--;
       }
       mCount++;
@@ -376,26 +401,50 @@ appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px")
 
-$("#corpus-topics li").on("mouseover", function(){
+$("#corpus-topics").on("mouseover", "li:not(.selected)", function(){
+  if (topics.full()) {
+    return
+  }
   var t = this.dataset.topic;
   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
     .attr("fill",topics.nextColor())
     .style("opacity",".5");
 })
-$("#corpus-topics li").on("mouseout", function(){
+$("#corpus-topics").on("mouseout", "li:not(.selected)", function(){
+  if (topics.full()) {
+    return
+  }
   var t = this.dataset.topic;
   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-    .attr("fill","#d8d8d8")
+    .attr("fill",topics.defaultColor)
     .style("opacity","1");
 })
-// $("#corpus-topics li").on("click", function(){
-//   var t = this.dataset.topic;
-//   var add = ! d3.select(this).classed("selected");
-//   if (add) {
-//     d3.select(this).classed("selected", true)
-//       .style("background-color", topics);
-//   }
-//   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-//     .attr("fill",topics.nextColor())
-//     .style("opacity",".5");
-// })
+$("#corpus-topics li").on("click", function() {
+  var t = this.dataset.topic;
+  var add = ! d3.select(this).classed("selected");
+  if (add) {
+    if (topics.full()) {
+      return;
+    }
+    console.log("add");
+    d3.select(this).classed("selected", true)
+      .select(".color-box")
+        .style("background-color", topics.nextColor());
+    d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+      .attr("fill",topics.nextColor())
+      .style("opacity","1");
+    console.log(topics.nextColor());
+    topics.addToSelected(t);
+  } else {
+    console.log("remove");
+    d3.select(this)
+      .classed("selected", false)
+      .select(".color-box")
+        .attr("style", null)
+        .style("background-color", topics.nextColor());
+    d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+      .attr("fill","#d8d8d8")
+      .style("opacity","1");
+    topics.removeSelected(t);
+  }
+})

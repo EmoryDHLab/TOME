@@ -74,7 +74,8 @@
           <ol id="corpus-topics" class="topic-list scroll">
             {% for t in topics %}
             <li data-topic="{{t.key}}">
-              {{t.topFive}}
+              <span class="topic-words">{{t.topFive}}</span>
+              <span class="color-box"></span>
             </li>
             {% endfor %}
           </ol>
