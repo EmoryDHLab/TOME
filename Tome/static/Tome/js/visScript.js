@@ -67,6 +67,36 @@ topics = {
   }
 }
 
+function addTopicToSelected(target, topic) {
+  if (topics.full()) {
+    alert("You may only select up to 10 topics.")
+    return;
+  }
+  console.log("add");
+  d3.select(target).classed("selected", true)
+    .select(".color-box")
+      .style("background-color", topics.nextColor());
+  d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']")
+    .attr("fill",topics.nextColor())
+    .style("opacity","1");
+  console.log(topics.nextColor());
+  topics.addToSelected(topic);
+}
+
+function removeTopicFromSelected(target, topic) {
+  console.log(target);
+  console.log("remove");
+  d3.select(target[0])
+    .classed("selected", false)
+    .select(".color-box")
+      .attr("style", null)
+      .style("background-color", "transparent");
+  d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']")
+    .attr("fill","#d8d8d8")
+    .style("opacity","1");
+  topics.removeSelected(topic);
+}
+
 for (i = data_start_year; i < data_end_year+1; i++) {
   rectdata.push(topic_data[i])
 }
@@ -399,7 +429,7 @@ appendSlider("#vertical-slide", true);
 appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
 
 d3.select(".vis-no-title")
-  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px")
+  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
 
 $("#corpus-topics").on("mouseover", "li:not(.selected)", function(){
   if (topics.full()) {
@@ -409,7 +439,8 @@ $("#corpus-topics").on("mouseover", "li:not(.selected)", function(){
   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
     .attr("fill",topics.nextColor())
     .style("opacity",".5");
-})
+});
+
 $("#corpus-topics").on("mouseout", "li:not(.selected)", function(){
   if (topics.full()) {
     return
@@ -418,33 +449,24 @@ $("#corpus-topics").on("mouseout", "li:not(.selected)", function(){
   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
     .attr("fill",topics.defaultColor)
     .style("opacity","1");
-})
+});
+
 $("#corpus-topics li").on("click", function() {
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {
-    if (topics.full()) {
-      return;
-    }
-    console.log("add");
-    d3.select(this).classed("selected", true)
-      .select(".color-box")
-        .style("background-color", topics.nextColor());
-    d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-      .attr("fill",topics.nextColor())
-      .style("opacity","1");
-    console.log(topics.nextColor());
-    topics.addToSelected(t);
+    addTopicToSelected(this,t);
   } else {
-    console.log("remove");
-    d3.select(this)
-      .classed("selected", false)
-      .select(".color-box")
-        .attr("style", null)
-        .style("background-color", topics.nextColor());
-    d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-      .attr("fill","#d8d8d8")
-      .style("opacity","1");
-    topics.removeSelected(t);
+    removeTopicFromSelected(this,t);
   }
-})
+});
+
+$("#clear-selected").on("click", function() {
+  for (var i = 0; i < topics.selected.length; i++) {
+    if (topics.selected[i] != undefined) {
+      target = d3.select(".topic-list li[data-topic='"
+        + topics.selected[i] +"']")[0];
+      removeTopicFromSelected(target, topics.selected[i]);
+    }
+  }
+});
