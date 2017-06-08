@@ -67,6 +67,23 @@ topics = {
   }
 }
 
+function highlightRects(t) {
+  if (topics.full()) {
+    return
+  }
+  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+    .attr("fill",topics.nextColor())
+    .style("opacity",".5");
+}
+function unhighlightRects(t) {
+  if (topics.full()) {
+    return
+  }
+  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
+    .attr("fill",topics.defaultColor)
+    .style("opacity","1");
+}
+
 function addTopicToSelected(target, topic) {
   if (topics.full()) {
     alert("You may only select up to 10 topics.")
@@ -78,6 +95,7 @@ function addTopicToSelected(target, topic) {
       .style("background-color", topics.nextColor());
   d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']")
     .attr("fill",topics.nextColor())
+    .classed("selected",true)
     .style("opacity","1");
   console.log(topics.nextColor());
   topics.addToSelected(topic);
@@ -86,13 +104,14 @@ function addTopicToSelected(target, topic) {
 function removeTopicFromSelected(target, topic) {
   console.log(target);
   console.log("remove");
-  d3.select(target[0])
+  d3.select(target)
     .classed("selected", false)
     .select(".color-box")
       .attr("style", null)
       .style("background-color", "transparent");
   d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']")
     .attr("fill","#d8d8d8")
+    .classed("selected", false)
     .style("opacity","1");
   topics.removeSelected(topic);
 }
@@ -220,13 +239,19 @@ var myChart = d3.select('#corpus-chart').append('svg')
           .attr({
             stroke: '#000'
           });
+        if (!d3.select(this).classed("selected")){
+          highlightRects(this.dataset.topic);
+        }
     })
     .on('mouseout', function(d, i, j) {
         d3.select(this)
           .attr({
             stroke: 'none'
           });
-    })
+        if (!d3.select(this).classed("selected")){
+          unhighlightRects(this.dataset.topic);
+        }
+    });
 
 var sThickness = 5;
 
@@ -432,23 +457,11 @@ d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
 
 $("#corpus-topics").on("mouseover", "li:not(.selected)", function(){
-  if (topics.full()) {
-    return
-  }
-  var t = this.dataset.topic;
-  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-    .attr("fill",topics.nextColor())
-    .style("opacity",".5");
+  highlightRects(this.dataset.topic);
 });
 
 $("#corpus-topics").on("mouseout", "li:not(.selected)", function(){
-  if (topics.full()) {
-    return
-  }
-  var t = this.dataset.topic;
-  d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
-    .attr("fill",topics.defaultColor)
-    .style("opacity","1");
+  unhighlightRects(this.dataset.topic);
 });
 
 $("#corpus-topics li").on("click", function() {
@@ -465,7 +478,8 @@ $("#clear-selected").on("click", function() {
   for (var i = 0; i < topics.selected.length; i++) {
     if (topics.selected[i] != undefined) {
       target = d3.select(".topic-list li[data-topic='"
-        + topics.selected[i] +"']")[0];
+        + topics.selected[i] +"']")[0][0];
+      console.log(target);
       removeTopicFromSelected(target, topics.selected[i]);
     }
   }
