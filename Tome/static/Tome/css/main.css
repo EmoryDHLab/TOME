@@ -241,6 +241,16 @@ input[type='button']:hover{
   float: right;
 }
 
+#top-ten p {
+  margin: 0;
+  padding-right: 10px;
+  font-family: 'Poppins', sans-serif;
+  font-style: italic;
+  font-size: 1.5em;
+  text-align: right;
+
+}
+
 /* ---------------------- End Topic Styles ----------------------- */
 
 .slider-tray {
@@ -333,15 +343,15 @@ input[type='button']:hover{
   position: relative;
   top:0;
   margin-right: 10px;
-  margin-left: 30px;
+  margin-left: 50px;
 }
 
 .vertical-label {
   display: block;
   position: absolute;
   top: 50%;
-  transform: rotate(-90deg);
-  left: -100%;
+  transform: translateY(-50%) rotate(-90deg);
+  left: -200%;
 }
 .vis-wrap {
   position: relative;
@@ -360,7 +370,7 @@ input[type='button']:hover{
 .chart-wrap {
   position: absolute;
   top: 0;
-  left: 60px;
+  right: 0;
 }
 
 .out {

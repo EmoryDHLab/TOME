@@ -14,6 +14,14 @@ window.onscroll = function() {
   }
 };
 
+$(".view-ten").click(function(e) {
+  viewTenSwitch(e);
+});
+
+$(".view-all").click(function(e) {
+  viewAllSwitch(e);
+});
+
 d3.selectAll(".topic-list")
   .style('height', function() {
     return d3.select("#corpus-chart").style('height');

@@ -97,7 +97,6 @@ function addTopicToSelected(target, topic) {
     .attr("fill",topics.nextColor())
     .classed("selected",true)
     .style("opacity","1");
-  console.log(topics.nextColor());
   topics.addToSelected(topic);
 }
 
@@ -163,14 +162,10 @@ var updateCorpusChart = function() {
     var yval = gridMap.get(this.id).i;
     var xval = gridMap.get(this.id).j;
     if (yval > corpusSliders.y.minVal) {
-      console.log(corpusSliders.y.minVal, yval);
       vn = true;
-      console.log("vn: " + vn + "----------------");
     }
     if (yval < corpusSliders.y.maxVal) {
-      console.log(corpusSliders.y.maxVal, yval);
       vx = true;
-      console.log("vx: " + vx + "----------------");
     }
     if (xval > corpusSliders.x.maxVal) {
       hx = true;
@@ -179,7 +174,6 @@ var updateCorpusChart = function() {
       hn = true;
     }
     if (vn || vx) {
-      console.log(mCount);
       if (mCount % data_n_range == 0){
         m--;
       }
@@ -252,6 +246,13 @@ var myChart = d3.select('#corpus-chart').append('svg')
           unhighlightRects(this.dataset.topic);
         }
     });
+
+$('rect[data-j]').filter(function(){
+  return (this.dataset.j<10 && this.dataset.i<10);
+}).addClass("top-ten");
+
+d3.selectAll(".top-ten")
+  .attr("data-ten-topic","N/A")
 
 var sThickness = 5;
 
@@ -371,8 +372,8 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
   );
 }
 dispatch.on('maxChange', function(target, value, scl) {
-  value = Math.round(value);
-  coreVal = value;
+  value = Math.round(value); //round the value
+  coreVal = value; // save it to a temp
   value = scl(value);
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
@@ -484,3 +485,41 @@ $("#clear-selected").on("click", function() {
     }
   }
 });
+
+function setVertRange(start, end) {
+  var vert = document.getElementById("vertical-slide");
+  var minH = vert.getElementsByClassName("min-handle")[0];
+  var maxH = vert.getElementsByClassName("max-handle")[0];
+  var scl = sY;
+  var mouse = 1;
+  dispatch.maxChange(maxH, start, scl);
+  dispatch.minChange(minH, end, scl);
+}
+
+function viewTenSwitch(e) {
+  setVertRange(0,9);
+  updateCorpusChart();
+  d3.select(".view-ten").style("display","none");
+  d3.select(".view-all").style("display","inline-block");
+  d3.select("#vertical-slide").style("display","none");
+  d3.select("#top-ten")
+    .style("display","block")
+    .selectAll("p")
+      .style("height", function() {
+        return getRectHeight() + "px";
+      })
+      .style("line-height", function() {
+        return getRectHeight() + "px";
+      })
+      .style("margin-bottom", function() {
+        return offset + "px";
+      })
+}
+function viewAllSwitch(e) {
+  setVertRange(0,99);
+  updateCorpusChart();
+  d3.select(".view-ten").style("display","inline-block");
+  d3.select(".view-all").style("display","none");
+  d3.select("#vertical-slide").style("display","block");
+  d3.select("#top-ten").style("display","none");
+}
