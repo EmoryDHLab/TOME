@@ -123,6 +123,10 @@
 
     <!-- Scripts -->
     <script>
+      allTopicList = [];
+      '{% for t in topics %}'
+        allTopicList.push(parseInt('{{ t.key }}'));
+      '{% endfor %}'
       topic_data = JSON.parse('{{ topics_js | safe }}');
       data_start_year = parseInt('{{corpus.date_started.year}}');
       data_end_year = parseInt('{{corpus.date_ended.year}}');
