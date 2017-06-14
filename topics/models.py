@@ -21,6 +21,9 @@ class Topic(models.Model):
     def topFive(self):
         return self.getFormattedTopWords(5, False)
 
+    @property
+    def topTen(self):
+        return self.getFormattedTopWords(10, False)
     class Meta:
         ordering = ('-score',)
 
@@ -42,7 +45,7 @@ class Topic(models.Model):
         print(self.score)
 
     def __str__(self):
-        return "Rank: " + str(self.score) +  self.getFormattedTopWords(5)
+        return "Rank: " + str(self.score) +  self.getFormattedTopWords(10)
 
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)

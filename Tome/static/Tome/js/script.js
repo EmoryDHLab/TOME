@@ -14,6 +14,47 @@ window.onscroll = function() {
   }
 };
 
+appendSlider("#vertical-slide", true);
+appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
+
+d3.select(".vis-no-title")
+  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
+
+$(".topic-list").on("mouseover", "li:not(.selected)", function(){
+  if (tenMode) {
+    $(this).find("i").css("display","block");
+    fadeOutRects(this.dataset.topic);
+  } else {
+    highlightRects(this.dataset.topic);
+  }
+});
+
+$(".topic-list").on("mouseout", "li:not(.selected)", function(){
+  if (tenMode) {
+    $(this).find("i").css("display","none");
+    unfadeOutRects(this.dataset.topic);
+  } else {
+    unhighlightRects(this.dataset.topic);
+  }
+});
+
+$(".topic-list").on("click", "li",function() {
+  if (tenMode) {
+    switchTopic(this.dataset.topic);
+  } else {
+    var t = this.dataset.topic;
+    var add = ! d3.select(this).classed("selected");
+    if (add) {
+      addTopicToSelected(this,t);
+    } else {
+      removeTopicFromSelected(this,t);
+    }
+  }
+});
+
+$("#clear-selected").on("click", function() {
+  clearSelected()
+});
 $(".view-ten").click(function(e) {
   viewTenSwitch(e);
 });

@@ -98,7 +98,7 @@ function unhighlightRects(t) {
 function fadeOutRects(t) {
   console.log("FADE");
   d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "'])")
-    .style("opacity",".5");
+    .style("opacity",".2");
 }
 function unfadeOutRects(t) {
   d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "'])")
@@ -148,16 +148,19 @@ var vertMax = window.innerHeight - 150,
     horzMax = $(".flex-container").innerWidth() - $(".topics").outerWidth(true);
 var height = (vertMax < horzMax) ? vertMax : horzMax,
     width = height,
-    offset = width/500,
+    offset = {
+      x : width/500,
+      y : height/500
+    },
     m = 100,
     n = data_n_range;
 
 var getRectWidth = function() {
-  return (width - (offset * (n - 1))) / n;
+  return (width - (offset.x * (n - 1))) / n;
 }
 
 var getRectHeight = function() {
-  return (height - (offset * (m - 1))) / m;
+  return (height - (offset.y * (m - 1))) / m;
 }
 
 var resizeCorpusChart = function() {
@@ -167,12 +170,12 @@ var resizeCorpusChart = function() {
     .attr("x", function(){
       var j = gridMap.get(this.id).j;
       var newJ = j - corpusSliders.x.minVal;
-      return newJ * (getRectWidth() + offset);
+      return newJ * (getRectWidth() + offset.x);
     })
     .attr("y", function(){
       var i = gridMap.get(this.id).i;
       var newI = i - corpusSliders.y.maxVal;
-      return newI * (getRectHeight() + offset);
+      return newI * (getRectHeight() + offset.y);
     })
 }
 
@@ -235,10 +238,10 @@ var myChart = d3.select('#corpus-chart').append('svg')
         return idTemp;
       },
       x: function(d, i, j) {
-        return j * (getRectWidth() + offset);
+        return j * (getRectWidth() + offset.x);
       },
       y: function(d, i, j) {
-        return i * (getRectHeight() + offset);
+        return i * (getRectHeight() + offset.y);
       },
     })
     .attr('data-i', function(d,i,j) {
@@ -470,7 +473,7 @@ var corpusSliders = {
       getAdjustedMax: function(){ return this.shift + this.maxVal; },
       getShift: function(i) {
         return -((data_n_range - n) * getRectWidth()
-          + (data_n_range - 1 - n) * offset);
+          + (data_n_range - 1 - n) * offset.x);
       }
     },
   y:{
@@ -481,46 +484,6 @@ var corpusSliders = {
       }
     }
 }
-
-appendSlider("#vertical-slide", true);
-appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
-
-d3.select(".vis-no-title")
-  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
-
-$("#corpus-topics").on("mouseover", "li:not(.selected)", function(){
-  if (tenMode) {
-    fadeOutRects(this.dataset.topic);
-  } else {
-    highlightRects(this.dataset.topic);
-  }
-});
-
-$("#corpus-topics").on("mouseout", "li:not(.selected)", function(){
-  if (tenMode) {
-    unfadeOutRects(this.dataset.topic);
-  } else {
-    unhighlightRects(this.dataset.topic);
-  }
-});
-
-$("#corpus-topics li").on("click", function() {
-  if (tenMode) {
-
-  } else {
-    var t = this.dataset.topic;
-    var add = ! d3.select(this).classed("selected");
-    if (add) {
-      addTopicToSelected(this,t);
-    } else {
-      removeTopicFromSelected(this,t);
-    }
-  }
-});
-
-$("#clear-selected").on("click", function() {
-  clearSelected()
-});
 
 function clearSelected(){
   for (var i = 0; i < topics.selected.length; i++) {
@@ -545,9 +508,11 @@ function setVertRange(start, end) {
 
 function viewTenSwitch(e) {
   clearSelected();
+  offset.y  *= 10;
   tenMode = true;
   setVertRange(0,9);
   updateCorpusChart();
+  d3.select('.chart-title').text("Top Ten Topics");
   d3.select("#corpus-topics").classed(".ten-mode", true);
   d3.select(".view-ten").style("display","none");
   d3.select(".view-all").style("display","inline-block");
@@ -562,19 +527,23 @@ function viewTenSwitch(e) {
         return getRectHeight() + "px";
       })
       .style("margin-bottom", function() {
-        return offset + "px";
+        return offset.y + "px";
       })
-  populateViewTen(allTopicList.slice(0,10));
+  populateViewTen(allKeys.slice(0,10));
+  useTenList(allTopicList.slice(0,10));
 }
 function viewAllSwitch(e) {
   clearSelected();
+  offset.y = offset.x;
   tenMode = false;
   setVertRange(0,99);
   updateCorpusChart();
+  d3.select('.chart-title').text("Topics ranked by % of entire corpus");
   d3.select(".view-ten").style("display","inline-block");
   d3.select(".view-all").style("display","none");
   d3.select("#vertical-slide").style("display","block");
   d3.select("#top-ten").style("display","none");
+  useAllList();
 }
 
 function getRelativeRanks(keys) {
@@ -604,5 +573,58 @@ function populateViewTen(keys) {
     .attr("fill", function() {
       return topics.addToOrGetFromSelected(relRanks[this.dataset.j][this.dataset.i].topic);
     })
+}
 
+function useAllList() {
+  d3.select("#corpus-ten-topics").style("display","none");
+  d3.select("#corpus-topics").style("display","block");
+}
+
+function createTenList(keys) {
+  var list = d3.select("#corpus-ten-topics");
+    list.style("display","block")
+    .selectAll("li").data(keys)
+    .enter().append("li")
+      .attr("data-topic", function(d) {
+        return d.key;
+      })
+      .style("height", function() {
+        return getRectHeight() + "px";
+      })
+      .style("margin-bottom", function() {
+        return offset.y + "px";
+      })
+      .append("span")
+        .classed("color-box", true)
+        .style("background-color", function(d){
+          return (topics.getColor(d.key));
+        })
+        .append("i")
+          .classed("fa fa-exchange", true)
+          .attr("aria-hidden", true)
+          .style("display", "none");
+  d3.selectAll("#corpus-ten-topics li")
+      .append("p")
+        .classed("topic-words", true)
+        .style("line-height", function(){
+          return (getRectHeight()-10)/3 + "px";
+        })
+        .text(function(d) { return d.desc });
+}
+
+function useTenList(keys) {
+  d3.select("#corpus-topics").style("display","none");
+  if (d3.select("#corpus-ten-topics").text() == "") createTenList(keys);
+  var list = d3.select("#corpus-ten-topics");
+    list.style("display","block")
+    .selectAll("li").data(keys)
+      .attr("data-topic", function(d) {
+        return d.key;
+      })
+  d3.selectAll("#corpus-ten-topics li .topic-words")
+    .text(function(d) { return d.desc });
+}
+
+function switchTopic(key) {
+  alert("Switching topics not yet implemented");
 }

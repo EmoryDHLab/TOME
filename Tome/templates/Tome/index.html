@@ -20,7 +20,7 @@
       </header>
       <nav id="head-nav">
         <ul>
-          <li class="available active"><h4>OVERVIEW</h4></li>
+          <li class="available active"><a href="#search"><h4>OVERVIEW</h4></a></li>
           <li class=""><h4>TOPIC DETAILS</h4></h4></h4></li>
           <li class=""><h4>DOCUMENT DETAILS</h4></h4></li>
           <li class="available"><h4>NOTES</h4></li>
@@ -73,7 +73,7 @@
                   style="display:none">View All</button>
               </div>
           </h2>
-          <ol id="corpus-topics" class="topic-list scroll">
+          <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
             <li data-topic="{{t.key}}">
               <span class="topic-words">{{t.topFive}}</span>
@@ -81,6 +81,7 @@
             </li>
             {% endfor %}
           </ol>
+          <ul id="corpus-ten-topics" class="topic-list" style="display:none"></ul>
           <button id="clear-selected" name="clear-selected" class="btn-dark">
             Clear Selected
           </button>
@@ -125,8 +126,15 @@
     <script>
       allTopicList = [];
       '{% for t in topics %}'
-        allTopicList.push(parseInt('{{ t.key }}'));
+        allTopicList.push({
+          key : parseInt('{{ t.key }}'),
+          desc : '{{ t.topTen }}'
+        });
       '{% endfor %}'
+      allKeys = [];
+      for (var i = 0; i < allTopicList.length; i++) {
+        allKeys.push(allTopicList[i].key);
+      }
       topic_data = JSON.parse('{{ topics_js | safe }}');
       data_start_year = parseInt('{{corpus.date_started.year}}');
       data_end_year = parseInt('{{corpus.date_ended.year}}');
