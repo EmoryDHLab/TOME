@@ -15,7 +15,8 @@ window.onscroll = function() {
 };
 
 appendSlider("#vertical-slide", true);
-appendSlider("#horizontal-slide",false, [data_start_year-1,data_end_year-1]);
+appendSlider("#horizontal-slide", false,
+  [data_start_year - 1, data_end_year - 1]);
 
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
@@ -39,28 +40,24 @@ $(".topic-list").on("mouseout", "li:not(.selected)", function(){
 });
 
 $(".topic-list").on("click", "li",function() {
-  if (tenMode) {
-    switchTopic(this.dataset.topic);
+  var t = this.dataset.topic;
+  var add = ! d3.select(this).classed("selected");
+  if (add) {
+    addTopicToSelected(this, t);
   } else {
-    var t = this.dataset.topic;
-    var add = ! d3.select(this).classed("selected");
-    if (add) {
-      addTopicToSelected(this,t);
-    } else {
-      removeTopicFromSelected(this,t);
-    }
+    removeTopicFromSelected(this,t);
   }
 });
 
 $("#clear-selected").on("click", function() {
-  clearSelected()
+  clearSelected();
 });
 $(".view-ten").click(function(e) {
-  viewTenSwitch(e);
+  switchMode();
 });
 
 $(".view-all").click(function(e) {
-  viewAllSwitch(e);
+  switchMode();
 });
 
 d3.selectAll(".topic-list")

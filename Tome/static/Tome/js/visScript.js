@@ -1,82 +1,8 @@
-var rectdata = []
+var rectdata = [];
 var tenMode = false;
 
-topics = {
-  count : 0,
-  colors : [
-    "#d0011b", //red
-    "#f6a623", //orange
-    "#8b572a", //brown
-    "#4990e2", //blue
-    "#bd0fe1", //violet
-    "#f33dd3", //pink
-    "#417505", //green
-    "#9012fe", //purple
-    "#7ed321", //light-green
-    "#50e3c2"  //teal?
-  ],
-  defaultColor : "#d8d8d8",
-  selected : [],
-  getColor: function(k) {
-    return this.colors[this.selected.indexOf(k)]
-  },
-  addToSelected: function(k) {
-    if (this.selected.indexOf(k) != -1) {
-      console.log("Already in it.");
-      return;
-    }
-    if (this.count == 10){
-      console.log("Too many.");
-      return;
-    }
-    if (this.count < this.selected.length){
-      for (i = 0; i < this.selected.length; i++) {
-        if (this.selected[i] == undefined) {
-          this.selected[i] = k;
-          console.log("placed");
-          break;
-        }
-      }
-    } else {
-      console.log("placed");
-      this.selected.push(k);
-    }
-    this.count++;
-    return this.colors[this.count - 1];
-  },
-  full: function() {
-    return this.count == 10;
-  },
-  addToOrGetFromSelected(k) {
-    var tempCol = this.addToSelected(k);
-    if (tempCol == undefined) {
-      return this.getColor(k)
-    }
-    return tempCol;
-  },
-  nextColor: function() {
-    ind = 0;
-    if (this.count < this.selected.length){
-      for (i = 0; i < this.selected.length; i++) {
-        if (this.selected[i] == undefined) {
-          ind = i;
-          break;
-        }
-      }
-    } else {
-      ind = this.count;
-    }
-    return this.colors[ind];
-  },
-  removeSelected: function(k) {
-    i = this.selected.indexOf(k);
-    console.log(i);
-    if (i > -1) {
-        this.selected[i] = undefined;
-        this.count--;
-    }
-  }
-}
+topics = new Topic();
+tenTopics = new Topic();
 
 function highlightRects(t) {
   if (topics.full()) {
@@ -111,7 +37,6 @@ function addTopicToSelected(target, topic) {
     alert("You may only select up to 10 topics.")
     return;
   }
-  console.log("add");
   d3.select(target).classed("selected", true)
     .select(".color-box")
       .style("background-color", topics.nextColor());
@@ -119,11 +44,10 @@ function addTopicToSelected(target, topic) {
     .attr("fill",topics.nextColor())
     .classed("selected",true)
     .style("opacity","1");
-  topics.addToSelected(topic);
+  topics.add(topic);
 }
 
-function removeTopicFromSelected(target, topic) {
-  console.log(target);
+function removeTopicFromSelected(target, topic, fake=false) {
   console.log("remove");
   d3.select(target)
     .classed("selected", false)
@@ -137,7 +61,7 @@ function removeTopicFromSelected(target, topic) {
   rects.attr("fill","#d8d8d8")
     .classed("selected", false)
     .style("opacity","1");
-  topics.removeSelected(topic);
+  topics.deleteSelected(topic);
 }
 
 for (i = data_start_year; i < data_end_year+1; i++) {
@@ -485,14 +409,24 @@ var corpusSliders = {
     }
 }
 
-function clearSelected(){
-  for (var i = 0; i < topics.selected.length; i++) {
-    if (topics.selected[i] != undefined) {
-      target = d3.select(".topic-list li[data-topic='"
-        + topics.selected[i] +"']")[0][0];
-      console.log(target);
-      removeTopicFromSelected(target, topics.selected[i]);
-    }
+function switchMode(){
+  tenMode = !tenMode;
+
+  //clear all colors
+  d3.selectAll("#corpus-chart rect")
+    .attr("fill", topics.defaultColor)
+    .selectAll(".top-ten")
+    .attr("data-ten-topic", "N/A");
+
+  // recolor based on new mode
+  if (tenMode) {
+    viewTenInit();
+    populateViewTen(allKeys.slice(0,10));
+    useTenList(allTopicList.slice(0,10));
+  } else {
+    viewAllInit();
+    populateViewAll();
+    useAllList();
   }
 }
 
@@ -506,10 +440,8 @@ function setVertRange(start, end) {
   dispatch.minChange(minH, end, scl);
 }
 
-function viewTenSwitch(e) {
-  clearSelected();
-  offset.y  *= 10;
-  tenMode = true;
+function viewTenInit(e) {
+  offset.y *= 10;
   setVertRange(0,9);
   updateCorpusChart();
   d3.select('.chart-title').text("Top Ten Topics");
@@ -529,21 +461,17 @@ function viewTenSwitch(e) {
       .style("margin-bottom", function() {
         return offset.y + "px";
       })
-  populateViewTen(allKeys.slice(0,10));
-  useTenList(allTopicList.slice(0,10));
 }
-function viewAllSwitch(e) {
-  clearSelected();
+function viewAllInit(e) {
+  var tempSelect = topics.getSelected();
   offset.y = offset.x;
-  tenMode = false;
-  setVertRange(0,99);
+  setVertRange(0, 99);
   updateCorpusChart();
   d3.select('.chart-title').text("Topics ranked by % of entire corpus");
   d3.select(".view-ten").style("display","inline-block");
   d3.select(".view-all").style("display","none");
   d3.select("#vertical-slide").style("display","block");
   d3.select("#top-ten").style("display","none");
-  useAllList();
 }
 
 function getRelativeRanks(keys) {
@@ -562,17 +490,32 @@ function getRelativeRanks(keys) {
 }
 
 function populateViewTen(keys) {
-  if (keys.length != 10) {
+  if (keys.length > 10) {
     return;
   }
+  if (keys.length < 10) {
+    return;
+  }
+  tenTopics.clear();
+  tenTopics.addAllToSelected(keys);
   relRanks = getRelativeRanks(keys);
+  console.log(relRanks);
   d3.selectAll("rect[data-ten-topic]")
-    .attr("data-ten-topic",function(){
+    .attr("data-ten-topic", function() {
       return relRanks[this.dataset.j][this.dataset.i].topic;
     })
     .attr("fill", function() {
-      return topics.addToOrGetFromSelected(relRanks[this.dataset.j][this.dataset.i].topic);
+      return tenTopics.getColor(relRanks[this.dataset.j][this.dataset.i].topic);
     })
+}
+
+function populateViewAll() {
+  d3.selectAll("rect[data-topic]").filter(function() {
+    return topics.contains(this.dataset.topic);
+  })
+    .attr("fill",function() {
+      return topics.getColor(this.dataset.topic);
+  })
 }
 
 function useAllList() {
@@ -597,22 +540,23 @@ function createTenList(keys) {
       .append("span")
         .classed("color-box", true)
         .style("background-color", function(d){
-          return (topics.getColor(d.key));
+          return (tenTopics.getColor(d.key));
         })
         .append("i")
           .classed("fa fa-exchange", true)
           .attr("aria-hidden", true)
           .style("display", "none");
   d3.selectAll("#corpus-ten-topics li")
-      .append("p")
-        .classed("topic-words", true)
-        .style("line-height", function(){
-          return (getRectHeight()-10)/3 + "px";
-        })
-        .text(function(d) { return d.desc });
+    .append("p")
+      .classed("topic-words", true)
+      .style("line-height", function(){
+        return (getRectHeight()-10)/3 + "px";
+      })
+      .text(function(d) { return d.desc });
 }
 
 function useTenList(keys) {
+  console.log(keys);
   d3.select("#corpus-topics").style("display","none");
   if (d3.select("#corpus-ten-topics").text() == "") createTenList(keys);
   var list = d3.select("#corpus-ten-topics");
@@ -621,8 +565,12 @@ function useTenList(keys) {
       .attr("data-topic", function(d) {
         return d.key;
       })
-  d3.selectAll("#corpus-ten-topics li .topic-words")
-    .text(function(d) { return d.desc });
+      .select("span")
+        .style("background-color", function(d){
+          return tenTopics.getColor(d.key);
+        })
+  d3.selectAll("#corpus-ten-topics li .topic-words").data(keys)
+    .text(function(d) { console.log(d.desc); return d.desc });
 }
 
 function switchTopic(key) {
