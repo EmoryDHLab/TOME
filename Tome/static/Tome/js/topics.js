@@ -19,9 +19,11 @@ Topic.prototype.getSelected = function() {
   return this.selected;
 };
 Topic.prototype.getColor = function(k) {
+  k = parseInt(k);
   return this.colors[this.getSelected().indexOf(k)]
 };
 Topic.prototype.add = function(k) {
+  k = parseInt(k);
   if (this.contains(k)) {
     console.log("Already in it.");
     return;
@@ -47,7 +49,7 @@ Topic.prototype.add = function(k) {
 
 Topic.prototype.addAll = function (keys) {
   for (var i = 0; i < keys.length; i++) {
-    this.add(keys[i]);
+    this.add(parseInt(keys[i]));
   }
 };
 
@@ -56,11 +58,13 @@ Topic.prototype.full = function() {
 };
 
 Topic.prototype.contains = function(k) {
+  k = parseInt(k);
   return this.getSelected().indexOf(k) != -1;
 }
 
   //works for both topTen and selected
 Topic.prototype.addOrGet = function(k) {
+  k = parseInt(k);
   var tempCol = this.add(k);
   if (tempCol == undefined) {
     return this.getColor(k)
@@ -69,6 +73,7 @@ Topic.prototype.addOrGet = function(k) {
 };
 
 Topic.prototype.deleteSelected = function(k) {
+  k = parseInt(k);
   i = this.getSelected().indexOf(k);
   console.log(i);
   if (i > -1) {

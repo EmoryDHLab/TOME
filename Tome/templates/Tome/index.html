@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>News Stuff</title>
+    <title>TOME</title>
     {% load static %}
     {% load i18n %}
     <link
@@ -131,10 +131,9 @@
           desc : '{{ t.topTen }}'
         });
       '{% endfor %}'
-      allKeys = [];
-      for (var i = 0; i < allTopicList.length; i++) {
-        allKeys.push(allTopicList[i].key);
-      }
+      allKeys = allTopicList.map(function(t) {
+        return t.key;
+      });
       topic_data = JSON.parse('{{ topics_js | safe }}');
       data_start_year = parseInt('{{corpus.date_started.year}}');
       data_end_year = parseInt('{{corpus.date_ended.year}}');

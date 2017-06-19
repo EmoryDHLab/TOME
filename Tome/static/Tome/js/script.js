@@ -39,7 +39,10 @@ $(".topic-list").on("mouseout", "li:not(.selected)", function(){
   }
 });
 
-$(".topic-list").on("click", "li",function() {
+$(".topic-list").on("click", "li", function() {
+  if (tenMode) {
+    return;
+  }
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {

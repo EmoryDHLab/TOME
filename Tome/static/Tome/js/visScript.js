@@ -428,10 +428,12 @@ function switchMode(){
   if (tenMode) {
     viewTenInit();
     var tenTopicsList = getTenTopicsWithSelected();
+    console.log(tenTopicsList);
     populateViewTen(tenTopicsList.map(function(t) {
+      console.log(t);
       return t.key;
     }));
-    useTenList(allTopicList.slice(0,10));
+    useTenList(tenTopicsList);
   } else {
     viewAllInit();
     populateViewAll();
@@ -441,12 +443,24 @@ function switchMode(){
 
 function getTenTopicsWithSelected() {
   console.log(topics.getSelected());
-  if (topics.full()) { return topics.getSelected(); }
-  var remaining = 10 - topics.count;
-  var temptTList = allTopicList.filter(function(t) {
-    return !topics.contains(t.key);
-  });
-  return topics.getSelected().concat(temptTList.slice(0, remaining));
+  var preSelected = [];
+  for (var i = 0; i < topics.getSelected().length; i++) {
+    var tp = topics.getSelected()[i];
+    var t = allTopicList.find(function (t) { return tp == t.key });
+    if (t != undefined) {
+      preSelected.push(t);
+    }
+  }
+  if (topics.full()) {
+    return preSelected;
+  } else {
+    console.log("SELECTED:", preSelected);
+    var remaining = 10 - topics.count;
+    var temptTList = allTopicList.filter(function(t) {
+      return !topics.contains(t.key);
+    });
+    return preSelected.concat(temptTList.slice(0, remaining));
+  }
 }
 
 function setVertRange(start, end) {
@@ -460,6 +474,7 @@ function setVertRange(start, end) {
 }
 
 function viewTenInit(e) {
+  console.log(topics.selected);
   offset.y *= 10;
   setVertRange(0,9);
   updateCorpusChart();
