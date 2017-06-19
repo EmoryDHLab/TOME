@@ -65,7 +65,11 @@ function removeTopicFromSelected(target, topic, fake=false) {
 }
 
 function clearSelected() {
-  d3.selectAll("#corpus-topics li.selected").each(function(){
+  var query = "#corpus-topics li.selected";
+  if (tenMode) {
+    query = "#corpus-ten-topics li.selected"
+  }
+  d3.selectAll(query).each(function(){
     removeTopicFromSelected(this,this.dataset.topic);
   });
 }
