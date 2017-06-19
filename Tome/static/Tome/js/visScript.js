@@ -14,7 +14,7 @@ function highlightRects(t) {
 }
 function unhighlightRects(t) {
   if (topics.full()) {
-    return
+    return;
   }
   d3.selectAll("#corpus-chart rect[data-topic='" + t + "']")
     .attr("fill",topics.defaultColor)
@@ -62,6 +62,12 @@ function removeTopicFromSelected(target, topic, fake=false) {
     .classed("selected", false)
     .style("opacity","1");
   topics.deleteSelected(topic);
+}
+
+function clearSelected() {
+  d3.selectAll("#corpus-topics li.selected").each(function(){
+    removeTopicFromSelected(this,this.dataset.topic);
+  });
 }
 
 for (i = data_start_year; i < data_end_year+1; i++) {
@@ -142,7 +148,7 @@ var updateCorpusChart = function() {
   }).addClass("out");
   resizeCorpusChart();
 }
-var gridMap = new Map;
+var gridMap = new Map();
 var myChart = d3.select('#corpus-chart').append('svg')
   .attr({
     height: height,
@@ -421,13 +427,26 @@ function switchMode(){
   // recolor based on new mode
   if (tenMode) {
     viewTenInit();
-    populateViewTen(allKeys.slice(0,10));
+    var tenTopicsList = getTenTopicsWithSelected();
+    populateViewTen(tenTopicsList.map(function(t) {
+      return t.key;
+    }));
     useTenList(allTopicList.slice(0,10));
   } else {
     viewAllInit();
     populateViewAll();
     useAllList();
   }
+}
+
+function getTenTopicsWithSelected() {
+  console.log(topics.getSelected());
+  if (topics.full()) { return topics.getSelected(); }
+  var remaining = 10 - topics.count;
+  var temptTList = allTopicList.filter(function(t) {
+    return !topics.contains(t.key);
+  });
+  return topics.getSelected().concat(temptTList.slice(0, remaining));
 }
 
 function setVertRange(start, end) {
@@ -490,14 +509,10 @@ function getRelativeRanks(keys) {
 }
 
 function populateViewTen(keys) {
-  if (keys.length > 10) {
-    return;
-  }
-  if (keys.length < 10) {
-    return;
-  }
+  if (keys.length > 10) { console.log("ERROR"); return; }
+  if (keys.length < 10) { console.log("ERROR2"); return; }
   tenTopics.clear();
-  tenTopics.addAllToSelected(keys);
+  tenTopics.addAll(keys);
   relRanks = getRelativeRanks(keys);
   console.log(relRanks);
   d3.selectAll("rect[data-ten-topic]")

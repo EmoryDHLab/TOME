@@ -45,7 +45,7 @@ Topic.prototype.add = function(k) {
   this.count++;
 };
 
-Topic.prototype.addAllToSelected = function (keys) {
+Topic.prototype.addAll = function (keys) {
   for (var i = 0; i < keys.length; i++) {
     this.add(keys[i]);
   }
