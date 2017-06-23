@@ -697,23 +697,57 @@ function switchTopic(key) {
 
 //----------------------------TOPIC DETAILS VIS---------------------------------
 
-var sizes = {
-  width : 500,
-  height : 500
+function getCurrentKeys(){
+  return [45,86];
 }
 
-var scales = {
-  v1 : {
+var margins = {top: 20, right: 10, bottom: 20, left: 10};
+
+var sizes = {
+  width : 500 - margins.left - margins.right,
+  height : 500 - margins.bottom - margins.top
+}
+var dataTMP = [];
+//for each key
+$.each(getCurrentKeys(), function(k ,v) {
+  // for each year
+  var temp = []
+  $.each(rectdata, function(key, tops) {
+    temp = temp.concat(tops.filter(function(t) { return t.topic == v}))
+  });
+  dataTMP.push(temp);
+});
+
+var scale = {
     x: d3.scale.linear()
         .domain([data_start_year, data_end_year])
         .range([0, sizes.width])
         .clamp(true),
     y: d3.scale.linear()
-        .domain([0, d3.max(function() {
-          console.log(d);
-          return 1;
+        .domain([0, d3.max(dataTMP, function(tops) {
+          return d3.max(tops, function(t) {
+            return t.score;
+          })
         })])
         .range([0, sizes.height])
         .clamp(true)
-  }
 };
+var line = d3.svg.line()
+  .x(function(d) { console.log(scale.x(d.year)); return scale.x(d.year); })
+  .y(function(d) { console.log(scale.y(d.score)); return scale.y(d.score); })
+  .interpolate("linear");
+
+var graph = d3.select("#topic-score-chart").append("svg").data(dataTMP)
+    .attr("width", sizes.width + margins.left + margins.right)
+    .attr("height", sizes.height + margins.top + margins.bottom);
+var g = graph.append("g")
+    .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
+  $.each(dataTMP, function(key,value) {
+    g.append("path")
+    .attr("fill", function(d) { return "none"; })
+    .attr("stroke", "steelblue")
+    .attr("stroke-linejoin", "round")
+    .attr("stroke-linecap", "round")
+    .attr("stroke-width", 1.5)
+    .attr("d", line(value));
+  })
