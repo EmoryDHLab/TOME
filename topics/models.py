@@ -2,6 +2,8 @@ from Tome.helpers.model_helpers import *
 from Tome.helpers.maths import median
 from django.utils.translation import ugettext_lazy as _
 
+import simplejson as json
+
 class Word(models.Model):
     text = models.CharField(max_length=200, unique=True)
 
@@ -26,6 +28,21 @@ class Topic(models.Model):
         return self.getFormattedTopWords(10, False)
     class Meta:
         ordering = ('-score',)
+
+    def toJSON(self):
+        dictified = {'words' : [],'articles' : []}
+        dictified["key"] = self.key
+        dictified["score"] = self.score
+        words = self.wordtopicrank_set.all()
+        articles = self.articletopicrank_set.all()[:10]
+
+        for word in words:
+            dictified["words"].append(word.toJSON())
+
+        for article in articles:
+            dictified["articles"].append(article.toJSON())
+
+        return json.dumps(dictified)
 
     def getFormattedTopWords(self, max_words, bracket=True):
         words = self.words.all()
@@ -56,6 +73,12 @@ class WordTopicRank(models.Model):
         ordering = ('-score',)
         unique_together = ('word', 'topic')
 
+    def toJSON(self):
+        tempD = {}
+        tempD["word"] = self.word.text
+        tempD["score"] = self.score
+        tempD["topic"] = self.topic.key
+        return json.dumps(tempD)
     def __str__(self):
         return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) + " | Score: " + str(self.score)
 
@@ -67,6 +90,14 @@ class ArticleTopicRank(models.Model):
     class Meta:
         ordering = ('-score',)
         unique_together = ('article', 'topic')
+
+    def toJSON(self):
+        tempD = {}
+        tempD["topic"] = self.topic.key
+        tempD["article"] = self.article.id
+        tempD["score"] = self.score
+        tempD["year"] = self.article.year
+        return json.dumps(tempD)
 
     def __str__(self):
         return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.title,

@@ -20,4 +20,5 @@ app_name = 'topics'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^(?P<topic_id>[0-9]+)/', views.detail, name='detail'),
+    url(r'^topics_as_json/', views.topicsAsJSON, name='topics_as_json'),
 ]

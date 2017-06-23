@@ -21,9 +21,39 @@ appendSlider("#horizontal-slide", false,
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
 
+function updateTopicsSelected(e) {
+  console.log("UPDATE");
+  $.ajax({
+    type : "GET",
+    url : topic_data_link,
+    data : {
+      json_data : JSON.stringify({'topics' : topics.getKeys()})
+    },
+    success : function(data) {
+      console.log(data);
+      var output = "";
+      $.each(data, function(key, val) {
+        output += "<span data-topic='" +val.key+ "'>TOPIC " + val.key +"</span>"
+      });
+      if (topics.count > 0) {
+        $("#topic-titles").html(output);
+        $("#topic-link").addClass("available");
+      } else {
+        $("#topic-link").removeClass("available").removeClass("active");
+      }
+    }
+  });
+}
+
+$("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
+$("nav").on("click", "li.available:not(.active) a", function(e){
+  $(".active").removeClass("active");
+  $(this.parentNode).addClass("active");
+});
+
 $(".topic-list").on("mouseover", "li:not(.selected)", function(){
   if (tenMode) {
-    $(this).find("i").css("display","block");
+    //$(this).find("i").css("display","block");
     fadeOutRects(this.dataset.topic);
   } else {
     highlightRects(this.dataset.topic);
@@ -32,28 +62,27 @@ $(".topic-list").on("mouseover", "li:not(.selected)", function(){
 
 $(".topic-list").on("mouseout", "li:not(.selected)", function(){
   if (tenMode) {
-    $(this).find("i").css("display","none");
     unfadeOutRects(this.dataset.topic);
   } else {
     unhighlightRects(this.dataset.topic);
   }
 });
 
-$(".topic-list").on("click", "li", function() {
-  if (tenMode) {
-    return;
-  }
+$(".topic-list").on("click", "li", function(e) {
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {
     addTopicToSelected(this, t);
+    updateTopicsSelected(e);
   } else {
     removeTopicFromSelected(this,t);
+    updateTopicsSelected(e);
   }
 });
 
-$("#clear-selected").on("click", function() {
+$("#clear-selected").on("click", function(e) {
   clearSelected();
+  updateTopicsSelected(e);
 });
 $(".view-ten").click(function(e) {
   switchMode();

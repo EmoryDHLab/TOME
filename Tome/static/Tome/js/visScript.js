@@ -23,44 +23,100 @@ function unhighlightRects(t) {
 
 function fadeOutRects(t) {
   console.log("FADE");
-  d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "'])")
+  d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "']):not(.selected)")
     .style("opacity",".2");
-}
-function unfadeOutRects(t) {
-  d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "'])")
+  d3.selectAll("#corpus-chart rect[data-ten-topic='" + t + "']")
     .style("opacity","1");
 }
+function unfadeOutRects(t) {
+  console.log(d3.selectAll("#corpus-chart rect.top-ten:not(.selected)"));
+  d3.selectAll("#corpus-chart rect.top-ten:not(.selected)")
+    .style("opacity", function() { return (topics.empty()) ? "1" : ".2"; });
+}
 
+function updateAllSelected(toTen = true) {
+  var selectedInList = d3.selectAll("#corpus-topics li.selected")[0];
+  if (toTen){
+    selectedInList = d3.selectAll("#corpus-ten-topics li.selected")[0];
+  }
+  // if it's in the list as selected, but not selected
+  for (var i = 0; i < selectedInList.length; i++) {
+    var el = selectedInList[i];
+    if (!topics.contains(el.dataset.topic)) {
+      console.log("NOT SELECTED NOW:", el.dataset.topic);
+      updateSelected(el.dataset.topic);
+    }
+  }
+  // if it's selected, but not in the list
+  for (var i = 0; i < topics.getSelected().length; i++) {
+    var topic = topics.getSelected()[i];
+    if (d3.selectAll("li[data-topic = '"+ topic +"']").length == 2)
+    updateSelected(topic);
+  }
+}
+
+function updateSelected(topic) {
+  if (topic == undefined) return;
+  var targets = d3.selectAll("li[data-topic = '"+ topic +"']");
+  var add = !targets.classed("selected");
+  var ten = "";
+  if (tenMode) {
+    ten = "ten-"
+  }
+  if (add) {
+    targets.classed("selected", true)
+    .selectAll(".color-box")
+      .style("background-color", function() {
+        if ((this.parentNode.parentNode.id == "corpus-ten-topics")) {
+          return d3.select(this).style("background-color");
+        }
+        return topics.nextColor();
+      })
+      .selectAll("i")
+        .style("display", "block");
+    d3.selectAll("#corpus-chart rect[data-" + ten + "topic='" + topic + "']")
+      .attr("fill", function() {
+        if (tenMode) {
+          return d3.select(this).attr("fill");
+        }
+        return topics.nextColor();
+      })
+      .classed("selected", true)
+      .style("opacity", "1");
+  } else {
+    targets.classed("selected", false)
+      .select(".color-box")
+        .attr("style", function() {
+          if (this.parentNode.parentNode.id == "corpus-ten-topics") {
+            return d3.select(this).attr("style");
+          }
+          return null;
+        })
+        .select("i")
+          .style("display","none");
+    var rects =
+      d3.selectAll("#corpus-chart rect[data-" + ten + "topic='" + topic + "']");
+    rects.attr("fill",function() {
+      return (tenMode) ? d3.select(this).attr("fill") : "#d8d8d8";
+    })
+      .classed("selected", false)
+      .style("opacity", "1");
+  }
+}
 
 function addTopicToSelected(target, topic) {
+  console.log("add");
   if (topics.full()) {
     alert("You may only select up to 10 topics.")
     return;
   }
-  d3.select(target).classed("selected", true)
-    .select(".color-box")
-      .style("background-color", topics.nextColor());
-  d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']")
-    .attr("fill",topics.nextColor())
-    .classed("selected",true)
-    .style("opacity","1");
+  updateSelected(topic);
   topics.add(topic);
 }
 
-function removeTopicFromSelected(target, topic, fake=false) {
+function removeTopicFromSelected(target, topic) {
   console.log("remove");
-  d3.select(target)
-    .classed("selected", false)
-    .select(".color-box")
-      .attr("style", null)
-      .style("background-color", "transparent");
-  var rects = (!tenMode) ?
-    d3.selectAll("#corpus-chart rect[data-topic='" + topic + "']") :
-    d3.selectAll("#corpus-chart rect[data-ten-topic='" + topic + "']");
-
-  rects.attr("fill","#d8d8d8")
-    .classed("selected", false)
-    .style("opacity","1");
+  updateSelected(topic);
   topics.deleteSelected(topic);
 }
 
@@ -433,11 +489,8 @@ function switchMode(){
     viewTenInit();
     var tenTopicsList = getTenTopicsWithSelected();
     console.log(tenTopicsList);
-    populateViewTen(tenTopicsList.map(function(t) {
-      console.log(t);
-      return t.key;
-    }));
-    useTenList(tenTopicsList);
+    populateViewTen(topics.getSelectedAsTopics(allTopicList));
+    useTenList(topics.getSelectedAsTopics(allTopicList));
   } else {
     viewAllInit();
     populateViewAll();
@@ -446,24 +499,14 @@ function switchMode(){
 }
 
 function getTenTopicsWithSelected() {
-  console.log(topics.getSelected());
-  var preSelected = [];
-  for (var i = 0; i < topics.getSelected().length; i++) {
-    var tp = topics.getSelected()[i];
-    var t = allTopicList.find(function (t) { return tp == t.key });
-    if (t != undefined) {
-      preSelected.push(t);
-    }
-  }
   if (topics.full()) {
-    return preSelected;
+    return [];
   } else {
-    console.log("SELECTED:", preSelected);
     var remaining = 10 - topics.count;
     var temptTList = allTopicList.filter(function(t) {
       return !topics.contains(t.key);
     });
-    return preSelected.concat(temptTList.slice(0, remaining));
+    return temptTList.slice(0, remaining);
   }
 }
 
@@ -506,10 +549,11 @@ function viewAllInit(e) {
   setVertRange(0, 99);
   updateCorpusChart();
   d3.select('.chart-title').text("Topics ranked by % of entire corpus");
-  d3.select(".view-ten").style("display","inline-block");
-  d3.select(".view-all").style("display","none");
-  d3.select("#vertical-slide").style("display","block");
-  d3.select("#top-ten").style("display","none");
+  d3.select(".view-ten").style("display", "inline-block");
+  d3.select(".view-all").style("display", "none");
+  d3.select("#vertical-slide").style("display", "block");
+  d3.select("#top-ten").style("display", "none");
+  d3.selectAll("#corpus-chart rect").style("opacity", "1");
 }
 
 function getRelativeRanks(keys) {
@@ -526,11 +570,19 @@ function getRelativeRanks(keys) {
   });
   return tenByYr;
 }
-
-function populateViewTen(keys) {
-  if (keys.length > 10) { console.log("ERROR"); return; }
-  if (keys.length < 10) { console.log("ERROR2"); return; }
-  tenTopics.clear();
+// keys are the keys ofcurrently selected topics, if < 10,
+//   remaining will be filled with other topics
+function populateViewTen(topicArr) {
+  if (topicArr.length > 10) { console.log("ERROR"); return; }
+  tenTopics.copyFrom(topicArr.map(function(t) {
+    return t.key;
+  }));
+  if (topicArr.length < 10) {
+    topicArr = topicArr.concat(getTenTopicsWithSelected());
+  }
+  var keys = topicArr.map(function(t) {
+    return t.key;
+  })
   tenTopics.addAll(keys);
   relRanks = getRelativeRanks(keys);
   console.log(relRanks);
@@ -540,6 +592,16 @@ function populateViewTen(keys) {
     })
     .attr("fill", function() {
       return tenTopics.getColor(relRanks[this.dataset.j][this.dataset.i].topic);
+    })
+    .classed("selected", function(d) {
+      return topics.contains(relRanks[this.dataset.j][this.dataset.i].topic);
+    })
+    .style("opacity", function() {
+      if (topics.contains(relRanks[this.dataset.j][this.dataset.i].topic)
+        || topics.empty()) {
+        return "1";
+      }
+      return "0.2";
     })
 }
 
@@ -555,15 +617,22 @@ function populateViewAll() {
 function useAllList() {
   d3.select("#corpus-ten-topics").style("display","none");
   d3.select("#corpus-topics").style("display","block");
+  updateAllSelected();
 }
 
 function createTenList(keys) {
+  if (keys.length < 10) {
+    keys = keys.concat(getTenTopicsWithSelected());
+  }
   var list = d3.select("#corpus-ten-topics");
     list.style("display","block")
     .selectAll("li").data(keys)
     .enter().append("li")
       .attr("data-topic", function(d) {
         return d.key;
+      })
+      .classed("selected", function(d) {
+        return topics.contains(d.key);
       })
       .style("height", function() {
         return getRectHeight() + "px";
@@ -579,7 +648,9 @@ function createTenList(keys) {
         .append("i")
           .classed("fa fa-exchange", true)
           .attr("aria-hidden", true)
-          .style("display", "none");
+          .style("display", function(d) {
+            return (topics.contains(d.key)) ? "block" : "none";
+          });
   d3.selectAll("#corpus-ten-topics li")
     .append("p")
       .classed("topic-words", true)
@@ -589,22 +660,29 @@ function createTenList(keys) {
       .text(function(d) { return d.desc });
 }
 
-function useTenList(keys) {
-  console.log(keys);
+function useTenList(topicArr) {
+  if (topicArr.length < 10) {
+    topicArr = topicArr.concat(getTenTopicsWithSelected());
+  }
+  console.log("!!!!!", topicArr);
   d3.select("#corpus-topics").style("display","none");
-  if (d3.select("#corpus-ten-topics").text() == "") createTenList(keys);
+  if (d3.select("#corpus-ten-topics").text() == "") createTenList(topicArr);
   var list = d3.select("#corpus-ten-topics");
     list.style("display","block")
-    .selectAll("li").data(keys)
+    .selectAll("li").data(topicArr)
       .attr("data-topic", function(d) {
         return d.key;
       })
-      .select("span")
+      .select(".color-box")
         .style("background-color", function(d){
           return tenTopics.getColor(d.key);
         })
-  d3.selectAll("#corpus-ten-topics li .topic-words").data(keys)
-    .text(function(d) { console.log(d.desc); return d.desc });
+        .select("i")
+          .style("display", function(d) {
+            return (topics.contains(d.key)) ? "block" : "none";
+          })
+  d3.selectAll("#corpus-ten-topics li .topic-words").data(topicArr)
+    .text(function(d) { return d.desc });
 }
 
 function switchTopic(key) {

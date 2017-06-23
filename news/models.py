@@ -171,6 +171,11 @@ class Article(models.Model):
 
     class Meta:
         ordering = ('issue__date_published',)
+
+    @property
+    def year(self):
+        return self.issue.date_published.year
+        
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
 

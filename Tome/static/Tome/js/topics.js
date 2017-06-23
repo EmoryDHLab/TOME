@@ -96,7 +96,45 @@ Topic.prototype.nextColor = function() {
   }
   return this.colors[ind];
 };
+
 Topic.prototype.clear = function() {
   this.count = 0;
   this.selected = [];
+}
+
+// gets all topics in selection as objects, not just keys.
+// tRef is the list of objects to be used to translate the key into the object
+Topic.prototype.getSelectedAsTopics = function(tRef) {
+  var preSelected = [];
+  for (var i = 0; i < this.getSelected().length; i++) {
+    var tp = this.getSelected()[i];
+    var t = tRef.find(function (t) { return tp == t.key });
+    if (t != undefined) {
+      preSelected.push(t);
+    }
+  }
+  return preSelected;
+}
+Topic.prototype.empty = function() {
+  return this.count == 0;
+}
+
+Topic.prototype.getKeys = function() {
+  return this.getSelected().reduce(function (r, a) {
+        if (a != undefined) {
+            r.push(a);
+        }
+        return r;
+    }, []);
+}
+
+Topic.prototype.copyFrom = function(keys) {
+  console.log(keys);
+  this.clear();
+  for (var i = 0; i < keys.length; i++) {
+    if (keys[i] != undefined) {
+      this.count++;
+    }
+    this.selected[i] = keys[i];
+  }
 }

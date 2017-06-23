@@ -20,10 +20,18 @@
       </header>
       <nav id="head-nav">
         <ul>
-          <li class="available active"><a href="#search"><h4>OVERVIEW</h4></a></li>
-          <li class=""><h4>TOPIC DETAILS</h4></h4></h4></li>
-          <li class=""><h4>DOCUMENT DETAILS</h4></h4></li>
-          <li class="available"><h4>NOTES</h4></li>
+          <li id="overview-link" class="available active">
+            <a href="#search"><h4>OVERVIEW</h4></a>
+          </li>
+          <li id="topic-link" class="">
+            <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
+          </li>
+          <li id="document-link" class="">
+            <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
+          </li>
+          <li id="notes-link" class="available">
+            <h4>NOTES</h4>
+          </li>
         </ul>
         <hr>
       </nav>
@@ -120,9 +128,20 @@
           </div>
         </div>
       </div>
+      <!-- END OF OVERVIEW -->
+      <hr/>
+
+      <div id="topic-details">
+        <h2 id="topic-titles"></h2>
+      </div>
+
     </div>
 
     <!-- Scripts -->
+    <script src="{% static "Tome/js/d3.min.js" %}"></script>
+    <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
+    <script src="{% static "Tome/js/map.js" %}"></script>
+    <script src="{% static "Tome/js/topics.js" %}"></script>
     <script>
       allTopicList = [];
       '{% for t in topics %}'
@@ -135,14 +154,11 @@
         return t.key;
       });
       topic_data = JSON.parse('{{ topics_js | safe }}');
+      topic_data_link = "{% url 'topics:topics_as_json' %}";
       data_start_year = parseInt('{{corpus.date_started.year}}');
       data_end_year = parseInt('{{corpus.date_ended.year}}');
       data_n_range = data_end_year - data_start_year + 1;
     </script>
-    <script src="{% static "Tome/js/d3.min.js" %}"></script>
-    <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
-    <script src="{% static "Tome/js/map.js" %}"></script>
-    <script src="{% static "Tome/js/topics.js" %}"></script>
     <script src="{% static "Tome/js/visScript.js" %}"></script>
     <script src="{% static "Tome/js/script.js" %}"></script>
   </body>
