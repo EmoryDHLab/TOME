@@ -55,7 +55,11 @@ class Corpus(models.Model):
         return self.topics.distinct()
 
     def getTopicsByYear(self, yr):
-        return list(self.yeartopicrank_set.filter(year=yr).order_by("-score").values_list("topic__key", flat = True))
+        topics = self.yeartopicrank_set.filter(year=yr).order_by("-score")
+        json_tops = []
+        for t in topics:
+            json_tops.append(t.toJSON(True))
+        return json_tops
 
     def getYearsTopics(self):
         start_yr = self.date_started.year
@@ -64,6 +68,7 @@ class Corpus(models.Model):
         for current_yr in range(start_yr, end_yr + 1):
             dates[current_yr] = self.getTopicsByYear(current_yr)
         return dates
+
     def clean(self):
         # Validate the dates
         vali_date(self)
@@ -175,7 +180,7 @@ class Article(models.Model):
     @property
     def year(self):
         return self.issue.date_published.year
-        
+
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
 

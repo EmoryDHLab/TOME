@@ -216,7 +216,7 @@ var myChart = d3.select('#corpus-chart').append('svg')
   })
   .selectAll('g').data(rectdata)
   .enter().append('g')
-  .selectAll('rect').data(function(d, i) { return d; })
+  .selectAll('rect').data(function(d) { return d; })
   .enter().append('rect')
     .attr({
       width: getRectWidth(),
@@ -244,7 +244,7 @@ var myChart = d3.select('#corpus-chart').append('svg')
       return j + data_start_year;
     })
     .attr('data-topic', function(d, i, j) {
-      return d;
+      return d.topic;
     })
     .on('mouseover', function(d, i, j) {
         d3.select(this)
@@ -558,10 +558,16 @@ function viewAllInit(e) {
 
 function getRelativeRanks(keys) {
   var tenByYr = []
+  // each year in topic data
   $.each(topic_data, function(k, v) {
     tempArr = [];
+    //each key in the keys array
     $.each(keys, function(index, value) {
-      tempArr.push({topic:value, rank:v.indexOf(value)})
+      tempArr.push({
+        topic : value,
+        // get the rank as the index of the key in the overall values list
+        rank : v.indexOf(v.find(function(t) {return t.topic == value }))
+      });
     })
     tempArr = tempArr.sort(function(a, b) {
       return a.rank - b.rank;
@@ -688,3 +694,26 @@ function useTenList(topicArr) {
 function switchTopic(key) {
   alert("Switching topics not yet implemented");
 }
+
+//----------------------------TOPIC DETAILS VIS---------------------------------
+
+var sizes = {
+  width : 500,
+  height : 500
+}
+
+var scales = {
+  v1 : {
+    x: d3.scale.linear()
+        .domain([data_start_year, data_end_year])
+        .range([0, sizes.width])
+        .clamp(true),
+    y: d3.scale.linear()
+        .domain([0, d3.max(function() {
+          console.log(d);
+          return 1;
+        })])
+        .range([0, sizes.height])
+        .clamp(true)
+  }
+};
