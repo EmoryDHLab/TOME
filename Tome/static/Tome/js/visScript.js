@@ -707,16 +707,18 @@ var sizes = {
   width : 500 - margins.left - margins.right,
   height : 500 - margins.bottom - margins.top
 }
-var dataTMP = [];
-//for each key
-$.each(getCurrentKeys(), function(k ,v) {
-  // for each year
-  var temp = []
-  $.each(rectdata, function(key, tops) {
-    temp = temp.concat(tops.filter(function(t) { return t.topic == v}))
+function getVisData() {
+  var dataTMP = [45];
+  //for each key
+  $.each(getCurrentKeys(), function(k ,v) {
+    // for each year
+    var temp = []
+    $.each(rectdata, function(key, tops) {
+      temp = temp.concat(tops.filter(function(t) { return t.topic == v}))
+    });
+    dataTMP.push(temp);
   });
-  dataTMP.push(temp);
-});
+}
 
 var scale = {
     x: d3.scale.linear()
@@ -724,7 +726,7 @@ var scale = {
         .range([0, sizes.width])
         .clamp(true),
     y: d3.scale.linear()
-        .domain([0, d3.max(dataTMP, function(tops) {
+        .domain([0, d3.max(getVisData(), function(tops) {
           return d3.max(tops, function(t) {
             return t.score;
           })
@@ -733,19 +735,19 @@ var scale = {
         .clamp(true)
 };
 var line = d3.svg.line()
-  .x(function(d) { console.log(scale.x(d.year)); return scale.x(d.year); })
-  .y(function(d) { console.log(scale.y(d.score)); return scale.y(d.score); })
+  .x(function(d) { return scale.x(d.year); })
+  .y(function(d) { return scale.y(d.score); })
   .interpolate("linear");
 
-var graph = d3.select("#topic-score-chart").append("svg").data(dataTMP)
+var graph = d3.select("#topic-score-chart").append("svg").data(getVisData())
     .attr("width", sizes.width + margins.left + margins.right)
     .attr("height", sizes.height + margins.top + margins.bottom);
 var g = graph.append("g")
     .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
-  $.each(dataTMP, function(key,value) {
+  $.each(getVisData(), function(key,value) {
     g.append("path")
     .attr("fill", function(d) { return "none"; })
-    .attr("stroke", "steelblue")
+    .attr("stroke", function(d) {topics.getColor(value[0].topic); return topics.getColor(value[0].topic)})
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
     .attr("stroke-width", 1.5)

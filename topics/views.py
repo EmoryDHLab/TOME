@@ -20,11 +20,14 @@ def detail(request, topic_id):
 
 def topicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
+    print(keys)
     data = keys
     topics = Topic.objects.filter(key__in = keys["topics"])
-    topics_json = "{"
+    print(topics)
+
+    topics_json = {}
     for t in topics:
-        topics_json += str(t.key) + ":" + t.toJSON() + ","
-    topics_json = topics_json[:-1]
-    topics_json += "}"
+        topics_json[t.key] = t.toJSON(True)
+    topics_json = json.dumps(topics_json)
+    print(topics_json)
     return HttpResponse(topics_json, content_type='application/json')

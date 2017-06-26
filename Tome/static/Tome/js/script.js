@@ -22,7 +22,6 @@ d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
 
 function updateTopicsSelected(e) {
-  console.log("UPDATE");
   $.ajax({
     type : "GET",
     url : topic_data_link,
@@ -30,17 +29,23 @@ function updateTopicsSelected(e) {
       json_data : JSON.stringify({'topics' : topics.getKeys()})
     },
     success : function(data) {
+      console.log("UPDATE");
       console.log(data);
+      $("#topic-titles").html("");
       var output = "";
       $.each(data, function(key, val) {
-        output += "<span data-topic='" +val.key+ "'>TOPIC " + val.key +"</span>"
+        output = "<span class='topic-title' data-topic='"
+          + val.key + "'>TOPIC " + val.key +"</span>";
+        $("#topic-titles").append(output);
       });
       if (topics.count > 0) {
-        $("#topic-titles").html(output);
         $("#topic-link").addClass("available");
       } else {
         $("#topic-link").removeClass("available").removeClass("active");
       }
+    },
+    error : function(textStatus, errorThrown) {
+      console.log(textStatus);
     }
   });
 }

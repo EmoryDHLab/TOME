@@ -466,8 +466,12 @@ input[type='range'].vertical {
   left: 100%;
   -webkit-transform-origin: left top;
   width: 700px;
-}*/
+}
 
 /* ---------------------- End Slider Styles ---------------------- */
 
 /* ---------------------- End Topic Menu Styles ---------------------- */
+
+.topic-title:not(:last-child)::after {
+  content : ", ";
+}

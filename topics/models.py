@@ -37,10 +37,10 @@ class Topic(models.Model):
         articles = self.articletopicrank_set.all()[:10]
 
         for word in words:
-            dictified["words"].append(word.toJSON())
+            dictified["words"].append(word.toJSON(nested))
 
         for article in articles:
-            dictified["articles"].append(article.toJSON())
+            dictified["articles"].append(article.toJSON(nested))
         if (not nested):
             return json.dumps(dictified)
         else:
