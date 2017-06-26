@@ -712,12 +712,17 @@ function getVisData(keys) {
 }
 
 function createTopicOverTimeVis(keys) {
-  d3.select("#topic-score-chart").html("")
+  if (keys.length == 0){
+    d3.select("#topic-score-chart svg").style("display","none");
+    return;
+  }
+  d3.select("#topic-score-chart").html("");
+  d3.select("#topic-score-chart svg").style("display","block");
   var visData = getVisData(keys);
-  var margin = {top: 0, right: 0, bottom: 30, left: 50};
+  var margin = {top: 30, right: 30, bottom: 30, left: 50};
 
   var sizes = {
-    width : 500 - margin.left - margin.right,
+    width : 600 - margin.left - margin.right,
     height : 500 - margin.bottom - margin.top
   }
 
@@ -737,7 +742,7 @@ function createTopicOverTimeVis(keys) {
     .clamp(true),
 
     yPerc: d3.scale.linear()
-    .domain([10 * d3.max(visData, function(tops) {
+    .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
         return t.score;
       })

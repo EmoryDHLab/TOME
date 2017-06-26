@@ -191,7 +191,7 @@ input[type='button']:hover{
   margin-right:1em;
   white-space: nowrap;
 }
-#search input {
+#search input[name="keyword"] {
   flex:1;
   height:50px;
   font-size: 24px;
@@ -200,12 +200,15 @@ input[type='button']:hover{
   border: solid 1px #979797;
   padding: 0px 5px;
 }
-#search input:focus{
+#search input[name="keyword"]:focus{
   outline: none !important;
   border-color: #719ECE;
   box-shadow: 0 0 5px #719ECE;
 }
-
+#search input[name="submit-search"] {
+  margin-left: 1%;
+  font-size: 1.1em;
+}
 /* ---------------------- End Search Styles ---------------------- */
 
 /* ---------------------- Topic/Vis Styles ---------------------- */
@@ -471,6 +474,9 @@ input[type='range'].vertical {
 /* ---------------------- End Slider Styles ---------------------- */
 
 /* ---------------------- End Topic Menu Styles ---------------------- */
+.section-separator {
+  margin-top: 3em;
+}
 
 .topic-title:not(:last-child)::after {
   content : ", ";
