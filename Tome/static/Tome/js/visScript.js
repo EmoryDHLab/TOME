@@ -697,20 +697,10 @@ function switchTopic(key) {
 
 //----------------------------TOPIC DETAILS VIS---------------------------------
 
-function getCurrentKeys(){
-  return [45,86];
-}
-
-var margins = {top: 20, right: 10, bottom: 20, left: 10};
-
-var sizes = {
-  width : 500 - margins.left - margins.right,
-  height : 500 - margins.bottom - margins.top
-}
-function getVisData() {
-  var dataTMP = [45];
+function getVisData(keys) {
+  var dataTMP = [];
   //for each key
-  $.each(getCurrentKeys(), function(k ,v) {
+  $.each(keys, function(k ,v) {
     // for each year
     var temp = []
     $.each(rectdata, function(key, tops) {
@@ -718,33 +708,58 @@ function getVisData() {
     });
     dataTMP.push(temp);
   });
+  return dataTMP;
 }
 
-var scale = {
+function createTopicOverTimeVis(keys) {
+  d3.select("#topic-score-chart").html("")
+  var visData = getVisData(keys);
+  var margin = {top: 0, right: 0, bottom: 30, left: 50};
+
+  var sizes = {
+    width : 500 - margin.left - margin.right,
+    height : 500 - margin.bottom - margin.top
+  }
+
+  var scale = {
     x: d3.scale.linear()
-        .domain([data_start_year, data_end_year])
-        .range([0, sizes.width])
-        .clamp(true),
+    .domain([data_start_year, data_end_year])
+    .range([0, sizes.width])
+    .clamp(true),
+
     y: d3.scale.linear()
-        .domain([0, d3.max(getVisData(), function(tops) {
-          return d3.max(tops, function(t) {
-            return t.score;
-          })
-        })])
-        .range([0, sizes.height])
-        .clamp(true)
-};
-var line = d3.svg.line()
+    .domain([d3.max(visData, function(tops) {
+      return d3.max(tops, function(t) {
+        return t.score;
+      })
+    }), 0])
+    .range([0, sizes.height])
+    .clamp(true),
+
+    yPerc: d3.scale.linear()
+    .domain([10 * d3.max(visData, function(tops) {
+      return d3.max(tops, function(t) {
+        return t.score;
+      })
+    }), 0])
+    .range([0, sizes.height])
+    .clamp(true),
+  };
+  var axis = {
+    x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
+    y: d3.svg.axis().scale(scale.yPerc).orient("left").ticks(10)
+  }
+  var line = d3.svg.line()
   .x(function(d) { return scale.x(d.year); })
   .y(function(d) { return scale.y(d.score); })
   .interpolate("linear");
 
-var graph = d3.select("#topic-score-chart").append("svg").data(getVisData())
-    .attr("width", sizes.width + margins.left + margins.right)
-    .attr("height", sizes.height + margins.top + margins.bottom);
-var g = graph.append("g")
-    .attr("transform", "translate(" + margins.left + "," + margins.top + ")");
-  $.each(getVisData(), function(key,value) {
+  var graph = d3.select("#topic-score-chart").append("svg").data(visData)
+  .attr("width", sizes.width + margin.left + margin.right)
+  .attr("height", sizes.height + margin.top + margin.bottom);
+  var g = graph.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  $.each(visData, function(key,value) {
     g.append("path")
     .attr("fill", function(d) { return "none"; })
     .attr("stroke", function(d) {topics.getColor(value[0].topic); return topics.getColor(value[0].topic)})
@@ -753,3 +768,8 @@ var g = graph.append("g")
     .attr("stroke-width", 1.5)
     .attr("d", line(value));
   })
+  g.append("g").call(axis.y);
+  g.append("g")
+    .attr("transform", "translate( 0,"+ sizes.height +")")
+    .call(axis.x);
+}

@@ -43,6 +43,7 @@ function updateTopicsSelected(e) {
       } else {
         $("#topic-link").removeClass("available").removeClass("active");
       }
+      createTopicOverTimeVis(topics.getKeys())
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
