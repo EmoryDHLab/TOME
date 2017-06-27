@@ -88,9 +88,19 @@ function updateTopicsList(search) {
       var output = "";
       $.each(data, function(key, t) {
         console.log(t.words)
-        output = "<li data-topic=" + t.key + ">"
-            + "<span class='topic-words'>" + arrToString(t.words, 5) + "</span>"
-            + "<span class='color-box'></span>"
+        var cls = "";
+        var clr = "transparent";
+        if (topics.contains(t.key)){
+          cls = "selected";
+          clr = topics.getColor(t.key);
+        }
+        output = "<li data-topic=" + t.key + " class='" + cls + "''>"
+            + "<span class='topic-words'>"
+              + arrToString(t.words, 5)
+            + "</span>" + "&nbsp;"
+            + "<span class='color-box' style='background-color:"
+              + clr
+            + "'></span>"
           + "</li>";
         $("#corpus-topics").append(output);
       });
