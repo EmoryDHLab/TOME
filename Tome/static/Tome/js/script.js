@@ -42,7 +42,7 @@ function endLoad() {
   $("#loader").css("display","none");
 }
 function updateTopicsSelected(e) {
-  startLoad();
+  // startLoad();
   $.ajax({
     type : "GET",
     url : topic_data_link,
@@ -65,7 +65,7 @@ function updateTopicsSelected(e) {
         $("#topic-link").removeClass("available").removeClass("active");
       }
       createTopicOverTimeVis(topics.getKeys())
-      endLoad();
+      // endLoad();
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -86,8 +86,14 @@ function updateTopicsList(search) {
       console.log(data);
       $("#corpus-topics").html("");
       var output = "";
+      allTopicList = [];
+      allKeys = [];
       $.each(data, function(key, t) {
-        console.log(t.words)
+        allTopicList.push({
+          key:t.key,
+          desc: arrToString(t.words, 10)
+        })
+        allKeys.push(t.key);
         var cls = "";
         var clr = "transparent";
         if (topics.contains(t.key)){
