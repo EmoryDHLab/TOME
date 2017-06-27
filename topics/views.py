@@ -14,20 +14,25 @@ def index(request):
     }
     return render(request,'topics/index.html', context)
 
-def detail(request, topic_id):
-    topic = get_object_or_404(Topic, pk=topic_id)
-    return render(request, 'topics/detail.html', {'topic':topic})
-
 def topicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
-    print(keys)
-    data = keys
     topics = Topic.objects.filter(key__in = keys["topics"])
-    print(topics)
-
     topics_json = {}
     for t in topics:
         topics_json[t.key] = t.toJSON(True)
     topics_json = json.dumps(topics_json)
-    print(topics_json)
+    return HttpResponse(topics_json, content_type='application/json')
+
+def allTopicsAsJSON(request):
+    keys = json.loads(request.GET.get("json_data"))
+    if ("keywords" in keys):
+        keywords = keys["keywords"]
+        print(keywords)
+    topics = Topic.objects.all()
+    topics_json = {}
+    rank = 1;
+    for t in topics:
+        topics_json[rank] = t.toJSON(True)
+        rank += 1
+    topics_json = json.dumps(topics_json)
     return HttpResponse(topics_json, content_type='application/json')

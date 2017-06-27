@@ -156,6 +156,7 @@
       });
       topic_data = JSON.parse('{{ topics_js | safe }}');
       topic_data_link = "{% url 'topics:topics_as_json' %}";
+      all_topic_list_link = "{% url 'topics:all_topics_as_json' %}";
       data_start_year = parseInt('{{corpus.date_started.year}}');
       data_end_year = parseInt('{{corpus.date_ended.year}}');
       data_n_range = data_end_year - data_start_year + 1;

@@ -6,6 +6,20 @@ var scrollTop = function() {
     (document.documentElement || document.body.parentNode ||
     document.body).scrollTop;}
 
+function arrToString(arr, ct=-1) {
+  var s = "";
+  if (ct != -1) {
+    var truncateAfter = ct;
+  } else {
+    var truncateAfter = arr.length;
+  }
+  for (var i = 0; i < truncateAfter; i++) {
+      s += arr[i].word;
+      s += (i < truncateAfter - 1 ) ? ", ": "";
+  }
+  return s;
+}
+
 window.onscroll = function() {
   if( scrollTop() > hdr ) {
     mn.className = mns;
@@ -44,6 +58,33 @@ function updateTopicsSelected(e) {
         $("#topic-link").removeClass("available").removeClass("active");
       }
       createTopicOverTimeVis(topics.getKeys())
+    },
+    error : function(textStatus, errorThrown) {
+      console.log(textStatus);
+    }
+  });
+}
+
+function updateTopicsList(search) {
+  $.ajax({
+    type : "GET",
+    url : all_topic_list_link,
+    data : {
+      json_data : JSON.stringify({'keywords' : search})
+    },
+    success : function(data) {
+      console.log("UPDATE TOPICS");
+      console.log(data);
+      $("#corpus-topics").html("");
+      var output = "";
+      $.each(data, function(key, t) {
+        console.log(t.words)
+        output = "<li data-topic=" + t.key + ">"
+            + "<span class='topic-words'>" + arrToString(t.words, 5) + "</span>"
+            + "<span class='color-box'></span>"
+          + "</li>";
+        $("#corpus-topics").append(output);
+      });
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -96,6 +137,10 @@ $(".view-ten").click(function(e) {
 
 $(".view-all").click(function(e) {
   switchMode();
+});
+
+$("[name='submit-search']").click(function(e){
+  updateTopicsList($("[name='keyword']").val());
 });
 
 d3.selectAll(".topic-list")
