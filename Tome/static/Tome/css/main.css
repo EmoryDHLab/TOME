@@ -66,6 +66,14 @@ input[type='reset']:hover,
 input[type='button']:hover{
   cursor: pointer;
 }
+
+.anchor {
+  width:1px;
+  height:1px;
+  position: absolute;
+  left:20px;
+}
+
 .btn-dark {
   border-radius: 2px;
   background-color: #4a4a4a;
@@ -212,6 +220,10 @@ input[type='button']:hover{
 /* ---------------------- End Search Styles ---------------------- */
 
 /* ---------------------- Topic/Vis Styles ---------------------- */
+
+#overview {
+  position: relative;
+}
 
 .topic-list {
   overflow-y: auto;

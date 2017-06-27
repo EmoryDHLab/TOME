@@ -697,6 +697,7 @@ function switchTopic(key) {
 
 //----------------------------TOPIC DETAILS VIS---------------------------------
 
+//VIS 1
 function getVisData(keys) {
   var dataTMP = [];
   //for each key
@@ -766,8 +767,8 @@ function createTopicOverTimeVis(keys) {
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   $.each(visData, function(key,value) {
     g.append("path")
-    .attr("fill", function(d) { return "none"; })
-    .attr("stroke", function(d) {topics.getColor(value[0].topic); return topics.getColor(value[0].topic)})
+    .attr("fill", "none")
+    .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
     .attr("stroke-width", 1.5)
@@ -777,4 +778,65 @@ function createTopicOverTimeVis(keys) {
   g.append("g")
     .attr("transform", "translate( 0,"+ sizes.height +")")
     .call(axis.x);
+}
+
+// RANK CHANGE OVER TIME
+
+function getDeltaRankData(keys) {
+  d = getVisData(keys);
+}
+
+function createDeltaRankChart(keys) {
+  if (keys.length == 0){
+    d3.select("#topic-rank-charts").style("display","none");
+    return;
+  }
+  d3.select("#topic-rank-charts").html("");
+  d3.select("#topic-rank-charts svg").style("display","block");
+  var visData = getDeltaRankData(keys);
+  var margin = {top: 30, right: 30, bottom: 30, left: 50};
+
+  var sizes = {
+    width : 600 - margin.left - margin.right,
+    height : 500 - margin.bottom - margin.top
+  }
+
+  var scale = {
+    x: d3.scale.linear()
+    .domain([data_start_year, data_end_year])
+    .range([0, sizes.width])
+    .clamp(true),
+
+    color: function(change) {
+      var red = "#d0011b",
+      green = "#417505";
+      opacities = [.25, .5, .75, 1]
+      style = {
+        backgroundColor : "d8d8d8",
+        opacity : opacities[Math.floor((Math.abs(change)-1)/25)]
+      }
+      if (change < 0) {
+        style.backgroundColor = red;
+      } else if (change > 0) {
+        style.backgroundColor = green;
+      } else {
+        style.opacity = 1;
+      }
+      return style;
+    }
+  };
+  var axis = {
+    x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
+  }
+
+  var graph = d3.select("#topic-rank-charts").append("svg").data(visData)
+  .attr("width", sizes.width + margin.left + margin.right)
+  .attr("height", sizes.height + margin.top + margin.bottom);
+  var g = graph.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  g.selectAll('g').data(visData)
+    .enter().append('g')
+    selectAll('rect').data(function(d) { return d; })
+      .enter().append('rect')
+        .()
 }
