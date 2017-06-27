@@ -35,7 +35,14 @@ appendSlider("#horizontal-slide", false,
 d3.select(".vis-no-title")
   .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
 
+function startLoad() {
+  $("#loader").css("display","block");
+}
+function endLoad() {
+  $("#loader").css("display","none");
+}
 function updateTopicsSelected(e) {
+  startLoad();
   $.ajax({
     type : "GET",
     url : topic_data_link,
@@ -58,6 +65,7 @@ function updateTopicsSelected(e) {
         $("#topic-link").removeClass("available").removeClass("active");
       }
       createTopicOverTimeVis(topics.getKeys())
+      endLoad();
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -66,6 +74,7 @@ function updateTopicsSelected(e) {
 }
 
 function updateTopicsList(search) {
+  startLoad();
   $.ajax({
     type : "GET",
     url : all_topic_list_link,
@@ -85,6 +94,7 @@ function updateTopicsList(search) {
           + "</li>";
         $("#corpus-topics").append(output);
       });
+      endLoad();
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -139,6 +149,11 @@ $(".view-all").click(function(e) {
   switchMode();
 });
 
+$("[name='keyword']").keydown(function(e){
+  if ((e.keyCode || e.which) == 13){
+    updateTopicsList($("[name='keyword']").val());
+  }
+});
 $("[name='submit-search']").click(function(e){
   updateTopicsList($("[name='keyword']").val());
 });

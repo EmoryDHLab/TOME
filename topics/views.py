@@ -26,13 +26,20 @@ def topicsAsJSON(request):
 def allTopicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
     if ("keywords" in keys):
-        keywords = keys["keywords"]
-        print(keywords)
-    topics = Topic.objects.all()
+        keywords = keys["keywords"].strip()
+        tokens = keywords.split(" ")
+    topics = []
+    topics.append(Topic.objects.filter(words__text__in=tokens).distinct().order_by('-wordtopicrank__score'))
+    topics.append(Topic.objects.exclude(words__text__in=tokens).distinct())
     topics_json = {}
     rank = 1;
-    for t in topics:
-        topics_json[rank] = t.toJSON(True)
-        rank += 1
+    for qset in topics:
+        ids = []
+        for t in qset:
+            if (t.id not in ids):
+                ids.append(t.id)
+                topics_json[rank] = t.toJSON(True)
+                rank += 1
+
     topics_json = json.dumps(topics_json)
     return HttpResponse(topics_json, content_type='application/json')
