@@ -783,7 +783,14 @@ function createTopicOverTimeVis(keys) {
 // RANK CHANGE OVER TIME
 
 function getDeltaRankData(keys) {
-  
+  /*
+    I am trying to compare each topic in rank from one year to the next.
+
+    I do not associate ranks with topics on load...
+    I could do that...?
+
+    It would make my life easier overall.
+  */
   // get the ranks of each topic (from keys)
 
   // get the rank of the topic's previous year

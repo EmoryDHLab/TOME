@@ -18,6 +18,7 @@ class Topic(models.Model):
 
     articles = models.ManyToManyField('news.Article', through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
+    rank = models.IntegerField(default=-1)
 
     @property
     def topFive(self):
@@ -27,24 +28,25 @@ class Topic(models.Model):
     def topTen(self):
         return self.getFormattedTopWords(10, False)
     class Meta:
-        ordering = ('-score',)
+        ordering = ('rank',)
 
     def toJSON(self, nested=False):
-        dictified = {'words' : [],'articles' : []}
-        dictified["key"] = self.key
-        dictified["score"] = self.score
+        tempD = {'words' : [],'articles' : []}
+        tempD["key"] = self.key
+        tempD["score"] = self.score
+        tempD["rank"] = self.rank
         words = self.wordtopicrank_set.all()
         articles = self.articletopicrank_set.all()[:10]
 
         for word in words:
-            dictified["words"].append(word.toJSON(nested))
+            tempD["words"].append(word.toJSON(nested))
 
         for article in articles:
-            dictified["articles"].append(article.toJSON(nested))
+            tempD["articles"].append(article.toJSON(nested))
         if (not nested):
-            return json.dumps(dictified)
+            return json.dumps(tempD)
         else:
-            return dictified
+            return tempD
 
     def getFormattedTopWords(self, max_words, bracket=True):
         words = self.words.all()
@@ -118,9 +120,10 @@ class YearTopicRank(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     year = models.IntegerField()
     score = models.DecimalField(max_digits=10, decimal_places=10)
+    rank = models.IntegerField(default=-1)
 
     class Meta:
-        ordering = ("year","-score")
+        ordering = ("year","rank")
         unique_together = ('year','topic')
 
     def calculateScore(self):
@@ -134,6 +137,7 @@ class YearTopicRank(models.Model):
         tempD["topic"] = self.topic.key
         tempD["year"] = self.year
         tempD["score"] = self.score
+        tempD["rank"] = self.rank
         if (not nested):
             return json.dumps(tempD)
         else:
