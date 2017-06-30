@@ -64,7 +64,8 @@ function updateTopicsSelected(e) {
       } else {
         $("#topic-link").removeClass("available").removeClass("active");
       }
-      createTopicOverTimeVis(topics.getKeys())
+      createTopicOverTimeVis(topics.getKeys());
+      createDeltaRankChart(topics.getKeys());
       // endLoad();
     },
     error : function(textStatus, errorThrown) {

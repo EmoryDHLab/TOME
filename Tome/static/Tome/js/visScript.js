@@ -783,30 +783,40 @@ function createTopicOverTimeVis(keys) {
 // RANK CHANGE OVER TIME
 
 function getDeltaRankData(keys) {
-  /*
-    I am trying to compare each topic in rank from one year to the next.
-
-    I do not associate ranks with topics on load...
-    I could do that...?
-
-    It would make my life easier overall.
-  */
-  // get the ranks of each topic (from keys)
-
-  // get the rank of the topic's previous year
-
-  // put the key and the rank change into an object
-
-
+  // returns a list of topics lists, each one with a delta rank based on it's
+  var data = [];
+  $.each(keys, function(i, key) {
+    var tData = [];
+    var prevTRank;
+    $.each(topic_data, function(yr, tops) {
+      var currentTop = tops.find(function(t) { return t.topic == key });
+      console.log(currentTop);
+      if (prevTRank == undefined) {
+        prevTRank = currentTop.rank;
+      }
+      var t = {
+        key: key,
+        year: yr,
+        change: prevTRank - currentTop.rank,
+      }
+      prevTRank = currentTop.rank;
+      tData.push(t);
+    })
+    data.push(tData);
+  });
+  return data;
 }
 
 function createDeltaRankChart(keys) {
+  console.log(keys);
   if (keys.length == 0){
     d3.select("#topic-rank-charts").style("display","none");
     return;
+  } else {
+    d3.select("#topic-rank-charts").style("display","block");
+
   }
   d3.select("#topic-rank-charts").html("");
-  d3.select("#topic-rank-charts svg").style("display","block");
   var visData = getDeltaRankData(keys);
   var margin = {top: 30, right: 30, bottom: 30, left: 50};
 
@@ -823,16 +833,16 @@ function createDeltaRankChart(keys) {
 
     color: function(change) {
       var red = "#d0011b",
-      green = "#417505";
+          green = "#417505";
       opacities = [.25, .5, .75, 1]
       style = {
-        backgroundColor : "d8d8d8",
+        fill : "#d8d8d8",
         opacity : opacities[Math.floor((Math.abs(change)-1)/25)]
       }
       if (change < 0) {
-        style.backgroundColor = red;
+        style.fill = red;
       } else if (change > 0) {
-        style.backgroundColor = green;
+        style.fill = green;
       } else {
         style.opacity = 1;
       }
@@ -841,7 +851,7 @@ function createDeltaRankChart(keys) {
   };
   var offset = {
     x: sizes.width / 100,
-    y: sizes.height / keys.length
+    y: sizes.height / (keys.length * 10)
   }
   var axis = {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
@@ -854,9 +864,26 @@ function createDeltaRankChart(keys) {
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   g.selectAll('g').data(visData)
     .enter().append('g')
-    selectAll('rect').data(function(d) { return d; })
+    .selectAll('rect').data(function(d) { return d; })
       .enter().append('rect')
-        .attr("width", function () {//width - (offset.x * (n - 1))) / n
-          return sizes.width - (offset) /data_n_range;
+        .attr("width", function() {//width - (offset.x * (n - 1))) / n
+          return (sizes.width - (offset.x * (data_n_range - 1))) / data_n_range;
         })
+        .attr("height", function() {
+          return (sizes.height - (offset.y
+            * (keys.length - 1)))/ keys.length;
+        })
+        .attr("x", function(d, i) {
+          console.log(sizes.width);
+          return i * (((sizes.width - (offset.x
+            * (data_n_range - 1))) / data_n_range) + offset.x);
+        })
+        .attr("y", function(d, i, j) {
+          console.log(j);
+          return j * (((sizes.height - (offset.y
+            * (keys.length - 1))) / keys.length) + offset.y);
+        })
+        .attr("fill", function(d) { return scale.color(d.change).fill; })
+        .style("opacity", function(d) { return scale.color(d.change).opacity;})
+
 }
