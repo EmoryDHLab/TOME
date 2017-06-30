@@ -28,7 +28,7 @@ class Topic(models.Model):
     def topTen(self):
         return self.getFormattedTopWords(10, False)
     class Meta:
-        ordering = ('rank',)
+        ordering = ('-score',)
 
     def toJSON(self, nested=False):
         tempD = {'words' : [],'articles' : []}
@@ -66,7 +66,7 @@ class Topic(models.Model):
         print(self.score)
 
     def __str__(self):
-        return "Rank: " + str(self.score) +  self.getFormattedTopWords(10)
+        return "Rank: " + str(self.rank) +  self.getFormattedTopWords(10)
 
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
@@ -123,7 +123,7 @@ class YearTopicRank(models.Model):
     rank = models.IntegerField(default=-1)
 
     class Meta:
-        ordering = ("year","rank")
+        ordering = ('year', '-score')
         unique_together = ('year','topic')
 
     def calculateScore(self):
