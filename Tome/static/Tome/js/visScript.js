@@ -783,7 +783,14 @@ function createTopicOverTimeVis(keys) {
 // RANK CHANGE OVER TIME
 
 function getDeltaRankData(keys) {
-  d = getVisData(keys);
+  
+  // get the ranks of each topic (from keys)
+
+  // get the rank of the topic's previous year
+
+  // put the key and the rank change into an object
+
+
 }
 
 function createDeltaRankChart(keys) {
@@ -825,6 +832,10 @@ function createDeltaRankChart(keys) {
       return style;
     }
   };
+  var offset = {
+    x: sizes.width / 100,
+    y: sizes.height / keys.length
+  }
   var axis = {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
   }
@@ -838,5 +849,7 @@ function createDeltaRankChart(keys) {
     .enter().append('g')
     selectAll('rect').data(function(d) { return d; })
       .enter().append('rect')
-        .()
+        .attr("width", function () {//width - (offset.x * (n - 1))) / n
+          return sizes.width - (offset) /data_n_range;
+        })
 }
