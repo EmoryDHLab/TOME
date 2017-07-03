@@ -714,11 +714,11 @@ function getVisData(keys) {
 
 function createTopicOverTimeVis(keys) {
   if (keys.length == 0){
-    d3.select("#topic-score-chart svg").style("display","none");
+    d3.select("#topic-score-chart-wrapper").style("display","none");
     return;
   }
   d3.select("#topic-score-chart").html("");
-  d3.select("#topic-score-chart svg").style("display","block");
+  d3.select("#topic-score-chart-wrapper").style("display","block");
   var visData = getVisData(keys);
   var margin = {top: 30, right: 30, bottom: 60, left: 80};
 
@@ -829,10 +829,10 @@ function getDeltaRankData(keys) {
 function createDeltaRankChart(keys) {
   console.log(keys);
   if (keys.length == 0){
-    d3.select("#topic-rank-charts").style("display","none");
+    d3.select("#topic-rank-charts-wrapper").style("display","none");
     return;
   } else {
-    d3.select("#topic-rank-charts").style("display","block");
+    d3.select("#topic-rank-charts-wrapper").style("display","block");
 
   }
   d3.select("#topic-rank-charts").html("");
@@ -841,7 +841,7 @@ function createDeltaRankChart(keys) {
 
   var sizes = {
     width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
-    height : (keys.length * 150) - margin.bottom - margin.top
+    height : (Math.sqrt(keys.length) * 175) - margin.bottom - margin.top
   }
 
   var scale = {
@@ -869,7 +869,7 @@ function createDeltaRankChart(keys) {
     }
   };
   var offset = {
-    x: sizes.width / 100,
+    x: sizes.width / 500,
     y: sizes.height / (keys.length * 10)
   }
   var axis = {
