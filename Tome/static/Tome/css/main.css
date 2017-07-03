@@ -523,6 +523,14 @@ input[type='range'].vertical {
     100% {transform: translateY(-50%) rotate(360deg);}
 }
 
+/*------------------------------ TOPIC DETAILS ----------------------------*/
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: slategray;
+  shape-rendering: crispEdges;
+}
 /*------------------------------ MAP STYLES -----------------------------*/
 .leaflet-popup-content-wrapper {
   border-width : 2px;

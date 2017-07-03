@@ -7,6 +7,7 @@ map.doubleClickZoom.disable();
 map.scrollWheelZoom.disable();
 var visLayer;
 
+
 // GeoJSON data: see http://geojson.org/ for the full description of this format.
 //
 // In these lines, we create some random points. This, of course, you can change:
@@ -26,6 +27,13 @@ function updateMapLocations(keys) {
         clearMapData();
       }
       addMapData(data);
+      if (keys.length == 0) {
+        $("#map").css("display","none");
+        map.invalidateSize(); // doesn't seem to do anything
+      } else {
+        $("#map").css("display","block");
+        map.invalidateSize(); // doesn't seem to do anything
+      }
       // endLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -47,19 +55,19 @@ function addMapData(locations) {
     console.log(loc);
     $.each(loc.topics, function(t, score){
       geoJsonData.features.push({
-          type: 'Feature',
-          properties: {
-              name: loc.location.city + ", " + loc.location.state,
-              topic: t,
-              // The important part is here: that each feature has some property
-              // that we refer to later on, in `pointToLayer`, that determines
-              // the size of the scaled circle.
-              count: score
-          },
-          geometry: {
-              type: 'Point',
-              coordinates: [loc.location.lng, loc.location.lat]
-          }
+        type: 'Feature',
+        properties: {
+          name: loc.location.city + ", " + loc.location.state,
+          topic: t,
+          // The important part is here: that each feature has some property
+          // that we refer to later on, in `pointToLayer`, that determines
+          // the size of the scaled circle.
+          count: score
+        },
+        geometry: {
+          type: 'Point',
+          coordinates: [loc.location.lng, loc.location.lat]
+        }
       });
     });
   });

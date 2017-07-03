@@ -21,7 +21,7 @@ function arrToString(arr, ct=-1) {
 }
 
 window.onscroll = function() {
-  if( scrollTop() > hdr ) {
+  if( scrollTop() >= hdr ) {
     mn.className = mns;
   } else {
     mn.className = "";

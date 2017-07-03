@@ -720,10 +720,10 @@ function createTopicOverTimeVis(keys) {
   d3.select("#topic-score-chart").html("");
   d3.select("#topic-score-chart svg").style("display","block");
   var visData = getVisData(keys);
-  var margin = {top: 30, right: 30, bottom: 30, left: 50};
+  var margin = {top: 30, right: 30, bottom: 60, left: 80};
 
   var sizes = {
-    width : 600 - margin.left - margin.right,
+    width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
     height : 500 - margin.bottom - margin.top
   }
 
@@ -753,7 +753,7 @@ function createTopicOverTimeVis(keys) {
   };
   var axis = {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
-    y: d3.svg.axis().scale(scale.yPerc).orient("left").ticks(10)
+    y: d3.svg.axis().scale(scale.yPerc).orient("left").ticks(10),
   }
   var line = d3.svg.line()
   .x(function(d) { return scale.x(d.year); })
@@ -774,10 +774,29 @@ function createTopicOverTimeVis(keys) {
     .attr("stroke-width", 1.5)
     .attr("d", line(value));
   })
-  g.append("g").call(axis.y);
   g.append("g")
+    .classed("y axis", true)
+    .call(axis.y)
+    .append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "end")
+      .attr("dy", "-3.5em")
+      .attr("dx", "-20%")
+      .style("transform", "rotate(-90deg)")
+      .text("Score");
+
+  g.append("g")
+    .classed("x axis", true)
     .attr("transform", "translate( 0,"+ sizes.height +")")
-    .call(axis.x);
+    .call(axis.x)
+    .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "end")
+      .attr("dy", "2.5em")
+      .attr("dx", "45%")
+      .text("Year");
+
+
 }
 
 // RANK CHANGE OVER TIME
@@ -818,11 +837,11 @@ function createDeltaRankChart(keys) {
   }
   d3.select("#topic-rank-charts").html("");
   var visData = getDeltaRankData(keys);
-  var margin = {top: 30, right: 30, bottom: 30, left: 50};
+  var margin = {top: 30, right: 30, bottom: 50, left: 30};
 
   var sizes = {
-    width : 600 - margin.left - margin.right,
-    height : 500 - margin.bottom - margin.top
+    width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
+    height : (keys.length * 150) - margin.bottom - margin.top
   }
 
   var scale = {
@@ -857,6 +876,14 @@ function createDeltaRankChart(keys) {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
   }
 
+  var getRHeight = function() {
+    return (sizes.height - (offset.y * (keys.length)))/ keys.length;
+  }
+
+  var getRWidth = function() {
+    return (sizes.width - (offset.x * (data_n_range - 1))) / data_n_range;
+  }
+
   var graph = d3.select("#topic-rank-charts").append("svg").data(visData)
   .attr("width", sizes.width + margin.left + margin.right)
   .attr("height", sizes.height + margin.top + margin.bottom);
@@ -867,11 +894,10 @@ function createDeltaRankChart(keys) {
     .selectAll('rect').data(function(d) { return d; })
       .enter().append('rect')
         .attr("width", function() {//width - (offset.x * (n - 1))) / n
-          return (sizes.width - (offset.x * (data_n_range - 1))) / data_n_range;
+          return getRWidth()
         })
         .attr("height", function() {
-          return (sizes.height - (offset.y
-            * (keys.length - 1)))/ keys.length;
+          return getRHeight();
         })
         .attr("x", function(d, i) {
           console.log(sizes.width);
@@ -881,9 +907,19 @@ function createDeltaRankChart(keys) {
         .attr("y", function(d, i, j) {
           console.log(j);
           return j * (((sizes.height - (offset.y
-            * (keys.length - 1))) / keys.length) + offset.y);
+            * (keys.length))) / keys.length) + offset.y);
         })
         .attr("fill", function(d) { return scale.color(d.change).fill; })
         .style("opacity", function(d) { return scale.color(d.change).opacity;})
 
+  g.append("g")
+    .classed("x axis", true)
+    .attr("transform", "translate( 0,"+ sizes.height +")")
+    .call(axis.x)
+    .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "end")
+      .attr("dy", "2.5em")
+      .attr("dx", "45%")
+      .text("Year");
 }
