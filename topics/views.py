@@ -3,14 +3,15 @@ from django.http import HttpResponse
 import simplejson as json;
 
 from .models import Topic
+from news.models import Location
 
 # Create your views here.
 def index(request):
-    newspaper_list = Topic.objects.all()
-    topics_len = len(topic_list)
+    topics_list = Topic.objects.all()
+    topics_len = len(topics_list)
     context = {
-        'topics_len': news_len,
-        'topics_list': newspaper_list
+        'topics_len': topics_len,
+        'topics_list': topics_list
     }
     return render(request,'topics/index.html', context)
 
@@ -43,3 +44,18 @@ def allTopicsAsJSON(request):
 
     topics_json = json.dumps(topics_json)
     return HttpResponse(topics_json, content_type='application/json')
+
+def locationMap(request):
+    keys = json.loads(request.GET.get("json_data"))
+    topics = Topic.objects.filter(key__in = keys["topics"])
+    locs_json = {}
+    locs = Location.objects.all();
+    for loc in locs:
+        l = {}
+        l['location'] = loc.toJSON(True)
+        l['topics'] = {}
+        for t in topics:
+            l["topics"][t.key] = t.aggregateScoreByLocation(loc.id)
+        locs_json[loc.id] = l
+    locs_json = json.dumps(locs_json)
+    return HttpResponse(locs_json, content_type='application/json')

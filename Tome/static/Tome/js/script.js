@@ -66,6 +66,7 @@ function updateTopicsSelected(e) {
       }
       createTopicOverTimeVis(topics.getKeys());
       createDeltaRankChart(topics.getKeys());
+      updateMapLocations(topics.getKeys());
       // endLoad();
     },
     error : function(textStatus, errorThrown) {

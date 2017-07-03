@@ -2,6 +2,7 @@ from Tome.helpers.model_helpers import *
 from Tome.helpers.time_helpers import *
 from django.utils.translation import ugettext_lazy as _
 
+import simplejson as json
 # validates a model's date ranges
 def vali_date(m):
     # Don't allow start date to exceed end date
@@ -16,10 +17,20 @@ def vali_date(m):
 class Location(models.Model):
     city = models.CharField(max_length=200, default="New York")
     state = models.CharField(max_length=200, default="New York")
-
+    latitude = models.DecimalField(max_digits=7, decimal_places=4, default=40.7128)
+    longitude = models.DecimalField(max_digits=7, decimal_places=4, default=-74.0059)
     class Meta:
         unique_together = ("city","state")
 
+    def toJSON(self, nested =False):
+        tempD = {}
+        tempD["city"] = self.city
+        tempD["state"] = self.state
+        tempD["lat"] = self.latitude
+        tempD["lng"] = self.longitude
+        if (nested):
+            return tempD
+        return json.dumps(tempD)
     def __str__(self):
         return "{0}, {1}".format(self.city, self.state)
 

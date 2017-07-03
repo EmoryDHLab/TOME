@@ -5,6 +5,8 @@
     <title>TOME</title>
     {% load static %}
     {% load i18n %}
+    <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
     <link
       href="{% static "Tome/font-awesome-4.7.0/css/font-awesome.min.css" %}"
       rel="stylesheet" type="text/css"/>
@@ -139,6 +141,7 @@
       </div>
       <div id="topic-score-chart"></div>
       <div id="topic-rank-charts"></div>
+      <div id='map' style='width: 600px; height: 600px;'></div>
     </div>
 
     <!-- Scripts -->
@@ -146,6 +149,7 @@
     <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
     <script src="{% static "Tome/js/map.js" %}"></script>
     <script src="{% static "Tome/js/topics.js" %}"></script>
+    <script src="{% static "Tome/js/mapVis.js" %}"></script>
     <script>
       allTopicList = [];
       '{% for t in topics %}'
@@ -160,6 +164,7 @@
       topic_data = JSON.parse('{{ topics_js | safe }}');
       topic_data_link = "{% url 'topics:topics_as_json' %}";
       all_topic_list_link = "{% url 'topics:all_topics_as_json' %}";
+      map_data_link = "{% url 'topics:location_mapper' %}";
       data_start_year = parseInt('{{ corpus.date_started.year }}');
       data_end_year = parseInt('{{ corpus.date_ended.year }}');
       data_n_range = data_end_year - data_start_year + 1;

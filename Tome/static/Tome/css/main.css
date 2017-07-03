@@ -522,3 +522,20 @@ input[type='range'].vertical {
     50% {transform: translateY(-50%) rotate(180deg);}
     100% {transform: translateY(-50%) rotate(360deg);}
 }
+
+/*------------------------------ MAP STYLES -----------------------------*/
+.leaflet-popup-content-wrapper {
+  border-width : 2px;
+  border-style : solid;
+}
+
+.leaflet-popup,
+.leaflet-popup-close-button {
+  color : white;
+}
+
+.leaflet-popup h4,
+.leaflet-popup h6 {
+  text-align: center;
+  margin-bottom: 0;
+}

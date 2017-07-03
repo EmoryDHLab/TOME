@@ -30,6 +30,10 @@ class Topic(models.Model):
     class Meta:
         ordering = ('-score',)
 
+    def aggregateScoreByLocation(self, loc_id):
+        atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
+        return median(atrs.values_list('score',flat=True))
+
     def toJSON(self, nested=False):
         tempD = {'words' : [],'articles' : []}
         tempD["key"] = self.key

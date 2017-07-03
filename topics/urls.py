@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^topics_as_json/', views.topicsAsJSON, name='topics_as_json'),
     url(r'^all_topics_as_json/', views.allTopicsAsJSON, name='all_topics_as_json'),
+    url(r'^location_mapper/', views.locationMap, name='location_mapper'),
 ]
