@@ -712,18 +712,21 @@ function getVisData(keys) {
   return dataTMP;
 }
 
-function createTopicOverTimeVis(keys) {
+function createTopicOverTimeVis(keys, data) {
   if (keys.length == 0){
     d3.select("#topic-score-chart-wrapper").style("display","none");
     return;
   }
   d3.select("#topic-score-chart").html("");
   d3.select("#topic-score-chart-wrapper").style("display","block");
+  $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
+    - $("#selected-topics").outerWidth(true));
   var visData = getVisData(keys);
-  var margin = {top: 30, right: 30, bottom: 60, left: 80};
+  var margin = {top: 30, right: 30, bottom: 50, left: 80};
 
   var sizes = {
-    width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
+    width : $(".wrapper").innerWidth()-$("#selected-topics").outerWidth(true)
+      - margin.left - margin.right,
     height : 500 - margin.bottom - margin.top
   }
 
@@ -795,7 +798,23 @@ function createTopicOverTimeVis(keys) {
       .attr("dy", "2.5em")
       .attr("dx", "45%")
       .text("Year");
-
+  // add to the selected list
+  $("#selected-topics-list").html("");
+  $("#selected-topics").css("height", $("#topic-score-chart-inner-wrapper").height());
+  $.each(data, function(key, tData) {
+    var words = arrToString(tData.words, 10)
+    spaces = ""
+    for(var i = 2 - key.toString().length; i > 0; i--) {
+      spaces += "&nbsp;&nbsp;";
+    }
+    var el = "<li data-topic='" + key + "'>"
+              + "<div class='color-box key' style='background-color:"
+                + topics.getColor(key) + "'>"
+                + spaces + key + ".</div>"
+              + "<span class='topic-words'>&nbsp;" + words + "</span>"
+           + "</li>";
+    $("#selected-topics-list").append(el);
+  })
 
 }
 
@@ -837,7 +856,7 @@ function createDeltaRankChart(keys) {
   }
   d3.select("#topic-rank-charts").html("");
   var visData = getDeltaRankData(keys);
-  var margin = {top: 30, right: 30, bottom: 50, left: 30};
+  var margin = {top: 0, right: 30, bottom: 50, left: 50};
 
   var sizes = {
     width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
@@ -873,7 +892,8 @@ function createDeltaRankChart(keys) {
     y: sizes.height / (keys.length * 10)
   }
   var axis = {
-    x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d")),
+    x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d"))
+         .tickValues(scale.x.domain()),
   }
 
   var getRHeight = function() {
@@ -889,9 +909,21 @@ function createDeltaRankChart(keys) {
   .attr("height", sizes.height + margin.top + margin.bottom);
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  g.selectAll('g').data(visData)
+  var rows = g.selectAll('g').data(visData)
     .enter().append('g')
-    .selectAll('rect').data(function(d) { return d; })
+      .style("transform", function(d, i){
+        var dy = i * (((sizes.height - (offset.y
+          * (keys.length))) / keys.length) + offset.y);
+        console.log(i, dy);
+        return "translate(0px, " + dy + "px)";
+      })
+      var boxG =rows.append("g")
+      boxG.append("rect")
+        .attr("width", 20)
+        .attr("height", 20)
+      boxG.append("text")
+        .text("Hey")
+    rows.selectAll('rect').data(function(d) { return d; })
       .enter().append('rect')
         .attr("width", function() {//width - (offset.x * (n - 1))) / n
           return getRWidth()
@@ -903,11 +935,6 @@ function createDeltaRankChart(keys) {
           console.log(sizes.width);
           return i * (((sizes.width - (offset.x
             * (data_n_range - 1))) / data_n_range) + offset.x);
-        })
-        .attr("y", function(d, i, j) {
-          console.log(j);
-          return j * (((sizes.height - (offset.y
-            * (keys.length))) / keys.length) + offset.y);
         })
         .attr("fill", function(d) { return scale.color(d.change).fill; })
         .style("opacity", function(d) { return scale.color(d.change).opacity;})

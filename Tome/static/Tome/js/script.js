@@ -64,7 +64,7 @@ function updateTopicsSelected(e) {
       } else {
         $("#topic-link").removeClass("available").removeClass("active");
       }
-      createTopicOverTimeVis(topics.getKeys());
+      createTopicOverTimeVis(topics.getKeys(), data);
       createDeltaRankChart(topics.getKeys());
       updateMapLocations(topics.getKeys());
       // endLoad();

@@ -139,14 +139,49 @@
       <div id="topic-details">
         <h2 id="topic-titles"></h2>
         <div id="topic-score-chart-wrapper" style='display: none;'>
-          <h2>Change in score of topics</h2>
-          <div id="topic-score-chart"></div>
+          <div id="selected-topics">
+            <h2>Selected topics</h2>
+            <ol id="selected-topics-list" class="no-dec scroll-y"></ol>
+          </div>
+          <div id="topic-score-chart-inner-wrapper" class="c-wrap">
+            <h2>Change in score of topics</h2>
+            <div id="topic-score-chart"></div>
+          </div>
         </div>
         <div id="topic-rank-charts-wrapper" style='display: none;'>
           <h2>Change in rank over time</h2>
           <div id="topic-rank-charts"></div>
+          <div id="topic-rank-key">
+            <h3>Increase/decrease in rank</h3>
+            <table>
+              <tr>
+                <td><div class="square increase op-0"></div></td>
+                <td><div class="square decrease op-0"></div></td>
+                <td>1-25 places</td>
+              </tr>
+              <tr>
+                <td><div class="square increase op-1"></div></td>
+                <td><div class="square decrease op-1"></div></td>
+                <td>26-50 places</td>
+              </tr>
+              <tr>
+                <td><div class="square increase op-2"></div></td>
+                <td><div class="square decrease op-2"></div></td>
+                <td>51-75 places</td>
+              </tr>
+              <tr>
+                <td><div class="square increase"></div></td>
+                <td><div class="square decrease"></div></td>
+                <td>76-100 places</td>
+              </tr>
+            </table>
+
+          </div>
         </div>
-        <div id='map' style='width: 600px; height: 600px; display: none;'></div>
+        <div id='map-wrapper' style="display: none;">
+          <h2>Topic scores by geographic location</h2>
+          <div id='map' style='width: 600px; height: 600px;'></div>
+        </div>
       </div>
     </div>
 

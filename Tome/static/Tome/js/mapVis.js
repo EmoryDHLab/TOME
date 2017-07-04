@@ -28,10 +28,10 @@ function updateMapLocations(keys) {
       }
       addMapData(data);
       if (keys.length == 0) {
-        $("#map").css("display","none");
+        $("#map-wrapper").css("display","none");
         map.invalidateSize(); // doesn't seem to do anything
       } else {
-        $("#map").css("display","block");
+        $("#map-wrapper").css("display","block");
         map.invalidateSize(); // doesn't seem to do anything
       }
       // endLoad();

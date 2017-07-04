@@ -122,6 +122,19 @@ input[type='button']:hover{
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.scroll-y {
+  overflow-y: auto;
+}
+
+.no-dec {
+  list-style: none;
+}
+
+ol.no-dec {
+  padding-left: 0;
+}
+
 /* ---------------------- End Overall Page Styles ---------------------- */
 
 /* ---------------------- Header Styles ---------------------- */
@@ -239,11 +252,6 @@ ul.topic-list {
   padding-left: 0;
   overflow-y: hidden;
   list-style: none;
-}
-
-
-ul.topic-list li {
-
 }
 
 ul.topic-list .topic-words {
@@ -491,14 +499,14 @@ input[type='range'].vertical {
 }
 
 .topic-title:not(:last-child)::after {
-  content : ", ";
+  content: ", ";
 }
 
 /*----------------------- Loading Screen ------------------------------*/
 #loader {
   position: fixed;
   top: 50%;
-  left:50%;
+  left: 50%;
   transform: translate(-50%,-50%);
   width: 100%;
   height: 100vh;
@@ -531,15 +539,75 @@ input[type='range'].vertical {
   stroke: slategray;
   shape-rendering: crispEdges;
 }
+
+.key.color-box {
+  width: auto;
+  height: auto;
+  color: white;
+  padding: 5px 5px;
+  border-radius: 3px;
+}
+
+#selected-topics {
+  float:left;
+  margin-right:20px;
+  height: 500px;
+  width: 300px;
+  border-right: 2px solid #d8d8d8;
+  box-sizing: border-box;
+  padding: 0px 10px;
+}
+
+#selected-topics-list {
+  height:calc(100% - 70px);
+}
+
+#selected-topics li {
+  margin-bottom: 5px;
+}
+
+.c-wrap {
+  box-sizing: border-box;
+  min-height: 250px;
+  overflow:hidden;
+}
+
+/*------------------------------ RANK OVER TIME ------------------------------*/
+
+.square {
+  width: 40px;
+  height: 40px;
+}
+
+.increase {
+  background-color: #417505;
+}
+
+.decrease {
+  background-color: #d0011b;
+}
+
+.op-0 {
+  opacity: .25;
+}
+
+.op-1 {
+  opacity: .50;
+}
+
+.op-2 {
+  opacity: .75;
+}
+
 /*------------------------------ MAP STYLES -----------------------------*/
 .leaflet-popup-content-wrapper {
-  border-width : 2px;
-  border-style : solid;
+  border-width: 2px;
+  border-style: solid;
 }
 
 .leaflet-popup,
 .leaflet-popup-close-button {
-  color : white;
+  color: white;
 }
 
 .leaflet-popup h4,
