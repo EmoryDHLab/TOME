@@ -835,7 +835,8 @@ function getDeltaRankData(keys) {
       var t = {
         key: key,
         year: yr,
-        change: prevTRank - currentTop.rank,
+        rank: currentTop.rank,
+        change: currentTop.rank - prevTRank,
       }
       prevTRank = currentTop.rank;
       tData.push(t);
@@ -856,7 +857,7 @@ function createDeltaRankChart(keys) {
   }
   d3.select("#topic-rank-charts").html("");
   var visData = getDeltaRankData(keys);
-  var margin = {top: 0, right: 30, bottom: 50, left: 50};
+  var margin = {top: 10, right: 30, bottom: 50, left: 50};
 
   var sizes = {
     width : $(".wrapper").innerWidth()/1.5 - margin.left - margin.right,
@@ -865,7 +866,7 @@ function createDeltaRankChart(keys) {
 
   var scale = {
     x: d3.scale.linear()
-    .domain([data_start_year, data_end_year])
+    .domain([data_start_year, data_end_year+1])
     .range([0, sizes.width])
     .clamp(true),
 
@@ -956,8 +957,17 @@ function createDeltaRankChart(keys) {
         })
         .attr("data-topic", function(d) { return d.key })
         .attr("fill", function(d) { return scale.color(d.change).fill; })
-        .style("opacity", function(d) { return scale.color(d.change).opacity;})
-
+        .style("fill-opacity", function(d) { return scale.color(d.change).opacity;})
+        .on("mouseover", function(d) {
+          d3.select(this).style("stroke-width", 3)
+          d3.select(this).style("stroke", "black")
+        })
+        .on("mouseout", function(d) {
+          d3.select(this).style("stroke-width", 0)
+          d3.select(this).style("stroke", "black")
+        })
+        .append("title")
+          .text(function(d) {return "Year: " + d.year + " Rank: " + d.rank;})
   g.append("g")
     .classed("x axis", true)
     .attr("transform", "translate( 0,"+ sizes.height +")")
