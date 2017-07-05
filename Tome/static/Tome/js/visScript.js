@@ -895,7 +895,7 @@ function createDeltaRankChart(keys) {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d"))
          .tickValues(scale.x.domain()),
   }
-
+  console.log(scale.x.range())
   var getRHeight = function() {
     return (sizes.height - (offset.y * (keys.length)))/ keys.length;
   }
@@ -907,6 +907,30 @@ function createDeltaRankChart(keys) {
   var graph = d3.select("#topic-rank-charts").append("svg").data(visData)
   .attr("width", sizes.width + margin.left + margin.right)
   .attr("height", sizes.height + margin.top + margin.bottom);
+  var sideBar =graph.selectAll("g").data(visData)
+    .enter().append("g")
+  var boxG = sideBar.selectAll("g").data(function(d) {return d;})
+    .enter().append("g")
+      .classed("label key",true)
+      .style("transform", function(d, i, j) {
+        var dy = j * (((sizes.height - (offset.y
+          * (keys.length))) / keys.length) + offset.y);
+          dy += getRHeight()/2;
+          dy -= 15;
+        return "translate(" + 0 + "px, " + dy + "px)"
+      })
+    boxG.append("rect")
+      .attr("width", 40)
+      .attr("height", 30)
+      .attr("rx", 5)
+      .attr("ry", 5)
+      .attr("fill", function(d) {return topics.getColor(d.key)})
+    boxG.append("text")
+      .attr("alignment-baseline","middle")
+      .attr("text-anchor","middle")
+      .attr("fill","#fff")
+      .style("transform", "translate(" + 18 + "px, " + 16 + "px)")
+      .text(function(d){ console.log(d.key); return d.key; });
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   var rows = g.selectAll('g').data(visData)
@@ -915,18 +939,12 @@ function createDeltaRankChart(keys) {
         var dy = i * (((sizes.height - (offset.y
           * (keys.length))) / keys.length) + offset.y);
         console.log(i, dy);
-        return "translate(0px, " + dy + "px)";
+        return "translate(-" + 0 + "px, " + dy + "px)";
       })
-      var boxG =rows.append("g")
-      boxG.append("rect")
-        .attr("width", 20)
-        .attr("height", 20)
-      boxG.append("text")
-        .text("Hey")
     rows.selectAll('rect').data(function(d) { return d; })
       .enter().append('rect')
         .attr("width", function() {//width - (offset.x * (n - 1))) / n
-          return getRWidth()
+          return getRWidth();
         })
         .attr("height", function() {
           return getRHeight();
@@ -936,6 +954,7 @@ function createDeltaRankChart(keys) {
           return i * (((sizes.width - (offset.x
             * (data_n_range - 1))) / data_n_range) + offset.x);
         })
+        .attr("data-topic", function(d) { return d.key })
         .attr("fill", function(d) { return scale.color(d.change).fill; })
         .style("opacity", function(d) { return scale.color(d.change).opacity;})
 
@@ -949,4 +968,6 @@ function createDeltaRankChart(keys) {
       .attr("dy", "2.5em")
       .attr("dx", "45%")
       .text("Year");
+
+  $("#topic-rank-key").css("min-height",$("topic-rank-charts").outerHeight())
 }

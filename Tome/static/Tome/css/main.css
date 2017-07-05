@@ -45,6 +45,12 @@ h2 {
   font-family: 'Cabin', sans-serif;
 }
 
+h3 {
+  font-family: 'Cabin', sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+}
+
 h4 {
   font-size: 14px;
   font-weight: bold;
@@ -532,6 +538,9 @@ input[type='range'].vertical {
 }
 
 /*------------------------------ TOPIC DETAILS ----------------------------*/
+#topic-details > div{
+  clear: both;
+}
 
 .axis path,
 .axis line {
@@ -573,6 +582,18 @@ input[type='range'].vertical {
 }
 
 /*------------------------------ RANK OVER TIME ------------------------------*/
+.key {
+  font-family: 'Cabin', sans-serif;
+}
+
+#topic-rank-charts {
+  float: left;
+}
+
+g.label.key text {
+  font-weight: bold;
+  font-style: italic;
+}
 
 .square {
   width: 40px;
