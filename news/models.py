@@ -189,8 +189,41 @@ class Article(models.Model):
         ordering = ('issue__date_published',)
 
     @property
+    def day(self):
+        return self.issue.date_published.day
+
+    @property
+    def month(self):
+        return self.issue.date_published.month
+
+    @property
     def year(self):
         return self.issue.date_published.year
+
+    @property
+    def newspaper(self):
+        return self.issue.newspaper
+
+    def toJSON(self, nested=False):
+        tempD = {}
+        tempD["date"] = "{0}/{1}/{2}".format(self.month,
+            self.day, self.year)
+        tempD["editor"] = self.issue.editor if (self.issue.editor != None) else "[Unavailable]"
+        tempD["title"] = self.title if (self.title != "") else "[Untitled]"
+        tempD["newspaper"] = self.newspaper.title
+        tempD["location"] = str(self.newspaper.location)
+        tempD["link"] = self.link
+        if (not nested):
+            return json.dumps(tempD)
+        else:
+            return tempD
+
+    def getTopTopics(self, count, asJSON=False, nested=False):
+        tempD = {}
+        atrs = self.articletopicrank_set.all()[0:count]
+        for atr in atrs:
+            tempD[atr.score] = (atr.topic.toJSON(nested, False) if asJSON else atr.topic)
+        return tempD
 
     def __str__(self):
         return "Article: {0} \nTitle: {1}".format(self.pk, self.title)
@@ -215,4 +248,4 @@ class Author(models.Model):
         return s
 
     def __str__(self):
-        return "Author: " + self.name + " Articles: " +self.getArticleTitles(3)
+        return self.name;

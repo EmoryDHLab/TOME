@@ -34,19 +34,21 @@ class Topic(models.Model):
         atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
         return median(atrs.values_list('score',flat=True))
 
-    def toJSON(self, nested=False):
-        tempD = {'words' : [],'articles' : []}
+    def toJSON(self, nested=False, includeArticles=True):
+        tempD = {'words' : []}
         tempD["key"] = self.key
         tempD["score"] = self.score
         tempD["rank"] = self.rank
         words = self.wordtopicrank_set.all()
-        articles = self.articletopicrank_set.all()[:10]
-
         for word in words:
             tempD["words"].append(word.toJSON(nested))
 
-        for article in articles:
-            tempD["articles"].append(article.toJSON(nested))
+        if (includeArticles):
+            tempD['articles'] = []
+            articles = self.articletopicrank_set.all()[:10]
+            for article in articles:
+                tempD["articles"].append(article.toJSON(nested))
+
         if (not nested):
             return json.dumps(tempD)
         else:

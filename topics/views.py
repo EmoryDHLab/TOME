@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 import simplejson as json;
 
-from .models import Topic
+from .models import Topic,ArticleTopicRank
 from news.models import Location
 
 # Create your views here.
@@ -59,3 +59,19 @@ def locationMap(request):
         locs_json[loc.id] = l
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')
+
+def getArticles(request):
+    print(request)
+    keys = json.loads(request.GET.get("json_data"))
+    atrs = ArticleTopicRank.objects.filter(topic__key__in = keys['topics'])
+    start = keys["start_at"]
+    count = keys["count"]
+    atrs = atrs[start:start+count]
+    i = 0
+    tempD = {}
+    for atr in atrs:
+        tOb = atr.article.toJSON(True)
+        tOb["topics"] = atr.article.getTopTopics(3,True, True)
+        tempD[i] = tOb
+        i+=1
+    return HttpResponse(json.dumps(tempD), content_type='application/json')

@@ -183,6 +183,18 @@
           <div id='map' style='width: 600px; height: 600px;'></div>
         </div>
       </div>
+      <hr class="section-separator"/>
+      <div id="document-details">
+        <h2>Document Details</h2>
+        <div class="column-wrap">
+          <div class="left column"></div>
+          <div class="middle column"></div>
+          <div class="right column"></div>
+        </div>
+        <div class="miniload" style="display:none;">
+          <img src="{% static "Tome/img/miniloader.svg" %}" alt="loading"/>
+        </div>
+      </div>
     </div>
 
     <!-- Scripts -->
@@ -205,6 +217,7 @@
       topic_data = JSON.parse('{{ topics_js | safe }}');
       topic_data_link = "{% url 'topics:topics_as_json' %}";
       all_topic_list_link = "{% url 'topics:all_topics_as_json' %}";
+      articles_link = "{% url 'topics:articles_by_topics' %}";
       map_data_link = "{% url 'topics:location_mapper' %}";
       data_start_year = parseInt('{{ corpus.date_started.year }}');
       data_end_year = parseInt('{{ corpus.date_ended.year }}');

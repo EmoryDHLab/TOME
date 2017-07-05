@@ -2,6 +2,10 @@
 
 /* ---------------------- Overall Page Styles ---------------------- */
 
+.indent {
+  padding-left: 1em !important;
+}
+
 .wrapper {
   width: 75%;
   margin-left: auto;
@@ -635,4 +639,73 @@ g.label.key text {
 .leaflet-popup h6 {
   text-align: center;
   margin-bottom: 0;
+}
+
+/*-----------------------------DOCUMENT DETAILS ------------------------------*/
+
+.column-wrap{
+  position: relative;
+}
+.column-wrap:after {
+	clear: both;
+	content: " ";
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+
+.column-wrap .column:not(:first-child):after, .column-wrap .columns:not(:first-child):after {
+	background: #D8D8D8;
+	bottom: 0;
+	content: " ";
+	margin-left: -16.5px;
+	position: absolute;
+	top: 0;
+	width: 3px;
+}
+
+.column {
+  float: left;
+  padding: 5px 15px;
+  box-sizing: border-box;
+  margin-bottom: 5px;
+}
+
+.column.left {
+  width: 25%;
+}
+
+.column.middle {
+  width: 50%;
+}
+
+.column.right {
+  width: 25%;
+}
+
+.article-info {
+  width:100%;
+  border-bottom: 3px solid #d8d8d8;
+  min-height: 400px;
+}
+
+.article-info ol {
+  margin-top: 0;
+}
+
+.article-info h4 {
+  margin-bottom: 0;
+}
+
+.article-info p {
+  margin: 0;
+  margin-bottom: .5em;
+}
+
+.miniload img {
+  height:100px;
+  width:100px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

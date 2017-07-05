@@ -1,3 +1,5 @@
+var nextArticle = 0;
+var LOADING = false;
 var  mn = document.getElementById("head-nav");
     mns = "head-nav-scrolled";
     hdr = document.getElementsByTagName('header')[0].offsetHeight;
@@ -26,6 +28,12 @@ window.onscroll = function() {
   } else {
     mn.className = "";
   }
+  if($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
+    if(!topics.empty() && (nextArticle != 0) && !LOADING) {
+      startMiniLoad();
+      loadAdditionalArticles();
+    }
+  }
 };
 
 appendSlider("#vertical-slide", true);
@@ -41,6 +49,18 @@ function startLoad() {
 function endLoad() {
   $("#loader").css("display","none");
 }
+
+function startMiniLoad() {
+  LOADING = true;
+  console.log("startMiniLoad");
+  $(".miniload").css("display","block");
+}
+function endMiniLoad() {
+  LOADING = false;
+  console.log("stopMiniLoad");
+  $(".miniload").css("display","none");
+}
+
 function updateTopicsSelected(e) {
   // startLoad();
   $.ajax({
@@ -67,6 +87,7 @@ function updateTopicsSelected(e) {
       createTopicOverTimeVis(topics.getKeys(), data);
       createDeltaRankChart(topics.getKeys());
       updateMapLocations(topics.getKeys());
+      loadArticles(topics.getKeys())
       // endLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -119,6 +140,82 @@ function updateTopicsList(search) {
     }
   });
 }
+
+function addArticleToDocumentDetails(rank, data) {
+  var r = rank % 3
+  if (r < 1) {
+    column = $(".middle.column")
+  } else if (r < 2) {
+    column = $(".left.column")
+  } else {
+    column = $(".right.column")
+  }
+  articleInfo = '<div class="article-info">'
+    + '<h3>' + (rank + 1) + '. ' + data.title + '</h3>'
+    + '<div class="indent">'
+      + '<ol class="general-info no-dec">'
+        + '<li>EDITOR: ' + data.editor + '</li>'
+        + '<li>DATE: ' + data.date + '</li>'
+        + '<li>NEWSPAPER: ' + data.newspaper + '</li>'
+        + '<li>LOCATION: ' + data.location + '</li>'
+      + '</ol>'
+      + '<h4>Top topics for this article:</h4>'
+      + '<ol class="topic-info no-dec indent">'
+        + (function(tops) {
+            var out = "";
+            $.each(tops, function(scr, t){
+              out += '<li>'
+                + 'Topic <span class="key">' + t.key + '</span> &mdash; '
+                + 'Scored <span class="score">' + scr + '</span>'
+                + '<p class="topic-words indent">'
+                    + arrToString(t.words)
+                + '</p>'
+              + '</li>';
+            });
+            return out;
+          })(data.topics)
+        + '</ol>'
+      + '</div>'
+    + '</div>'
+  + '</div>'
+
+  column.append(articleInfo)
+}
+
+function loadAdditionalArticles(count=6) {
+    loadArticles(topics.getKeys(), nextArticle, count);
+}
+
+function loadArticles(keys, start=0, count=6) {
+  startMiniLoad();
+  $.ajax({
+    type : "GET",
+    url : articles_link,
+    data : {
+      json_data : JSON.stringify({
+        'topics' : keys,
+        'start_at': start,
+        'count': count
+      })
+    },
+    success : function(data) {
+      if (start != nextArticle) {
+        nextArticle = 0;
+        $(".column").html("");
+      }
+      console.log(data);
+      $.each(data,function(rank, d) {
+        addArticleToDocumentDetails(parseInt(start) + parseInt(rank), d);
+      })
+      nextArticle += count;
+      endMiniLoad();
+    },
+    error : function(textStatus, errorThrown) {
+      console.log(textStatus);
+    }
+  });
+}
+
 
 $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
 $("nav").on("click", "li.available:not(.active) a", function(e){

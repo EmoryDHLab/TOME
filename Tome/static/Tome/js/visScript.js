@@ -866,7 +866,7 @@ function createDeltaRankChart(keys) {
 
   var scale = {
     x: d3.scale.linear()
-    .domain([data_start_year, data_end_year+1])
+    .domain([data_start_year, data_end_year + 1])
     .range([0, sizes.width])
     .clamp(true),
 
