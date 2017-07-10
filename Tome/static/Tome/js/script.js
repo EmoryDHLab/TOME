@@ -77,11 +77,24 @@ function updateTopicsSelected(e) {
       console.log("UPDATE");
       console.log(data);
       $("#topic-titles").html("");
-      var output = "";
+      var output = "",
+          words = "";
+      window.TEST=data;
+
       $.each(data, function(key, val) {
-        output = "<span class='topic-title' data-topic='"
-          + val.key + "'>TOPIC " + val.key +"</span>";
+        output += "<span class='topic-title' data-topic='"
+          + val.key + "'>"
+        if (topics.count == 1) {
+          output += "<div class='color-box' style='background-color:"
+            + topics.getColor(val.key) + "'>&nbsp;&nbsp;&nbsp;</div>";
+          words = arrToString(val.words.slice(0,10));
+        }
+        output += "<span>TOPIC " + val.key + "</span>";
+        output += (words != "") ? "<span class='topic-words'>&ndash;&nbsp;"
+          + words + "</span>" : "";
+        output += "</span>";
         $("#topic-titles").append(output);
+        output = "";
       });
       if (topics.count > 0) {
         d3.select("#topic-details").style("display","block");

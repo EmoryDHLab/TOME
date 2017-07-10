@@ -574,6 +574,19 @@ input[type='range'].vertical {
     text-align: center;
 }
 
+#topic-titles .topic-words {
+  font-size: .7em;
+}
+
+#topic-titles .color-box {
+  width: auto;
+  height: auto;
+  padding: 0px 7px;
+  border-radius: 3px;
+}
+#topic-titles .color-box {
+  margin-right: .5em;
+}
 .axis path,
 .axis line {
   fill: none;
