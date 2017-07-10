@@ -69,6 +69,15 @@ label {
   font-style: italic;
 }
 
+hr.dark {
+  border-color: black;
+}
+
+hr.thick {
+  border-width: 2px;
+}
+
+
 button,
 input[role='button']:hover,
 input[type='submit']:hover,
@@ -93,7 +102,9 @@ input[type='button']:hover{
   border:none;
   padding: 2px 5px;
 }
-
+.section {
+  margin-top: 2em;
+}
 .pop-up-wrap {
   display: inline;
   position: relative;
@@ -121,6 +132,11 @@ input[type='button']:hover{
   font-size: 14px;
 }
 
+.sort-menu li:not(.heading):hover {
+  cursor: pointer;
+  background-color: #d8d8d8;
+}
+
 .sort-menu li * {
   padding: 2px 10px;
 }
@@ -132,6 +148,11 @@ input[type='button']:hover{
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.sort-menu li.selected {
+  font-weight: 600;
+}
+
 
 .scroll-y {
   overflow-y: auto;
@@ -250,6 +271,7 @@ ol.no-dec {
 
 .topic-list {
   overflow-y: auto;
+  padding-right: 10px;
 }
 .topic-list li {
   position: relative;
@@ -344,6 +366,7 @@ ul .color-box i{
   text-align: right;
 
 }
+
 
 /* ---------------------- End Topic Styles ----------------------- */
 
@@ -546,6 +569,11 @@ input[type='range'].vertical {
   clear: both;
 }
 
+#topic-titles {
+    margin-bottom: 0;
+    text-align: center;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -568,7 +596,8 @@ input[type='range'].vertical {
   width: 300px;
   border-right: 2px solid #d8d8d8;
   box-sizing: border-box;
-  padding: 0px 10px;
+  padding: 0;
+  padding-right: 10px;
 }
 
 #selected-topics-list {
@@ -577,6 +606,10 @@ input[type='range'].vertical {
 
 #selected-topics li {
   margin-bottom: 5px;
+}
+
+#topic-score-chart-wrapper {
+  margin-top: 2em;
 }
 
 .c-wrap {

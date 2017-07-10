@@ -807,7 +807,7 @@ function createTopicOverTimeVis(keys, data) {
     for(var i = 2 - key.toString().length; i > 0; i--) {
       spaces += "&nbsp;&nbsp;";
     }
-    var el = "<li data-topic='" + key + "'>"
+    var el = "<li data-topic=" + key + " data-rank=" + tData.rank + ">"
               + "<div class='color-box key' style='background-color:"
                 + topics.getColor(key) + "'>"
                 + spaces + key + ".</div>"

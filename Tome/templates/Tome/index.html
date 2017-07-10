@@ -74,10 +74,10 @@
                   <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
                 </button>
                 <ul class="pop-up sort-menu">
-                  <li><h5>SORT BY</h5></li>
-                  <li><span>Most Prevalent in Corpus</span></li>
-                  <li><span>Most Similar to Selected</span></li>
-                  <li><span>Selected at Top</span></li>
+                  <li class="heading"><h5>SORT BY</h5></li>
+                  <li class="selected" data-sort="0"><span>Most Prevalent in Corpus</span></li>
+                  <li data-sort="1"><span>Most Similar to Selected</span></li>
+                  <li data-sort="2"><span>Selected at Top</span></li>
                 </ul>
               </div>
               <div class="view-ten-wrap">
@@ -88,7 +88,7 @@
           </h2>
           <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
-            <li data-topic="{{t.key}}">
+            <li data-topic="{{ t.key }}" data-rank="{{ t.rank }}">
               <span class="topic-words">{{t.topFive}}</span>
               <span class="color-box"></span>
             </li>
@@ -134,10 +134,11 @@
         </div>
       </div>
       <!-- END OF OVERVIEW -->
-      <hr class="section-separator"/>
 
-      <div id="topic-details">
+      <!-- <hr class="section-separator"/> -->
+      <div id="topic-details" class="section" style='display: none;'>
         <h2 id="topic-titles"></h2>
+        <hr class="dark thick"/>
         <div id="topic-score-chart-wrapper" style='display: none;'>
           <div id="selected-topics">
             <h2>Selected topics</h2>
@@ -183,8 +184,8 @@
           <div id='map' style='width: 600px; height: 600px;'></div>
         </div>
       </div>
-      <hr class="section-separator"/>
-      <div id="document-details">
+      <!-- <hr class="section-separator"/> -->
+      <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
         <div class="column-wrap">
           <div class="left column"></div>
@@ -208,7 +209,8 @@
       '{% for t in topics %}'
         allTopicList.push({
           key : parseInt('{{ t.key }}'),
-          desc : '{{ t.topTen }}'
+          desc : '{{ t.topTen }}',
+          rank : parseInt('{{ t.rank }}'),
         });
       '{% endfor %}'
       allKeys = allTopicList.map(function(t) {

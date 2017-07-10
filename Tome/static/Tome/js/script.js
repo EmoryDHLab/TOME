@@ -1,5 +1,9 @@
 var nextArticle = 0;
 var LOADING = false;
+
+var sortOpen = false;
+var sortMode = 0;
+
 var  mn = document.getElementById("head-nav");
     mns = "head-nav-scrolled";
     hdr = document.getElementsByTagName('header')[0].offsetHeight;
@@ -80,10 +84,17 @@ function updateTopicsSelected(e) {
         $("#topic-titles").append(output);
       });
       if (topics.count > 0) {
+        d3.select("#topic-details").style("display","block");
+        d3.select("#document-details").style("display","block");
         $("#topic-link").addClass("available");
+        $("#document-link").addClass("available");
       } else {
+        d3.select("#topic-details").style("display","none");
+        d3.select("#document-details").style("display","none");
         $("#topic-link").removeClass("available").removeClass("active");
+        $("#document-link").removeClass("available").removeClass("active");
       }
+      console.log(data);
       createTopicOverTimeVis(topics.getKeys(), data);
       createDeltaRankChart(topics.getKeys());
       updateMapLocations(topics.getKeys());
@@ -123,7 +134,8 @@ function updateTopicsList(search) {
           cls = "selected";
           clr = topics.getColor(t.key);
         }
-        output = "<li data-topic=" + t.key + " class='" + cls + "''>"
+        output = "<li data-topic=" + t.key + "data-rank="
+          + t.rank + " class='" + cls + "''>"
             + "<span class='topic-words'>"
               + arrToString(t.words, 5)
             + "</span>" + "&nbsp;"
@@ -250,6 +262,7 @@ $(".topic-list").on("click", "li", function(e) {
     removeTopicFromSelected(this,t);
     updateTopicsSelected(e);
   }
+  sortTopicList();
 });
 
 $("#clear-selected").on("click", function(e) {
@@ -279,9 +292,61 @@ d3.selectAll(".topic-list")
   })
 
 
-d3.selectAll(".topic-sort").on('click', function(){
+$(".topic-sort").on('click', function(e){
+  e.stopPropagation();
+  sortOpen = true;
   d3.select(this.parentNode).select('.sort-menu')
-    .style("display", function(){
-      return (d3.select(this).style("display") == "none") ? "block" : "none";
-    });
+    .style("display", 'block');
 })
+
+$(window).on('click', function() {
+  console.log("NOT POP");
+  if (sortOpen) {
+    $('.sort-menu').css('display', 'none')
+    sortOpen = false;
+  }
+});
+
+$('.sort-menu').on('click', 'li:not(.heading)', function(e) {
+  var sType = parseInt(this.dataset.sort);
+  sortMode = sType;
+  $('.sort-menu li[data-sort=' + sType + ']').addClass('selected');
+  $('.sort-menu li:not([data-sort=' + sType + '])').removeClass('selected');
+  sortTopicList();
+});
+
+function sortTopicList() {
+  switch (sortMode) {
+    case 0:
+      sortByPrevalence();
+      break;
+    case 1:
+      sortBySimilar();
+      break;
+    case 2:
+      sortSelectedToTop();
+      break;
+    default:
+      return;
+  }
+}
+
+function sortByPrevalence(){
+  var ul = $("#corpus-topics");
+  var li = ul.children("li");
+  li.detach().sort(function(a, b) {
+    return a.dataset.rank - b.dataset.rank;
+  });
+  ul.append(li);
+}
+function sortBySimilarity(){
+
+}
+function sortSelectedToTop(){
+  var ul = $("#corpus-topics");
+  var li = ul.children("li.selected");
+  li.detach().sort(function(a, b) {
+    return a.dataset.rank - b.dataset.rank;
+  });
+  ul.prepend(li);
+}
