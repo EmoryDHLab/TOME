@@ -269,7 +269,7 @@ $(".topic-list").on("click", "li", function(e) {
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {
-    addTopicToSelected(this, t);
+    addTopicToSelected(t);
     updateTopicsSelected(e);
   } else {
     removeTopicFromSelected(this,t);
@@ -283,10 +283,12 @@ $("#clear-selected").on("click", function(e) {
   updateTopicsSelected(e);
 });
 $(".view-ten").click(function(e) {
+  console.log("view ten");
   switchMode();
 });
 
 $(".view-all").click(function(e) {
+  console.log("view all");
   switchMode();
 });
 

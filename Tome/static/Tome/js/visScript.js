@@ -22,28 +22,25 @@ function unhighlightRects(t) {
 }
 
 function fadeOutRects(t) {
-  console.log("FADE");
   d3.selectAll("#corpus-chart rect:not([data-ten-topic='" + t + "']):not(.selected)")
     .style("opacity",".2");
   d3.selectAll("#corpus-chart rect[data-ten-topic='" + t + "']")
     .style("opacity","1");
 }
 function unfadeOutRects(t) {
-  console.log(d3.selectAll("#corpus-chart rect.top-ten:not(.selected)"));
   d3.selectAll("#corpus-chart rect.top-ten:not(.selected)")
     .style("opacity", function() { return (topics.empty()) ? "1" : ".2"; });
 }
 
 function updateAllSelected(toTen = true) {
-  var selectedInList = d3.selectAll("#corpus-topics li.selected")[0];
+  var selectedInList = d3.selectAll("#corpus-ten-topics li.selected")[0];
   if (toTen){
-    selectedInList = d3.selectAll("#corpus-ten-topics li.selected")[0];
+    selectedInList = d3.selectAll("#corpus-topics li.selected")[0];
   }
   // if it's in the list as selected, but not selected
   for (var i = 0; i < selectedInList.length; i++) {
     var el = selectedInList[i];
     if (!topics.contains(el.dataset.topic)) {
-      console.log("NOT SELECTED NOW:", el.dataset.topic);
       updateSelected(el.dataset.topic);
     }
   }
@@ -55,6 +52,7 @@ function updateAllSelected(toTen = true) {
   }
 }
 
+// takes a topic and selects it on the UI (in lists/etc)
 function updateSelected(topic) {
   if (topic == undefined) return;
   var targets = d3.selectAll("li[data-topic = '"+ topic +"']");
@@ -104,31 +102,38 @@ function updateSelected(topic) {
   }
 }
 
-function addTopicToSelected(target, topic) {
-  console.log("add");
+//adds a topic to the list of selected topics
+function addTopicToSelected(topic) {
+  // if the there are too many topics selected, tell the user
   if (topics.full()) {
     alert("You may only select up to 10 topics.")
     return;
   }
+  // update the selected topics
   updateSelected(topic);
+  // add the topic
   topics.add(topic);
 }
 
-function removeTopicFromSelected(target, topic) {
-  console.log("remove");
+function removeTopicFromSelected(topic) {
+  // update the selected topics
   updateSelected(topic);
+  // remove the topic
   topics.deleteSelected(topic);
 }
 
+//get rid of all selected topics in the ui
 function clearSelected() {
   var query = "#corpus-topics li.selected";
   if (tenMode) {
     query = "#corpus-ten-topics li.selected"
   }
   d3.selectAll(query).each(function(){
-    removeTopicFromSelected(this,this.dataset.topic);
+    removeTopicFromSelected(this.dataset.topic);
   });
 }
+
+//-------------------------------- Main Vis ------------------------------------
 
 for (i = data_start_year; i < data_end_year+1; i++) {
   rectdata.push(topic_data[i])
@@ -476,8 +481,8 @@ var corpusSliders = {
 }
 
 function switchMode(){
+  // switch modes
   tenMode = !tenMode;
-
   //clear all colors
   d3.selectAll("#corpus-chart rect")
     .attr("fill", topics.defaultColor)
@@ -488,7 +493,6 @@ function switchMode(){
   if (tenMode) {
     viewTenInit();
     var tenTopicsList = getTenTopicsWithSelected();
-    console.log(tenTopicsList);
     populateViewTen(topics.getSelectedAsTopics(allTopicList));
     useTenList(topics.getSelectedAsTopics(allTopicList));
   } else {
@@ -521,7 +525,6 @@ function setVertRange(start, end) {
 }
 
 function viewTenInit(e) {
-  console.log(topics.selected);
   offset.y *= 10;
   setVertRange(0,9);
   updateCorpusChart();
@@ -544,7 +547,6 @@ function viewTenInit(e) {
       })
 }
 function viewAllInit(e) {
-  var tempSelect = topics.getSelected();
   offset.y = offset.x;
   setVertRange(0, 99);
   updateCorpusChart();
@@ -556,6 +558,7 @@ function viewAllInit(e) {
   d3.selectAll("#corpus-chart rect").style("opacity", "1");
 }
 
+// gets the ranks of each topic by year
 function getRelativeRanks(keys) {
   var tenByYr = []
   // each year in topic data
@@ -579,7 +582,7 @@ function getRelativeRanks(keys) {
 // keys are the keys ofcurrently selected topics, if < 10,
 //   remaining will be filled with other topics
 function populateViewTen(topicArr) {
-  if (topicArr.length > 10) { console.log("ERROR"); return; }
+  if (topicArr.length > 10) { return; }
   tenTopics.copyFrom(topicArr.map(function(t) {
     return t.key;
   }));
@@ -591,7 +594,6 @@ function populateViewTen(topicArr) {
   })
   tenTopics.addAll(keys);
   relRanks = getRelativeRanks(keys);
-  console.log(relRanks);
   d3.selectAll("rect[data-ten-topic]")
     .attr("data-ten-topic", function() {
       return relRanks[this.dataset.j][this.dataset.i].topic;
@@ -611,6 +613,7 @@ function populateViewTen(topicArr) {
     })
 }
 
+// recolor all rects for the "view all" mode
 function populateViewAll() {
   d3.selectAll("rect[data-topic]").filter(function() {
     return topics.contains(this.dataset.topic);
@@ -620,12 +623,14 @@ function populateViewAll() {
   })
 }
 
+// switch the list to the view all mode
 function useAllList() {
   d3.select("#corpus-ten-topics").style("display","none");
   d3.select("#corpus-topics").style("display","block");
   updateAllSelected();
 }
 
+// create the list for the view ten mode
 function createTenList(keys) {
   if (keys.length < 10) {
     keys = keys.concat(getTenTopicsWithSelected());
@@ -666,11 +671,11 @@ function createTenList(keys) {
       .text(function(d) { return d.desc });
 }
 
+// switch to the view ten list
 function useTenList(topicArr) {
   if (topicArr.length < 10) {
     topicArr = topicArr.concat(getTenTopicsWithSelected());
   }
-  console.log("!!!!!", topicArr);
   d3.select("#corpus-topics").style("display","none");
   if (d3.select("#corpus-ten-topics").text() == "") createTenList(topicArr);
   var list = d3.select("#corpus-ten-topics");
@@ -691,6 +696,7 @@ function useTenList(topicArr) {
     .text(function(d) { return d.desc });
 }
 
+//TODO: implement switching topics
 function switchTopic(key) {
   alert("Switching topics not yet implemented");
 }
@@ -828,7 +834,6 @@ function getDeltaRankData(keys) {
     var prevTRank;
     $.each(topic_data, function(yr, tops) {
       var currentTop = tops.find(function(t) { return t.topic == key });
-      console.log(currentTop);
       if (prevTRank == undefined) {
         prevTRank = currentTop.rank;
       }
@@ -847,7 +852,6 @@ function getDeltaRankData(keys) {
 }
 
 function createDeltaRankChart(keys) {
-  console.log(keys);
   if (keys.length == 0){
     d3.select("#topic-rank-charts-wrapper").style("display","none");
     return;
@@ -896,7 +900,6 @@ function createDeltaRankChart(keys) {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d"))
          .tickValues(scale.x.domain()),
   }
-  console.log(scale.x.range())
   var getRHeight = function() {
     return (sizes.height - (offset.y * (keys.length)))/ keys.length;
   }
@@ -931,7 +934,7 @@ function createDeltaRankChart(keys) {
       .attr("text-anchor","middle")
       .attr("fill","#fff")
       .style("transform", "translate(" + 18 + "px, " + 16 + "px)")
-      .text(function(d){ console.log(d.key); return d.key; });
+      .text(function(d){ return d.key; });
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   var rows = g.selectAll('g').data(visData)
@@ -939,7 +942,6 @@ function createDeltaRankChart(keys) {
       .style("transform", function(d, i){
         var dy = i * (((sizes.height - (offset.y
           * (keys.length))) / keys.length) + offset.y);
-        console.log(i, dy);
         return "translate(-" + 0 + "px, " + dy + "px)";
       })
     rows.selectAll('rect').data(function(d) { return d; })
@@ -951,7 +953,6 @@ function createDeltaRankChart(keys) {
           return getRHeight();
         })
         .attr("x", function(d, i) {
-          console.log(sizes.width);
           return i * (((sizes.width - (offset.x
             * (data_n_range - 1))) / data_n_range) + offset.x);
         })
