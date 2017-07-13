@@ -14,12 +14,16 @@ var Topic = function () {
     "#50e3c2"  //teal?
   ];
   this.defaultColor = "#d8d8d8";
+  this.averageColor = "#000000";
 }
 Topic.prototype.getSelected = function() {
   return this.selected;
 };
 Topic.prototype.getColor = function(k) {
   k = parseInt(k);
+  if (k == -1) {
+    return this.averageColor;
+  }
   return this.colors[this.getSelected().indexOf(k)]
 };
 Topic.prototype.add = function(k) {

@@ -272,7 +272,7 @@ $(".topic-list").on("click", "li", function(e) {
     addTopicToSelected(t);
     updateTopicsSelected(e);
   } else {
-    removeTopicFromSelected(this,t);
+    removeTopicFromSelected(t);
     updateTopicsSelected(e);
   }
   sortTopicList();

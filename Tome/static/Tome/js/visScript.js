@@ -54,6 +54,7 @@ function updateAllSelected(toTen = true) {
 
 // takes a topic and selects it on the UI (in lists/etc)
 function updateSelected(topic) {
+  console.log(topic);
   if (topic == undefined) return;
   var targets = d3.selectAll("li[data-topic = '"+ topic +"']");
   var add = !targets.classed("selected");
@@ -294,8 +295,6 @@ var sY = d3.scale.linear()
   .domain([0,99])
   .range([0,height])
   .clamp(true);
-
-var TEST = undefined;
 
 var dispatch = d3.dispatch('maxChange','minChange', 'rescale');
 function appendSlider(selector, vertical = false, slideRange=[0,99]) {
@@ -704,7 +703,7 @@ function switchTopic(key) {
 //----------------------------TOPIC DETAILS VIS---------------------------------
 
 //VIS 1
-function getVisData(keys) {
+function getVisData(keys, withAVG) {
   var dataTMP = [];
   //for each key
   $.each(keys, function(k ,v) {
@@ -715,10 +714,30 @@ function getVisData(keys) {
     });
     dataTMP.push(temp);
   });
+  if (withAVG && dataTMP.length > 1) {
+    var avgLine = []
+    for (var i = 0; i < dataTMP[0].length; i++) {
+      var avgPoint = {
+        rank : -1,
+        score : 0,
+        topic : -1,
+        year : 0,
+      }
+      for (var j = 0; j < dataTMP.length; j++) {
+        avgPoint.year = dataTMP[j][i].year;
+        avgPoint.score += dataTMP[j][i].score;
+      }
+      avgPoint.score /= dataTMP.length
+      avgLine.push(avgPoint);
+    }
+    dataTMP.push(avgLine);
+    console.log(avgLine);
+    console.log(dataTMP);
+  }
   return dataTMP;
 }
 
-function createTopicOverTimeVis(keys, data) {
+function createTopicOverTimeVis(keys, data, withAVG=true) {
   if (keys.length == 0){
     d3.select("#topic-score-chart-wrapper").style("display","none");
     return;
@@ -727,7 +746,7 @@ function createTopicOverTimeVis(keys, data) {
   d3.select("#topic-score-chart-wrapper").style("display","block");
   $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
     - $("#selected-topics").outerWidth(true));
-  var visData = getVisData(keys);
+  var visData = getVisData(keys, withAVG);
   var margin = {top: 30, right: 30, bottom: 50, left: 80};
 
   var sizes = {
@@ -780,7 +799,7 @@ function createTopicOverTimeVis(keys, data) {
     .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
-    .attr("stroke-width", 1.5)
+    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 3 : 1.5})
     .attr("d", line(value));
   })
   g.append("g")
@@ -821,13 +840,20 @@ function createTopicOverTimeVis(keys, data) {
            + "</li>";
     $("#selected-topics-list").append(el);
   })
-
+  if (withAVG && visData.length > 1) {
+    var el = "<li data-topic=" + -1 +">"
+              + "<div class='color-box key' style='background-color:"
+                + topics.getColor(-1) + "'>" + "Avg.</div>"
+              + "<span class='topic-words'>&nbsp;Average line</span>"
+           + "</li>";
+   $("#selected-topics-list").append(el);
+  }
 }
 
 // RANK CHANGE OVER TIME
 
-function getDeltaRankData(keys) {
-  // returns a list of topics lists, each one with a delta rank based on it's
+function getDeltaRankData(keys, withAvg) {
+  // returns a list of topics lists, each one with a delta rank
   var data = [];
   $.each(keys, function(i, key) {
     var tData = [];
@@ -848,19 +874,40 @@ function getDeltaRankData(keys) {
     })
     data.push(tData);
   });
+  if (withAvg) {
+    var avgRow = [];
+    for (var i = 0; i < data[0].length; i++) {
+      var avgPoint = {
+        key: -1,
+        year: 0,
+        rank: -1,
+        change: 0,
+      }
+      for (var j = 0; j < data.length; j++) {
+        avgPoint.year = data[j][i].year;
+        avgPoint.change += data[j][i].change;
+      }
+      avgPoint.change /= data.length;
+      avgRow.push(avgPoint);
+    }
+    data.push(avgRow);
+  }
+  console.log(data);
   return data;
 }
 
-function createDeltaRankChart(keys) {
+function createDeltaRankChart(keys, withAvg=true) {
   if (keys.length == 0){
     d3.select("#topic-rank-charts-wrapper").style("display","none");
     return;
   } else {
     d3.select("#topic-rank-charts-wrapper").style("display","block");
-
+  }
+  if (keys.length == 1) {
+    withAvg = false;
   }
   d3.select("#topic-rank-charts").html("");
-  var visData = getDeltaRankData(keys);
+  var visData = getDeltaRankData(keys, withAvg);
   var margin = {top: 10, right: 30, bottom: 50, left: 50};
 
   var sizes = {
@@ -875,6 +922,9 @@ function createDeltaRankChart(keys) {
     .clamp(true),
 
     color: function(change) {
+      if (Math.abs(change < 1)) {
+        change = 1 * change/Math.abs(change);
+      }
       var red = "#d0011b",
           green = "#417505";
       opacities = [.25, .5, .75, 1]
@@ -894,14 +944,14 @@ function createDeltaRankChart(keys) {
   };
   var offset = {
     x: sizes.width / 500,
-    y: sizes.height / (keys.length * 10)
+    y: sizes.height / (visData.length * 10)
   }
   var axis = {
     x: d3.svg.axis().scale(scale.x).orient("bottom").tickFormat(d3.format("d"))
          .tickValues(scale.x.domain()),
   }
   var getRHeight = function() {
-    return (sizes.height - (offset.y * (keys.length)))/ keys.length;
+    return (sizes.height - (offset.y * (visData.length)))/ visData.length;
   }
 
   var getRWidth = function() {
@@ -911,14 +961,13 @@ function createDeltaRankChart(keys) {
   var graph = d3.select("#topic-rank-charts").append("svg").data(visData)
   .attr("width", sizes.width + margin.left + margin.right)
   .attr("height", sizes.height + margin.top + margin.bottom);
-  var sideBar =graph.selectAll("g").data(visData)
-    .enter().append("g")
-  var boxG = sideBar.selectAll("g").data(function(d) {return d;})
+  var sideBar = graph.append("g").classed("sidebar", true);
+  var boxG = sideBar.selectAll("g").data(visData)
     .enter().append("g")
       .classed("label key",true)
-      .style("transform", function(d, i, j) {
-        var dy = j * (((sizes.height - (offset.y
-          * (keys.length))) / keys.length) + offset.y);
+      .style("transform", function(d, i) {
+        var dy = i * (((sizes.height - (offset.y
+          * (visData.length))) / visData.length) + offset.y);
           dy += getRHeight()/2;
           dy -= 15;
         return "translate(" + 0 + "px, " + dy + "px)"
@@ -928,20 +977,20 @@ function createDeltaRankChart(keys) {
       .attr("height", 30)
       .attr("rx", 5)
       .attr("ry", 5)
-      .attr("fill", function(d) {return topics.getColor(d.key)})
+      .attr("fill", function(d) {return topics.getColor(d[0].key)})
     boxG.append("text")
       .attr("alignment-baseline","middle")
       .attr("text-anchor","middle")
       .attr("fill","#fff")
       .style("transform", "translate(" + 18 + "px, " + 16 + "px)")
-      .text(function(d){ return d.key; });
+      .text(function(d){ return (d[0].key !=-1) ? d[0].key : "Avg."; });
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   var rows = g.selectAll('g').data(visData)
     .enter().append('g')
       .style("transform", function(d, i){
         var dy = i * (((sizes.height - (offset.y
-          * (keys.length))) / keys.length) + offset.y);
+          * (visData.length))) / visData.length) + offset.y);
         return "translate(-" + 0 + "px, " + dy + "px)";
       })
     rows.selectAll('rect').data(function(d) { return d; })
@@ -968,7 +1017,7 @@ function createDeltaRankChart(keys) {
           d3.select(this).style("stroke", "black")
         })
         .append("title")
-          .text(function(d) {return "Year: " + d.year + " Rank: " + d.rank;})
+          .text(function(d) {return "Year: " + d.year + " | Change: " + d.change;})
   g.append("g")
     .classed("x axis", true)
     .attr("transform", "translate( 0,"+ sizes.height +")")
