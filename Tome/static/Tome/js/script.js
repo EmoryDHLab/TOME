@@ -79,7 +79,6 @@ function updateTopicsSelected(e) {
       $("#topic-titles").html("");
       var output = "",
           words = "";
-      window.TEST=data;
 
       $.each(data, function(key, val) {
         output += "<span class='topic-title' data-topic='"
@@ -130,7 +129,7 @@ function updateTopicsList(search) {
     },
     success : function(data) {
       console.log("UPDATE TOPICS");
-      console.log(data);
+      window.TEST=data;
       $("#corpus-topics").html("");
       var output = "";
       allTopicList = [];
@@ -184,14 +183,16 @@ function addArticleToDocumentDetails(rank, data) {
         + '<li>NEWSPAPER: ' + data.newspaper + '</li>'
         + '<li>LOCATION: ' + data.location + '</li>'
       + '</ol>'
-      + '<h4>Top topics for this article:</h4>'
+      + '<h4>Top topics from selected:</h4>'
       + '<ol class="topic-info no-dec indent">'
         + (function(tops) {
             var out = "";
-            $.each(tops, function(scr, t){
+            $.each(tops, function(i, t){
               out += '<li>'
-                + 'Topic <span class="key">' + t.key + '</span> &mdash; '
-                + 'Scored <span class="score">' + scr + '</span>'
+                + 'Topic <span class="color-box key" '
+                  +'style="background-color:' + topics.getColor(t.key)
+                  + '">' + t.key + '</span> &mdash; '
+                + 'Scored <span class="score">' + t.atr_score + '</span>'
                 + '<p class="topic-words indent">'
                     + arrToString(t.words)
                 + '</p>'
@@ -355,7 +356,7 @@ function sortByPrevalence(){
   ul.append(li);
 }
 function sortBySimilarity(){
-
+  return;
 }
 function sortSelectedToTop(){
   var ul = $("#corpus-topics");

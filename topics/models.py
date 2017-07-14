@@ -117,7 +117,7 @@ class ArticleTopicRank(models.Model):
             return tempD
 
     def __str__(self):
-        return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.title,
+        return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.key,
             self.topic.getFormattedTopWords(3), self.score)
 
 class YearTopicRank(models.Model):

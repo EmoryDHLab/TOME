@@ -71,7 +71,8 @@ def getArticles(request):
     tempD = {}
     for atr in atrs:
         tOb = atr.article.toJSON(True)
-        tOb["topics"] = atr.article.getTopTopics(3,True, True)
+        ct = len(keys['topics'])
+        tOb["topics"] = atr.article.getTopTopics(3, True, True, keys['topics'])
         tempD[i] = tOb
         i+=1
     return HttpResponse(json.dumps(tempD), content_type='application/json')

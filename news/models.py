@@ -209,7 +209,7 @@ class Article(models.Model):
         tempD["date"] = "{0}/{1}/{2}".format(self.month,
             self.day, self.year)
         tempD["editor"] = self.issue.editor if (self.issue.editor != None) else "[Unavailable]"
-        tempD["title"] = self.title if (self.title != "") else "[Untitled]"
+        tempD["title"] = self.title if (self.title != "") else "[Article " + str(self.key) + "]"
         tempD["newspaper"] = self.newspaper.title
         tempD["location"] = str(self.newspaper.location)
         tempD["link"] = self.link
@@ -218,11 +218,19 @@ class Article(models.Model):
         else:
             return tempD
 
-    def getTopTopics(self, count, asJSON=False, nested=False):
+    def getTopTopics(self, count, asJSON=False, nested=False, keys=[]):
         tempD = {}
-        atrs = self.articletopicrank_set.all()[0:count]
+        if (len(keys) > 0):
+            atrs = self.articletopicrank_set.filter(topic__key__in = keys)
+            print(atrs)
+        else:
+            atrs = self.articletopicrank_set.filter()[0:count]
+        ct = 0
         for atr in atrs:
-            tempD[atr.score] = (atr.topic.toJSON(nested, False) if asJSON else atr.topic)
+            tempD[ct] = (atr.topic.toJSON(nested, False) if asJSON else atr.topic)
+            tempD[ct]["atr_score"] = atr.score
+            ct += 1
+        print("Article:" + str(self.key) + "\nKeys:", keys)
         return tempD
 
     def __str__(self):
