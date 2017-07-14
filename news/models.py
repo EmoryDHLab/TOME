@@ -224,7 +224,8 @@ class Article(models.Model):
             atrs = self.articletopicrank_set.filter(topic__key__in = keys)
             print(atrs)
         else:
-            atrs = self.articletopicrank_set.filter()[0:count]
+            atrs = self.articletopicrank_set.filter()
+        atrs = atrs[0:count]
         ct = 0
         for atr in atrs:
             tempD[ct] = (atr.topic.toJSON(nested, False) if asJSON else atr.topic)
