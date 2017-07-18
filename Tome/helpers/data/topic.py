@@ -23,7 +23,7 @@ def addTopic(line):
     k = items[0]
     items = items[1:]
     print(k)
-    t = Topic(key=k)
+    t = Topic(key=k, score=0)
     t.save()
     word_dict = {}
     for i in range(0, len(items), 2):

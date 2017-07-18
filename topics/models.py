@@ -1,5 +1,4 @@
 from Tome.helpers.model_helpers import *
-from Tome.helpers.maths import median
 from django.utils.translation import ugettext_lazy as _
 
 import simplejson as json
@@ -15,6 +14,8 @@ class Topic(models.Model):
     key = models.IntegerField(unique=True, null=True)
 
     score = models.DecimalField(max_digits=10, decimal_places=10, default=0)
+
+    percentage = models.DecimalField(max_digits=10, decimal_places=8, default=0)
 
     articles = models.ManyToManyField('news.Article', through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
@@ -32,7 +33,7 @@ class Topic(models.Model):
 
     def aggregateScoreByLocation(self, loc_id):
         atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
-        return median(atrs.values_list('score',flat=True))
+        return sum(atrs.values_list('score',flat=True))
 
     def toJSON(self, nested=False, includeArticles=True):
         tempD = {'words' : []}
@@ -68,7 +69,7 @@ class Topic(models.Model):
 
     def calculateScore(self):
         scores = self.articletopicrank_set.all().values_list('score',flat=True)
-        self.score = median(scores)
+        self.score = sum(scores)
         print(self.score)
 
     def __str__(self):
@@ -136,7 +137,7 @@ class YearTopicRank(models.Model):
         scores = self.topic.articletopicrank_set.filter(
             article__issue__date_published__year=self.year).values_list('score',
             flat=True)
-        self.score = median(scores)
+        self.score = sum(scores)
 
     def toJSON(self, nested=False):
         tempD = {}

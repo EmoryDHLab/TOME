@@ -1,11 +1,13 @@
+from decimal import *
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.core.exceptions import ObjectDoesNotExist
+from Tome.helpers.time_helpers import *
+from Tome.settings import BASE_DIR
 from news.models import *
 from topics.models import *
-from Tome.helpers.time_helpers import *
-from django.core.exceptions import ObjectDoesNotExist
-from Tome.settings import BASE_DIR
-from django.contrib.staticfiles.templatetags.staticfiles import static
 
 def wipeATRs():
+    Topic.objects.all().update(score=0)
     ArticleTopicRank.objects.all().delete()
 
 def generateATRs(file_name):
@@ -13,21 +15,25 @@ def generateATRs(file_name):
     print(url)
     f = open(url)
     counter = 0;
+    # each article_key
     for line in f:
         items = line.split(",")
-        addATR(counter,items)
+        print(counter)
+        t_score = addATR(counter,items)
         counter+=1
 
 def addATR(article_key,items):
     a = Article.objects.get(key=article_key)
-    topic_dict = {}
+    t_dict = {}
+    # each topic-score pair
     for i in range(0, len(items), 2):
-        if (items[i] not in topic_dict.keys()):
-            t = Topic.objects.get(key=items[i])
-            topic_dict[items[i]] = t
-        else:
-            t = topic_dict[items[i]]
-        atr = ArticleTopicRank(article=a, topic=t, score=items[i+1])
+        scr = Decimal(items[i+1])
+        t_key = items[i]
+        if (t_key not in t_dict.keys()):
+            t_dict[t_key] = Topic.objects.get(key=t_key)
+        t_dict[t_key].score += scr
+        t_dict[t_key].save(update_fields=["score"])
+        atr = ArticleTopicRank(article=a, topic=t_dict[t_key], score=scr)
         atr.save()
 def qRun():
     wipeATRs()
