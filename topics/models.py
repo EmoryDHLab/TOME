@@ -1,4 +1,5 @@
 from Tome.helpers.model_helpers import *
+
 from django.utils.translation import ugettext_lazy as _
 
 import simplejson as json
@@ -13,9 +14,9 @@ class Topic(models.Model):
     # custom id for loading stuff right
     key = models.IntegerField(unique=True, null=True)
 
-    score = models.DecimalField(max_digits=10, decimal_places=10, default=0)
+    score = models.DecimalField(max_digits=16, decimal_places=10, default=0)
 
-    percentage = models.DecimalField(max_digits=10, decimal_places=8, default=0)
+    percentage = models.DecimalField(max_digits=16, decimal_places=10, default=0)
 
     articles = models.ManyToManyField('news.Article', through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
@@ -78,7 +79,7 @@ class Topic(models.Model):
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=10, decimal_places=10)
+    score = models.DecimalField(max_digits=16, decimal_places=10)
 
     class Meta:
         ordering = ('-score',)
@@ -100,7 +101,7 @@ class WordTopicRank(models.Model):
 class ArticleTopicRank(models.Model):
     article = models.ForeignKey('news.Article', on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=10, decimal_places=10)
+    score = models.DecimalField(max_digits=16, decimal_places=10)
 
     class Meta:
         ordering = ('-score',)
@@ -126,7 +127,7 @@ class YearTopicRank(models.Model):
     corpus = models.ForeignKey('news.Corpus', on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     year = models.IntegerField()
-    score = models.DecimalField(max_digits=10, decimal_places=10)
+    score = models.DecimalField(max_digits=16, decimal_places=10)
     rank = models.IntegerField(default=-1)
 
     class Meta:
