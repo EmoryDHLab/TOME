@@ -63,7 +63,7 @@ class Corpus(models.Model):
             return self.getTopics()[start-1:end]
 
     def getTopics(self):
-        return self.topics.distinct()
+        return self.topics.distinct().order_by('rank')
 
     def getTopicsByYear(self, yr):
         topics = self.yeartopicrank_set.filter(year=yr).order_by("-score")

@@ -103,7 +103,9 @@ input[type='button']:hover{
   padding: 2px 5px;
 }
 .section {
-  margin-top: 2em;
+  margin-bottom: 2em;
+  margin-top: -40px;
+  padding-top: 40px;
 }
 .pop-up-wrap {
   display: inline;
@@ -148,7 +150,11 @@ input[type='button']:hover{
   margin-top: 0;
   margin-bottom: 0;
 }
-
+.sort-menu li h5::after {
+  content : "x";
+  float: right;
+  cursor: pointer;
+}
 .sort-menu li.selected {
   font-weight: 600;
 }
@@ -267,6 +273,7 @@ ol.no-dec {
 
 #overview {
   position: relative;
+  padding-bottom: 1em;
 }
 
 .topic-list {
@@ -687,7 +694,9 @@ g.label.key text {
   text-align: center;
   margin-bottom: 0;
 }
-
+.leaflet-control {
+  z-index: 99;
+}
 /*-----------------------------DOCUMENT DETAILS ------------------------------*/
 
 .column-wrap{

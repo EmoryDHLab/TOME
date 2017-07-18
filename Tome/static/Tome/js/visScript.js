@@ -731,8 +731,6 @@ function getVisData(keys, withAVG) {
       avgLine.push(avgPoint);
     }
     dataTMP.push(avgLine);
-    console.log(avgLine);
-    console.log(dataTMP);
   }
   return dataTMP;
 }
@@ -827,7 +825,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   $("#selected-topics-list").html("");
   $("#selected-topics").css("height", $("#topic-score-chart-inner-wrapper").height());
   $.each(data, function(key, tData) {
-    var words = arrToString(tData.words, 10)
+    var words = wordObjToString(tData.words, 10)
     spaces = ""
     for(var i = 2 - key.toString().length; i > 0; i--) {
       spaces += "&nbsp;&nbsp;";
@@ -1031,3 +1029,11 @@ function createDeltaRankChart(keys, withAvg=true) {
 
   $("#topic-rank-key").css("min-height",$("topic-rank-charts").outerHeight())
 }
+
+// TOPICS BY NEWSPAPER VIS
+
+// two options:
+
+// if one topic is selected, use getVisData() no avg. line, for each newspaper
+
+// if multiple topics are selected select <= 10 newspapers and display

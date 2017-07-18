@@ -17,6 +17,8 @@ def index(request):
 
 def topicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
+    if ("topics" not in keys):
+        return
     topics = Topic.objects.filter(key__in = keys["topics"])
     topics_json = {}
     for t in topics:
@@ -47,7 +49,7 @@ def allTopicsAsJSON(request):
 
 def locationMap(request):
     keys = json.loads(request.GET.get("json_data"))
-    topics = Topic.objects.filter(key__in = keys["topics"])
+    topics = Topic.objects.filter(key__in = keys["topics"]).order_by('-rank')
     locs_json = {}
     locs = Location.objects.all();
     for loc in locs:

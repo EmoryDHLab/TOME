@@ -74,13 +74,14 @@ function addMapData(locations) {
 
   visLayer = L.geoJson(geoJsonData, {
       pointToLayer: function(feature, latlng) {
+        console.log("MAPY T : " + feature.properties.topic);
         var tClr = topics.getColor(feature.properties.topic);
+        if (tClr === undefined) return;
         var rgbClr = (function() {
           var rgbVals = [];
           for (var i = 1; i < tClr.length; i+=2) {
             rgbVals.push(parseInt(tClr.charAt(i) + tClr.charAt(i + 1), 16))
           }
-          console.log(rgbVals);
           return rgbVals;
         })();
         var markerOptions ={

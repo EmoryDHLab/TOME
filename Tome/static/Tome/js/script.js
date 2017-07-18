@@ -12,7 +12,29 @@ var scrollTop = function() {
     (document.documentElement || document.body.parentNode ||
     document.body).scrollTop;}
 
-function arrToString(arr, ct=-1) {
+
+
+// given an id, change the nav menu to have that selected
+function navChange(id, scrollToIt) {
+  $("nav .active").removeClass("active");
+  $("nav li").filter(function() {
+    console.log(this);
+    console.log(this.children[0].getAttribute('href'));
+    console.log("#" + id);
+    return this.children[0].getAttribute('href') == "#" + id;
+  }).addClass("active");
+  if (scrollToIt) {
+    document.querySelector("#" + id).scrollIntoView();
+  }
+  if(history.pushState) {
+    history.pushState(null, null, "#" + id);
+  }
+  else {
+      location.hash = "#" + id;
+  }
+}
+
+function wordObjToString(arr, ct=-1) {
   var s = "";
   if (ct != -1) {
     var truncateAfter = ct;
@@ -32,7 +54,20 @@ window.onscroll = function() {
   } else {
     mn.className = "";
   }
-  if($(window).scrollTop() + $(window).height() >= $(document).height() - 200) {
+  var winBottom = $(window).scrollTop() + $(window).height();
+  var currentSection = $(".section").filter(function() {
+    var buffer = 20;
+    var elTop = $(this).offset().top;
+    var elBottom = $(this).offset().top + $(this).outerHeight(true);
+    console.log(elTop , " <= ", winBottom);
+    return elTop - buffer < winBottom;
+  }).slice(-1)[0];
+  console.log(currentSection);
+  if (currentSection) {
+    navChange(currentSection.id, false);
+  }
+
+  if(winBottom >= $(document).height() - 200) {
     if(!topics.empty() && (nextArticle != 0) && !LOADING) {
       startMiniLoad();
       loadAdditionalArticles();
@@ -86,7 +121,7 @@ function updateTopicsSelected(e) {
         if (topics.count == 1) {
           output += "<div class='color-box' style='background-color:"
             + topics.getColor(val.key) + "'>&nbsp;&nbsp;&nbsp;</div>";
-          words = arrToString(val.words.slice(0,10));
+          words = wordObjToString(val.words.slice(0,10));
         }
         output += "<span>TOPIC " + val.key + "</span>";
         output += (words != "") ? "<span class='topic-words'>&ndash;&nbsp;"
@@ -137,7 +172,7 @@ function updateTopicsList(search) {
       $.each(data, function(key, t) {
         allTopicList.push({
           key:t.key,
-          desc: arrToString(t.words, 10)
+          desc: wordObjToString(t.words, 10)
         })
         allKeys.push(t.key);
         var cls = "";
@@ -149,7 +184,7 @@ function updateTopicsList(search) {
         output = "<li data-topic=" + t.key + "data-rank="
           + t.rank + " class='" + cls + "''>"
             + "<span class='topic-words'>"
-              + arrToString(t.words, 5)
+              + wordObjToString(t.words, 5)
             + "</span>" + "&nbsp;"
             + "<span class='color-box' style='background-color:"
               + clr
@@ -194,7 +229,7 @@ function addArticleToDocumentDetails(rank, data) {
                   + '">' + t.key + '</span> &mdash; '
                 + 'Scored <span class="score">' + t.atr_score + '</span>'
                 + '<p class="topic-words indent">'
-                    + arrToString(t.words)
+                    + wordObjToString(t.words)
                 + '</p>'
               + '</li>';
             });
@@ -245,6 +280,8 @@ function loadArticles(keys, start=0, count=6) {
 
 $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
 $("nav").on("click", "li.available:not(.active) a", function(e){
+  e.preventDefault();
+  navChange(this.getAttribute("href").substring(1), true)
   $(".active").removeClass("active");
   $(this.parentNode).addClass("active");
 });
@@ -320,10 +357,13 @@ $(window).on('click', function() {
   if (sortOpen) {
     $('.sort-menu').css('display', 'none')
     sortOpen = false;
+    d3.select('.sort-menu')
+      .style("display", 'none');
   }
 });
 
 $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
+  e.stopPropagation();
   var sType = parseInt(this.dataset.sort);
   sortMode = sType;
   $('.sort-menu li[data-sort=' + sType + ']').addClass('selected');
