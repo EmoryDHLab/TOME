@@ -30,13 +30,14 @@ class Topic(models.Model):
     @property
     def topTen(self):
         return self.getFormattedTopWords(10, False)
-        
+
     class Meta:
         ordering = ('-score',)
 
     def percentByLocation(self, loc_id, articleCount):
         atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
-        raw_perc = 100 * (sum(atrs.values_list('score',flat=True))/articleCount)
+        ct = atrs.count()
+        raw_perc = 100 * (sum(atrs.values_list('score',flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def toJSON(self, nested=False, includeArticles=True):

@@ -60,7 +60,7 @@ window.onscroll = function() {
     var elTop = $(this).offset().top;
     var elBottom = $(this).offset().top + $(this).outerHeight(true);
     console.log(elTop , " <= ", winBottom);
-    return elTop - buffer < winBottom;
+    return elTop + buffer < winBottom;
   }).slice(-1)[0];
   console.log(currentSection);
   if (currentSection) {

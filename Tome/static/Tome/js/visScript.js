@@ -181,7 +181,7 @@ var updateCorpusChart = function() {
   var mCount = 0,
       nCount = 0;
   $(".out").removeClass("out");
-  $('rect[data-j]').filter(function () {
+  $('#corpus-chart rect[data-j]').filter(function () {
     var vx = false, vn = false, hx = false, hn = false;
     var yval = gridMap.get(this.id).i;
     var xval = gridMap.get(this.id).j;
@@ -277,7 +277,7 @@ var myChart = d3.select('#corpus-chart').append('svg')
         }
     });
 
-$('rect[data-j]').filter(function(){
+$('#corpus-chart rect[data-j]').filter(function(){
   return (this.dataset.i<10);
 }).addClass("top-ten");
 
@@ -593,7 +593,7 @@ function populateViewTen(topicArr) {
   })
   tenTopics.addAll(keys);
   relRanks = getRelativeRanks(keys);
-  d3.selectAll("rect[data-ten-topic]")
+  d3.selectAll("#corpus-chart rect[data-ten-topic]")
     .attr("data-ten-topic", function() {
       return relRanks[this.dataset.j][this.dataset.i].topic;
     })
@@ -614,7 +614,7 @@ function populateViewTen(topicArr) {
 
 // recolor all rects for the "view all" mode
 function populateViewAll() {
-  d3.selectAll("rect[data-topic]").filter(function() {
+  d3.selectAll("#corpus-chart rect[data-topic]").filter(function() {
     return topics.contains(this.dataset.topic);
   })
     .attr("fill",function() {
@@ -920,8 +920,9 @@ function createDeltaRankChart(keys, withAvg=true) {
     .clamp(true),
 
     color: function(change) {
-      if (Math.abs(change < 1)) {
-        change = 1 * change/Math.abs(change);
+      // dealing with fractions (averages have them)
+      if (Math.abs(change) < 1) {
+        change = change/Math.abs(change);
       }
       var red = "#d0011b",
           green = "#417505";

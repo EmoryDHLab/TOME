@@ -244,6 +244,9 @@ ol.no-dec {
 /* ---------------------- End Dataset Styles ---------------------- */
 
 /* ---------------------- Search Styles ---------------------- */
+#search {
+  z-index: 99;
+}
 
 #search h2 {
   margin-right:1em;
