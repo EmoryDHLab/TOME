@@ -865,7 +865,7 @@ function getDeltaRankData(keys, withAvg) {
         key: key,
         year: yr,
         rank: currentTop.rank,
-        change: currentTop.rank - prevTRank,
+        change: prevTRank - currentTop.rank,
       }
       prevTRank = currentTop.rank;
       tData.push(t);

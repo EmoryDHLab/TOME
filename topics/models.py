@@ -3,6 +3,7 @@ from Tome.helpers.model_helpers import *
 from django.utils.translation import ugettext_lazy as _
 
 import simplejson as json
+from decimal import Decimal
 
 class Word(models.Model):
     text = models.CharField(max_length=200, unique=True)
@@ -29,12 +30,14 @@ class Topic(models.Model):
     @property
     def topTen(self):
         return self.getFormattedTopWords(10, False)
+        
     class Meta:
         ordering = ('-score',)
 
-    def aggregateScoreByLocation(self, loc_id):
+    def percentByLocation(self, loc_id, articleCount):
         atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
-        return sum(atrs.values_list('score',flat=True))
+        raw_perc = 100 * (sum(atrs.values_list('score',flat=True))/articleCount)
+        return raw_perc.quantize(Decimal('1.000'))
 
     def toJSON(self, nested=False, includeArticles=True):
         tempD = {'words' : []}

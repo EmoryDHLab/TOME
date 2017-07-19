@@ -6,7 +6,7 @@ map.touchZoom.disable();
 map.doubleClickZoom.disable();
 map.scrollWheelZoom.disable();
 var visLayer;
-
+var circleScale = 10;
 
 // GeoJSON data: see http://geojson.org/ for the full description of this format.
 //
@@ -85,7 +85,7 @@ function addMapData(locations) {
           return rgbVals;
         })();
         var markerOptions ={
-          radius: feature.properties.count*5000,
+          radius: feature.properties.count * circleScale,
           fillColor: tClr,
           color: tClr,
           weight: 1,
@@ -95,7 +95,7 @@ function addMapData(locations) {
         var popupOptions = {maxWidth: 500};
         var popupContent = '<div>'
             + '<h4>' + "Topic " + feature.properties.topic + '</h4>'
-            + '<span>' + feature.properties.count + '</span>'
+            + '<span>' + feature.properties.count + '%</span>'
           + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
         circle.bindPopup(popupContent, popupOptions);

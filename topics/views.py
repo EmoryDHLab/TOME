@@ -3,7 +3,7 @@ from django.http import HttpResponse
 import simplejson as json;
 
 from .models import Topic,ArticleTopicRank
-from news.models import Location
+from news.models import Location, Article
 
 # Create your views here.
 def index(request):
@@ -51,13 +51,14 @@ def locationMap(request):
     keys = json.loads(request.GET.get("json_data"))
     topics = Topic.objects.filter(key__in = keys["topics"]).order_by('-rank')
     locs_json = {}
-    locs = Location.objects.all();
+    locs = Location.objects.all()
+    articleCount = Article.objects.all().count()
     for loc in locs:
         l = {}
         l['location'] = loc.toJSON(True)
         l['topics'] = {}
         for t in topics:
-            l["topics"][t.key] = t.aggregateScoreByLocation(loc.id)
+            l["topics"][t.key] = t.percentByLocation(loc.id, articleCount)
         locs_json[loc.id] = l
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')

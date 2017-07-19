@@ -7,4 +7,4 @@ def validate_model(sender, **kwargs):
         kwargs['instance'].full_clean()
 
 pre_save.connect(validate_model, dispatch_uid='validate_models')
-''' 
+'''
