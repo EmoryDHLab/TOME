@@ -735,13 +735,21 @@ function getVisData(keys, withAVG) {
   return dataTMP;
 }
 
+function showOrHideSection(selector, keyLength) {
+  if (keyLength > 0) {
+    d3.select(selector).style("display","block");
+  } else {
+    d3.select(selector).style("display","none");
+  }
+  return;
+}
+
 function createTopicOverTimeVis(keys, data, withAVG=true) {
+  showOrHideSection("#topic-score-chart-wrapper", keys.length)
   if (keys.length == 0){
-    d3.select("#topic-score-chart-wrapper").style("display","none");
     return;
   }
   d3.select("#topic-score-chart").html("");
-  d3.select("#topic-score-chart-wrapper").style("display","block");
   $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
     - $("#selected-topics").outerWidth(true));
   var visData = getVisData(keys, withAVG);
@@ -791,7 +799,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   .attr("height", sizes.height + margin.top + margin.bottom);
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  $.each(visData, function(key,value) {
+  $.each(visData, function(key, value) {
     g.append("path")
     .attr("fill", "none")
     .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
@@ -895,11 +903,9 @@ function getDeltaRankData(keys, withAvg) {
 }
 
 function createDeltaRankChart(keys, withAvg=true) {
+  showOrHideSection("#topic-rank-charts-wrapper", keys.length);
   if (keys.length == 0){
-    d3.select("#topic-rank-charts-wrapper").style("display","none");
     return;
-  } else {
-    d3.select("#topic-rank-charts-wrapper").style("display","block");
   }
   if (keys.length == 1) {
     withAvg = false;
@@ -1034,7 +1040,7 @@ function createDeltaRankChart(keys, withAvg=true) {
 // TOPICS BY NEWSPAPER VIS
 var createTopicsByPaper = function(keys, data) {
   // two options:
-
+  console.log(data);
   $.ajax({
     type : "GET",
     url : paper_topic_data_link,
@@ -1042,9 +1048,119 @@ var createTopicsByPaper = function(keys, data) {
       json_data : JSON.stringify({'topics' : topics.getKeys()})
     },
     success : function(data) {
-      console.log(data);
+      showOrHideSection("#paper-wrapper", keys.length);
+      root = d3.select("#paper");
+      $("#paper").html("");
+      paperVisMulti(data, root);
     }
   });
   // if multiple topics are selected select <= 10 newspapers and display
+
   // if one topic is selected, use getVisData() no avg. line, for each newspaper
+}
+
+// Creates the newspaper visualization for multiple topics
+function paperVisMulti(data, root) {
+  var maxDat;
+  console.log(data);
+  paperCount = 0;
+  $.each(data, function(k, v) {
+    maxDat = 0;
+    $.each(v['topics'], function(key, top) {
+      var percent = top.percent;
+      console.log(key, percent);
+      if (maxDat == undefined) {
+        maxDat = percent;
+      } else {
+        maxDat += percent;
+      }
+      // compound the previous data to translate bar
+      console.log(key, maxDat - percent);
+      data[k]['topics'][key].totalPerc = maxDat - percent;
+    });
+    data[k]['paper'].totalPercent = maxDat;
+    paperCount++;
+  });
+
+  window.TEST = data;
+  var margin = {top: 10, right: 30, bottom: 50, left: 200};
+
+  var sizes = {
+    width : $(".wrapper").innerWidth()
+      - margin.left - margin.right,
+    barThickness : 40,
+    offset : 5
+  };
+  sizes.height = (sizes.barThickness * paperCount + sizes.offset * (paperCount - 1));
+
+  var scale = {
+    x: d3.scale.linear()
+    .domain([0, maxDat])
+    .range([0, sizes.width])
+    .clamp(true),
+
+  };
+
+  var axis = {
+    x: d3.svg.axis().scale(scale.x).orient("bottom")
+  }
+
+  var graph = d3.select("#paper").append("svg")
+    .attr("width", sizes.width + margin.left + margin.right)
+    .attr("height", sizes.height + margin.top + margin.bottom);
+  var g = graph.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    g.selectAll('g').data(Object.values(data))
+      .enter().append('g')
+      .selectAll('rect').data(function(d) { return Object.values(d.topics);})
+        .enter().append('rect')
+        .attr('x', function(d) { console.log(d);return scale.x(d.totalPerc); })
+        .attr('y', 0)//TODO: make this work for multiples
+        .attr('width',function(d) {
+          return scale.x(d.percent);
+        })
+        .attr('height',function(d) {
+          return sizes.barThickness;
+        })
+        .style('fill', function(d) {
+          return topics.getColor(d.key);
+        })
+        .append("title")
+          .text(function(d) {
+            var s = "Topic " + d.key + ": "
+              + roundToPlace(d.percent, 3) + "%"
+            return s;
+          })
+  g.append("g")
+    .classed("x axis", true)
+    .attr("transform", "translate( 0,"+ sizes.height +")")
+    .call(axis.x)
+    .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "center")
+      .attr("dy", "2.5em")
+      .attr("x", function(d) {
+        return (sizes.width - 40)/ 2;
+      })
+      .text("% of Newspaper");
+  var sideCol = g.append('g')
+  textArea = sideCol.selectAll("g").data(Object.values(data))
+    .enter().append("g")
+    .attr("transform", function(d, i) {
+      return "translate( -" + margin.left + ", " + i * sizes.barThickness + ")";
+    })
+    .append("text")
+      .attr("dy", function() {
+        return sizes.barThickness/2;
+      });
+      textArea.append("tspan")
+        .text(function(d) {
+          return d.paper.title;
+        });
+      textArea.append("tspan")
+        .attr("dy", 20)
+        .attr('x', 0)
+        .text(function(d){
+          return "Combined Perc. " + roundToPlace(d.paper.totalPercent, 3) + "%";
+        })
 }

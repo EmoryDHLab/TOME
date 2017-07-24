@@ -144,6 +144,7 @@ function updateTopicsSelected(e) {
       console.log(data);
       createTopicOverTimeVis(topics.getKeys(), data);
       createDeltaRankChart(topics.getKeys());
+      createTopicsByPaper(topics.getKeys(),data);
       updateMapLocations(topics.getKeys());
       loadArticles(topics.getKeys())
       // endLoad();
@@ -164,7 +165,6 @@ function updateTopicsList(search) {
     },
     success : function(data) {
       console.log("UPDATE TOPICS");
-      window.TEST=data;
       $("#corpus-topics").html("");
       var output = "";
       allTopicList = [];
@@ -288,7 +288,6 @@ $("nav").on("click", "li.available:not(.active) a", function(e){
 
 $(".topic-list").on("mouseover", "li:not(.selected)", function(){
   if (tenMode) {
-    //$(this).find("i").css("display","block");
     fadeOutRects(this.dataset.topic);
   } else {
     highlightRects(this.dataset.topic);

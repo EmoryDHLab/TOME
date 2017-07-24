@@ -1,5 +1,6 @@
-from django.shortcuts import render, get_object_or_404
+from django.db.models import Sum
 from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
 import simplejson as json;
 
 from .models import Topic,ArticleTopicRank
@@ -77,16 +78,32 @@ def getArticles(request):
         ct = len(keys['topics'])
         tOb["topics"] = atr.article.getTopTopics(3, True, True, keys['topics'])
         tempD[i] = tOb
-        i+=1
+        i += 1
     return HttpResponse(json.dumps(tempD), content_type='application/json')
 
 def topicsByPaper(request):
     keys = json.loads(request.GET.get("json_data"))
-    raw_atrs = ArticleTopicRank.objects.filter(topic__key__in = keys['topics'])
+    topic_keys = keys['topics'];
+    raw_atrs = ArticleTopicRank.objects.filter(topic__key__in=topic_keys)
     papers = Newspaper.objects.all()[0:10]
-    tempD = {}
+    tempD = {}#1
+    ct = 0;
+    # for each paper
     for paper in papers:
+        tempD2 = {'paper': { 'key': paper.key, 'title': paper.title }}
         paper_atrs = raw_atrs.filter(article__issue__newspaper=paper)
-        tempD[paper.key] = paper_atrs
-    print(tempD)
-    return HttpResponse("", content_type='application/json')
+        # add paper metadata
+        tempD2['topics'] = {} #4
+        for i in range(len(topic_keys)):
+            # set the current topic key
+            t_key = topic_keys[i]
+            sm = paper_atrs.filter(topic__key=t_key).aggregate(Sum('score'))
+            article_ct = Article.objects.filter(issue__newspaper=paper).count()
+            topicD = {
+                'key': t_key,
+                'percent': 100 * sm['score__sum'] / article_ct
+            } #5
+            tempD2['topics'][i] = topicD
+        tempD[ct] = tempD2
+        ct += 1;
+    return HttpResponse(json.dumps(tempD), content_type='application/json')
