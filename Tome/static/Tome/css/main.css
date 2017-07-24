@@ -277,6 +277,8 @@ ol.no-dec {
 #overview {
   position: relative;
   padding-bottom: 1em;
+  padding-top: 0px;
+  margin-top: 0px;
 }
 
 .topic-list {
