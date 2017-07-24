@@ -3,7 +3,7 @@ from django.http import HttpResponse
 import simplejson as json;
 
 from .models import Topic,ArticleTopicRank
-from news.models import Location, Article
+from news.models import Location, Article, Newspaper
 
 # Create your views here.
 def index(request):
@@ -79,3 +79,14 @@ def getArticles(request):
         tempD[i] = tOb
         i+=1
     return HttpResponse(json.dumps(tempD), content_type='application/json')
+
+def topicsByPaper(request):
+    keys = json.loads(request.GET.get("json_data"))
+    raw_atrs = ArticleTopicRank.objects.filter(topic__key__in = keys['topics'])
+    papers = Newspaper.objects.all()[0:10]
+    tempD = {}
+    for paper in papers:
+        paper_atrs = raw_atrs.filter(article__issue__newspaper=paper)
+        tempD[paper.key] = paper_atrs
+    print(tempD)
+    return HttpResponse("", content_type='application/json')

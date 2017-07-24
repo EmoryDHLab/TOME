@@ -1032,9 +1032,19 @@ function createDeltaRankChart(keys, withAvg=true) {
 }
 
 // TOPICS BY NEWSPAPER VIS
+var createTopicsByPaper = function(keys, data) {
+  // two options:
 
-// two options:
-
-// if one topic is selected, use getVisData() no avg. line, for each newspaper
-
-// if multiple topics are selected select <= 10 newspapers and display
+  $.ajax({
+    type : "GET",
+    url : paper_topic_data_link,
+    data : {
+      json_data : JSON.stringify({'topics' : topics.getKeys()})
+    },
+    success : function(data) {
+      console.log(data);
+    }
+  });
+  // if multiple topics are selected select <= 10 newspapers and display
+  // if one topic is selected, use getVisData() no avg. line, for each newspaper
+}

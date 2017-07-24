@@ -222,6 +222,7 @@
       topic_data_link = "{% url 'topics:topics_as_json' %}";
       all_topic_list_link = "{% url 'topics:all_topics_as_json' %}";
       articles_link = "{% url 'topics:articles_by_topics' %}";
+      paper_topic_data_link =  "{% url 'topics:topics_by_paper' %}";
       map_data_link = "{% url 'topics:location_mapper' %}";
       data_start_year = parseInt('{{ corpus.date_started.year }}');
       data_end_year = parseInt('{{ corpus.date_ended.year }}');
