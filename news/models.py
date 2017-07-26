@@ -69,7 +69,8 @@ class Corpus(models.Model):
         topics = self.yeartopicrank_set.filter(year=yr).order_by("-score")
         json_tops = []
         for t in topics:
-            json_tops.append(t.toJSON(True))
+            tJs = t.toJSON(True)
+            json_tops.append(tJs)
         return json_tops
 
     def getYearsTopics(self):
@@ -222,7 +223,6 @@ class Article(models.Model):
         tempD = {}
         if (len(keys) > 0):
             atrs = self.articletopicrank_set.filter(topic__key__in = keys)
-            print(atrs)
         else:
             atrs = self.articletopicrank_set.filter()
         atrs = atrs[0:count]
@@ -231,7 +231,6 @@ class Article(models.Model):
             tempD[ct] = (atr.topic.toJSON(nested, False) if asJSON else atr.topic)
             tempD[ct]["atr_score"] = atr.score
             ct += 1
-        print("Article:" + str(self.key) + "\nKeys:", keys)
         return tempD
 
     def __str__(self):

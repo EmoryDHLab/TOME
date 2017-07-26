@@ -245,6 +245,7 @@ ol.no-dec {
 
 /* ---------------------- Search Styles ---------------------- */
 #search {
+  position: relative;
   z-index: 99;
 }
 
@@ -277,8 +278,7 @@ ol.no-dec {
 #overview {
   position: relative;
   padding-bottom: 1em;
-  padding-top: 0px;
-  margin-top: 0px;
+
 }
 
 .topic-list {
@@ -747,7 +747,6 @@ g.label.key text {
 .article-info {
   width:100%;
   border-bottom: 3px solid #d8d8d8;
-  min-height: 400px;
 }
 
 .article-info ol {

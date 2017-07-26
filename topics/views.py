@@ -50,7 +50,7 @@ def allTopicsAsJSON(request):
 
 def locationMap(request):
     keys = json.loads(request.GET.get("json_data"))
-    topics = Topic.objects.filter(key__in = keys["topics"]).order_by('-rank')
+    topics = Topic.objects.filter(key__in = keys["topics"]).order_by('rank')
     locs_json = {}
     locs = Location.objects.all()
     articleCount = Article.objects.all().count()
@@ -58,14 +58,18 @@ def locationMap(request):
         l = {}
         l['location'] = loc.toJSON(True)
         l['topics'] = {}
-        for t in topics:
-            l["topics"][t.key] = t.percentByLocation(loc.id, articleCount)
+        for i in range(len(topics)):
+            t = topics[i]
+            print(i, t.key)
+            l["topics"][i] = {
+                'key': t.key,
+                'score': t.percentByLocation(loc.id, articleCount)
+            }
         locs_json[loc.id] = l
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')
 
 def getArticles(request):
-    print(request)
     keys = json.loads(request.GET.get("json_data"))
     atrs = ArticleTopicRank.objects.filter(topic__key__in = keys['topics'])
     start = keys["start_at"]

@@ -29,10 +29,12 @@ function updateMapLocations(keys) {
       addMapData(data);
       if (keys.length == 0) {
         $("#map-wrapper").css("display","none");
-        map.invalidateSize(); // doesn't seem to do anything
+        // fix map resizes issue
+        map.invalidateSize();
       } else {
         $("#map-wrapper").css("display","block");
-        map.invalidateSize(); // doesn't seem to do anything
+        // fix map resizes issue
+        map.invalidateSize();
       }
       // endLoad();
     },
@@ -53,16 +55,16 @@ function addMapData(locations) {
   };
   $.each(locations, function (id, loc) {
     console.log(loc);
-    $.each(loc.topics, function(t, score){
+    $.each(loc.topics, function(i, t){
       geoJsonData.features.push({
         type: 'Feature',
         properties: {
           name: loc.location.city + ", " + loc.location.state,
-          topic: t,
+          topic: t.key,
           // The important part is here: that each feature has some property
           // that we refer to later on, in `pointToLayer`, that determines
           // the size of the scaled circle.
-          count: score
+          count: t.score
         },
         geometry: {
           type: 'Point',

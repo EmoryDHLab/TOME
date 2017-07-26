@@ -1,6 +1,8 @@
 var nextArticle = 0;
 var LOADING = false;
 
+var previousSearch = "";
+
 var sortOpen = false;
 var sortMode = 0;
 
@@ -56,11 +58,12 @@ window.onscroll = function() {
   }
   var winBottom = $(window).scrollTop() + $(window).height();
   var currentSection = $(".section").filter(function() {
+
     var buffer = 20;
     var elTop = $(this).offset().top;
     var elBottom = $(this).offset().top + $(this).outerHeight(true);
     console.log(elTop , " <= ", winBottom);
-    return elTop + buffer < winBottom;
+    return $(this).css('display') != 'none' && elTop + buffer < winBottom;
   }).slice(-1)[0];
   console.log(currentSection);
   if (currentSection) {
@@ -269,6 +272,8 @@ function loadArticles(keys, start=0, count=6) {
         addArticleToDocumentDetails(parseInt(start) + parseInt(rank), d);
       })
       nextArticle += count;
+      var h = $(".left.column .article-info").first().outerHeight(true);
+      $(".article-info").css("min-height", h);
       endMiniLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -331,11 +336,19 @@ $(".view-all").click(function(e) {
 
 $("[name='keyword']").keydown(function(e){
   if ((e.keyCode || e.which) == 13){
-    updateTopicsList($("[name='keyword']").val());
+    var keywords = $("[name='keyword']").val()
+    if (keywords != previousSearch){
+      updateTopicsList(keywords);
+      previousSearch = keywords;
+    }
   }
 });
 $("[name='submit-search']").click(function(e){
-  updateTopicsList($("[name='keyword']").val());
+  var keywords = $("[name='keyword']").val()
+  if (keywords != previousSearch){
+    updateTopicsList(keywords);
+    previousSearch = keywords;
+  }
 });
 
 d3.selectAll(".topic-list")

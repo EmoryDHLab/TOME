@@ -75,7 +75,6 @@ class Topic(models.Model):
     def calculateScore(self):
         scores = self.articletopicrank_set.all().values_list('score',flat=True)
         self.score = sum(scores)
-        print(self.score)
 
     def __str__(self):
         return "Rank: " + str(self.rank) +  self.getFormattedTopWords(10)

@@ -626,7 +626,7 @@ function populateViewAll() {
 function useAllList() {
   d3.select("#corpus-ten-topics").style("display","none");
   d3.select("#corpus-topics").style("display","block");
-  updateAllSelected();
+  updateAllSelected(false);
 }
 
 // create the list for the view ten mode
@@ -770,7 +770,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     y: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return t.score;
+        return 100 * t.score / article_counts[t.year];
       })
     }), 0])
     .range([0, sizes.height])
@@ -779,7 +779,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     yPerc: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return t.score;
+        return 100 * t.score / article_counts[t.year];
       })
     }), 0])
     .range([0, sizes.height])
@@ -791,7 +791,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   }
   var line = d3.svg.line()
   .x(function(d) { return scale.x(d.year); })
-  .y(function(d) { return scale.y(d.score); })
+  .y(function(d) { return scale.y(100 * d.score / article_counts[d.year]); })
   .interpolate("linear");
 
   var graph = d3.select("#topic-score-chart").append("svg").data(visData)
@@ -817,7 +817,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
       .attr("dy", "-3.5em")
       .attr("dx", "-20%")
       .style("transform", "rotate(-90deg)")
-      .text("Score");
+      .text("% of Corpus (per year)");
 
   g.append("g")
     .classed("x axis", true)
