@@ -1,6 +1,12 @@
+
 tomeenv/
+
 __pycache__/
+
 .cache/
+
+/static/
+
 db.json
 
 # Settings file (to avoid overriding server defaults)
@@ -28,3 +34,4 @@ Thumbs.db
 venv
 node_modules
 .sass-cache
+.get-pip.py.swp
