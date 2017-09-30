@@ -9,6 +9,8 @@ __pycache__/
 
 db.json
 
+/env
+
 # Settings file (to avoid overriding server defaults)
 settings.py
 
