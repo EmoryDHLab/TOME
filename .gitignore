@@ -2,6 +2,7 @@ tomeenv/
 __pycache__/
 .cache/
 db.json
+/static/
 
 # Settings file (to avoid overriding server defaults)
 settings.py
@@ -25,6 +26,5 @@ Thumbs.db
 *.out
 
 # Application specific files
-venv
 node_modules
 .sass-cache
