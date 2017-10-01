@@ -1,6 +1,7 @@
-from topics.models import *
+from topics.models import Topic, Word, WordTopicRank
 from Tome.settings import BASE_DIR
 from django.contrib.staticfiles.templatetags.staticfiles import static
+
 
 def wipeTopics():
     Topic.objects.all().delete()
@@ -12,10 +13,10 @@ def importTopics(file_name):
     url = BASE_DIR + static('Tome/data/' + file_name)
     print(url)
     f = open(url)
-    counter = 0;
+    counter = 0
     for line in f:
         addTopic(line)
-        counter+=1
+        counter += 1
 
 
 def addTopic(line):
@@ -39,12 +40,16 @@ def addTopic(line):
             w.save()
         wtr = WordTopicRank(word=w, score=items[i+1], topic=t)
         wtr.save()
+
+
 def qRun():
     wipeTopics()
     importTopics("AntiSlaveryTopics.csv")
 
+
 def main():
     qRun()
+
 
 if __name__ == '__main__':
     main()

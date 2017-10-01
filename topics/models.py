@@ -1,9 +1,7 @@
-from Tome.helpers.model_helpers import *
-
-from django.utils.translation import ugettext_lazy as _
-
+from django.db import models
 import simplejson as json
 from decimal import Decimal
+
 
 class Word(models.Model):
     text = models.CharField(max_length=200, unique=True)
@@ -11,15 +9,18 @@ class Word(models.Model):
     def __str__(self):
         return self.text
 
+
 class Topic(models.Model):
     # custom id for loading stuff right
     key = models.IntegerField(unique=True, null=True)
 
     score = models.DecimalField(max_digits=16, decimal_places=10, default=0)
 
-    percentage = models.DecimalField(max_digits=16, decimal_places=10, default=0)
+    percentage = models.DecimalField(
+        max_digits=16, decimal_places=10, default=0)
 
-    articles = models.ManyToManyField('news.Article', through='ArticleTopicRank')
+    articles = models.ManyToManyField(
+        'news.Article', through='ArticleTopicRank')
     words = models.ManyToManyField(Word, through='WordTopicRank')
     rank = models.IntegerField(default=-1)
 
@@ -35,13 +36,14 @@ class Topic(models.Model):
         ordering = ('-score',)
 
     def percentByLocation(self, loc_id, articleCount):
-        atrs = self.articletopicrank_set.filter(article__issue__newspaper__location__id=loc_id);
+        atrs = self.articletopicrank_set.filter(
+            article__issue__newspaper__location__id=loc_id)
         ct = atrs.count()
-        raw_perc = 100 * (sum(atrs.values_list('score',flat=True)) / ct)
+        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def toJSON(self, nested=False, includeArticles=True):
-        tempD = {'words' : []}
+        tempD = {'words': []}
         tempD["key"] = self.key
         tempD["score"] = self.score
         tempD["rank"] = self.rank
@@ -63,21 +65,23 @@ class Topic(models.Model):
     def getFormattedTopWords(self, max_words, bracket=True):
         words = self.words.all()
         words_out = []
-        brk = ("","")
+        brk = ("", "")
         for i in range(max_words):
             if (i >= len(words)):
                 break
             words_out.append(str(words[i]))
         if (bracket):
-            brk = (" [","]")
+            brk = (" [", "]")
         return brk[0] + ", ".join(words_out) + brk[1]
 
     def calculateScore(self):
-        scores = self.articletopicrank_set.all().values_list('score',flat=True)
+        scores = self.articletopicrank_set.all().values_list(
+            'score', flat=True)
         self.score = sum(scores)
 
     def __str__(self):
-        return "Rank: " + str(self.rank) +  self.getFormattedTopWords(10)
+        return "Rank: " + str(self.rank) + self.getFormattedTopWords(10)
+
 
 class WordTopicRank(models.Model):
     word = models.ForeignKey(Word, on_delete=models.CASCADE)
@@ -99,7 +103,9 @@ class WordTopicRank(models.Model):
             return tempD
 
     def __str__(self):
-        return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) + " | Score: " + str(self.score)
+        return "Topic:" + str(self.topic.pk) + " | Word: " + str(self.word) \
+                + " | Score: " + str(self.score)
+
 
 class ArticleTopicRank(models.Model):
     article = models.ForeignKey('news.Article', on_delete=models.CASCADE)
@@ -122,11 +128,12 @@ class ArticleTopicRank(models.Model):
             return tempD
 
     def __str__(self):
-        return "Article: {0} | Topic: {1} | Score: {2}".format(self.article.key,
-            self.topic.getFormattedTopWords(3), self.score)
+        return "Article: {0} | Topic: {1} | Score: {2}".format(
+            self.article.key, self.topic.getFormattedTopWords(3), self.score)
+
 
 class YearTopicRank(models.Model):
-    #every YTR belongs to a corpus
+    # every YTR belongs to a corpus
     corpus = models.ForeignKey('news.Corpus', on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     year = models.IntegerField()
@@ -135,12 +142,12 @@ class YearTopicRank(models.Model):
 
     class Meta:
         ordering = ('year', '-score')
-        unique_together = ('year','topic')
+        unique_together = ('year', 'topic')
 
     def calculateScore(self):
         scores = self.topic.articletopicrank_set.filter(
-            article__issue__date_published__year=self.year).values_list('score',
-            flat=True)
+            article__issue__date_published__year=self.year).values_list(
+                'score', flat=True)
         self.score = sum(scores)
 
     def toJSON(self, nested=False):
@@ -153,5 +160,6 @@ class YearTopicRank(models.Model):
             return json.dumps(tempD)
         else:
             return tempD
+
     def __str__(self):
         return str(self.year) + ": " + str(self.score)

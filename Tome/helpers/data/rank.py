@@ -1,9 +1,10 @@
-from news.models import *
-from topics.models import *
+from topics.models import Topic, YearTopicRank
+
 
 def wipeRanks():
     Topic.objects.all().update(rank=-1)
     YearTopicRank.objects.all().update(rank=-1)
+
 
 def generateRanks():
     i = 0
@@ -11,7 +12,7 @@ def generateRanks():
     ytrs = YearTopicRank.objects.all()
     tCount = len(ts)
     ytrCount = len(ytrs)
-    mx = max([tCount, ytrCount])
+    # mx = max([tCount, ytrCount])
 
     while (i < tCount):
         t = ts[i]
@@ -33,12 +34,15 @@ def generateRanks():
         rnk += 1
         i += 1
 
+
 def qRun():
     wipeRanks()
     generateRanks()
 
+
 def main():
     qRun()
+
 
 if __name__ == '__main__':
     main()

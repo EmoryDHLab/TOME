@@ -81,10 +81,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'tome',
-	    'USER': os.environ["TOME_USERNAME"],
-	    'PASSWORD': os.environ["TOME_PASSWORD"],
-	    'HOST': 'localhost',
-	    'PORT': '',
+        'USER': os.environ["TOME_USERNAME"],
+        'PASSWORD': os.environ["TOME_PASSWORD"],
+        'HOST': 'localhost',
+        'PORT': '',
     }
 }
 
@@ -94,16 +94,20 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': 'django.contrib.auth.password_validation.'
+                + 'UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': 'django.contrib.auth.password_validation.'
+                + 'MinimumLengthValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.'
+                + 'CommonPasswordValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': 'django.contrib.auth.password_validation.'
+                + 'NumericPasswordValidator',
     },
 ]
 

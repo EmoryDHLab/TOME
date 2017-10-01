@@ -20,7 +20,8 @@ app_name = 'topics'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^topics_as_json/', views.topicsAsJSON, name='topics_as_json'),
-    url(r'^all_topics_as_json/', views.allTopicsAsJSON, name='all_topics_as_json'),
+    url(r'^all_topics_as_json/', views.allTopicsAsJSON,
+        name='all_topics_as_json'),
     url(r'^location_mapper/', views.locationMap, name='location_mapper'),
     url(r'^articles_by_topics/', views.getArticles, name='articles_by_topics'),
     url(r'^topics_by_paper/', views.topicsByPaper, name='topics_by_paper'),
