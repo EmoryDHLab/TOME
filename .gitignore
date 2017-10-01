@@ -8,6 +8,7 @@ __pycache__/
 /static/
 
 db.json
+/static/
 
 /env
 
@@ -33,7 +34,6 @@ Thumbs.db
 *.out
 
 # Application specific files
-venv
 node_modules
 .sass-cache
 .get-pip.py.swp
