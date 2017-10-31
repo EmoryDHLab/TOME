@@ -25,7 +25,7 @@ def topicsAsJSON(request):
     topics = Topic.objects.filter(key__in=keys["topics"])
     topics_json = {}
     for t in topics:
-        topics_json[t.key] = t.toJSON(True)
+        topics_json[t.key] = t.toJSON()
     topics_json = json.dumps(topics_json)
     return HttpResponse(topics_json, content_type='application/json')
 
@@ -46,7 +46,7 @@ def allTopicsAsJSON(request):
         for t in qset:
             if (t.id not in ids):
                 ids.append(t.id)
-                topics_json[rank] = t.toJSON(True)
+                topics_json[rank] = t.toJSON()
                 rank += 1
 
     topics_json = json.dumps(topics_json)
@@ -61,7 +61,7 @@ def locationMap(request):
     articleCount = Article.objects.all().count()
     for loc in locs:
         l = {}
-        l['location'] = loc.toJSON(True)
+        l['location'] = loc.toJSON()
         l['topics'] = {}
         for i in range(len(topics)):
             t = topics[i]
@@ -84,7 +84,7 @@ def getArticles(request):
     i = 0
     tempD = {}
     for atr in atrs:
-        tOb = atr.article.toJSON(True)
+        tOb = atr.article.toJSON()
         tOb["topics"] = atr.article.getTopTopics(3, True, True, keys['topics'])
         tempD[i] = tOb
         i += 1
