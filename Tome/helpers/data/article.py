@@ -4,13 +4,17 @@ from django.core.exceptions import ObjectDoesNotExist
 from Tome.settings import BASE_DIR
 from django.contrib.staticfiles.templatetags.staticfiles import static
 
-
+'''
+    Deletes all the changes
+'''
 def wipeNews():
     Newspaper.objects.all().delete()
     Issue.objects.all().delete()
     Article.objects.all().delete()
 
-
+'''
+    Imports the all the articles from a given file
+'''
 def importArticles(file_name):
     url = BASE_DIR + static('Tome/data/' + file_name)
     f = open(url)
@@ -21,7 +25,9 @@ def importArticles(file_name):
             addArticle(line)
         counter += 1
 
-
+'''
+    Imports a single article from a given line
+'''
 def addArticle(line):
     items = line.split(",")
     a = Article(key=items[0])
@@ -45,7 +51,7 @@ def addArticle(line):
 
 def qRun():
     wipeNews()
-    importArticles("documentMetadata.csv")
+    importArticles("documentMetadata_500.csv")
 
 
 def main():

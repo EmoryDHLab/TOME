@@ -40,8 +40,7 @@ def addATR(article_key, items):
 
 def qRun():
     wipeATRs()
-    generateATRs("docTopics.csv")
-
+    generateATRs("docTopics_FULL500.csv")
 
 def main():
     qRun()
