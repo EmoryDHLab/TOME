@@ -68,7 +68,7 @@ def locationMap(request):
             print(i, t.key)
             l["topics"][i] = {
                 'key': t.key,
-                'score': t.percentByLocation(loc.id, articleCount)
+                'score': t.percentByLocation(loc.id)
             }
         locs_json[loc.id] = l
     locs_json = json.dumps(locs_json)
@@ -85,7 +85,7 @@ def getArticles(request):
     tempD = {}
     for atr in atrs:
         tOb = atr.article.toJSON()
-        tOb["topics"] = atr.article.getTopTopics(3, True, True, keys['topics'])
+        tOb["topics"] = atr.article.getTopTopics(3, True, keys['topics'])
         tempD[i] = tOb
         i += 1
     return HttpResponse(json.dumps(tempD), content_type='application/json')
