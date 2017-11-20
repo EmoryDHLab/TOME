@@ -174,7 +174,7 @@ class Corpus(models.Model):
         # Validate the dates
         vali_date(self)
         # Don't allow corpus to exist without title
-        if (self.title == "" or self.title is not None):
+        if (self.title == "" or self.title is None):
             raise ValidationError(_('Newspaper must have a title'))
 
 
@@ -241,7 +241,7 @@ class Newspaper(models.Model):
         # Validate the dates
         vali_date(self)
         # Don't allow paper to exist without title
-        if (self.title == "" or self.title is not None):
+        if (self.title == "" or self.title is None):
             raise ValidationError(_('Newspaper must have a title'))
 
     def isActive(self):

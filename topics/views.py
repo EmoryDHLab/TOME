@@ -1,4 +1,4 @@
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.http import HttpResponse
 from django.shortcuts import render
 import simplejson as json
@@ -57,7 +57,9 @@ def locationMap(request):
     keys = json.loads(request.GET.get("json_data"))
     topics = Topic.objects.filter(key__in=keys["topics"]).order_by('rank')
     locs_json = {}
-    locs = Location.objects.all()
+    locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
+        .filter(newspaper_count__gt=0)
+    print("LOCATIONS: " + str(locs))
     articleCount = Article.objects.all().count()
     for loc in locs:
         l = {}
@@ -65,7 +67,6 @@ def locationMap(request):
         l['topics'] = {}
         for i in range(len(topics)):
             t = topics[i]
-            print(i, t.key)
             l["topics"][i] = {
                 'key': t.key,
                 'score': t.percentByLocation(loc.id)

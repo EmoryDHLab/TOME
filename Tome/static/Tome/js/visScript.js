@@ -1,8 +1,8 @@
 var rectdata = [];
 var tenMode = false;
 
-topics = new Topic();
-tenTopics = new Topic();
+topics = new TopicList();
+tenTopics = new TopicList();
 
 function highlightRects(t) {
   if (topics.full()) {
@@ -1033,8 +1033,8 @@ function createDeltaRankChart(keys, withAvg=true) {
       .attr("dy", "2.5em")
       .attr("dx", "45%")
       .text("Year");
-
-  $("#topic-rank-key").css("min-height",$("topic-rank-charts").outerHeight())
+      
+  $("#topic-rank-key").css("min-height",$("topic-rank-charts").outerHeight());
 }
 
 // TOPICS BY NEWSPAPER VIS

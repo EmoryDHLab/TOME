@@ -44,7 +44,7 @@ def addTopic(line):
 
 def qRun():
     wipeTopics()
-    importTopics("AntiSlaveryTopics_FULL500.csv")
+    importTopics("Multi/multipleTopics.csv")
 
 
 def main():

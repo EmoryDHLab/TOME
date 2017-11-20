@@ -1,3 +1,7 @@
+/*
+  Controls basic interaction on the site, and also has AJAX calls for data
+*/
+
 var nextArticle = 0;
 var LOADING = false;
 
@@ -12,9 +16,8 @@ var  mn = document.getElementById("head-nav");
 var scrollTop = function() {
   return (window.pageYOffset !== undefined) ? window.pageYOffset :
     (document.documentElement || document.body.parentNode ||
-    document.body).scrollTop;}
-
-
+    document.body).scrollTop;
+}
 
 // given an id, change the nav menu to have that selected
 function navChange(id, scrollToIt) {

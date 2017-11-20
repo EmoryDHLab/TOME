@@ -30,7 +30,7 @@ def addATR(article_key, items):
     for i in range(0, len(items), 2):
         scr = Decimal(items[i+1])
         t_key = items[i]
-        if (t_key not in t_dict.keys()):
+        if (t_key not in t_dict):
             t_dict[t_key] = Topic.objects.get(key=t_key)
         t_dict[t_key].score += scr
         t_dict[t_key].save(update_fields=["score"])

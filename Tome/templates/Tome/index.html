@@ -141,8 +141,15 @@
         <hr class="dark thick"/>
         <div id="topic-score-chart-wrapper" style='display: none;'>
           <div id="selected-topics">
+            <div class="view-toggle">
+              <h3>Select view:</h3>
+              <button type="button" name="t-perc">Topic %</button>
+              <button type="button" name="rank-change">Rank Change</button>
+            </div>
             <h2>Selected topics</h2>
-            <ol id="selected-topics-list" class="no-dec scroll-y"></ol>
+            <div class="list-wrapper">
+              <ol id="selected-topics-list" class="no-dec scroll-y"></ol>
+            </div>
           </div>
           <div id="topic-score-chart-inner-wrapper" class="c-wrap">
             <h2>Topic percentage per year</h2>

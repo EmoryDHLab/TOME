@@ -12,6 +12,11 @@
   margin-right: auto;
 }
 
+/* Make sure the fixed header will overlap everything else */
+.wrapper *:not(nav) {
+    z-index: 1;
+}
+
 .flex-container {
   display: flex;
 }
@@ -624,10 +629,56 @@ input[type='range'].vertical {
   box-sizing: border-box;
   padding: 0;
   padding-right: 10px;
+  display: grid;
+  grid-template-rows: 1fr 70px 4fr;
+}
+
+#selected-topics>div {
+  overflow: hidden;
+}
+
+#selected-topics .view-toggle {
+  margin-top: 0;
+  padding-top: 20px;
+}
+
+.view-toggle h3 {
+  margin-top: 0;
+}
+
+.view-toggle button {
+  font-family: 'Poppins', sans-serif;
+  display: inline-block;
+  padding: 5px;
+  width: 40%;
+  text-align: center;
+  border-radius: 0px;
+  border-color: #b8b8b8;
+  border-width: 1px;
+  border-style: solid;
+  float: left;
+}
+
+.view-toggle button.active {
+  outline: none;
+  background-color: #b8b8b8;
+  text-decoration: none;
+}
+
+.view-toggle button:focus {
+  outline: none;
+  background-color: #b8b8b8;
+}
+
+.view-toggle button:last-child {
+  border-left: none;
+  clear: right;
 }
 
 #selected-topics-list {
-  height:calc(100% - 70px);
+  height:calc(100%);
+  position: relative;
+  margin: 0;
 }
 
 #selected-topics li {

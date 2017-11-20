@@ -22,6 +22,7 @@ def importArticles(file_name):
     for line in f:
         line = line.strip()
         if (not line.startswith("#")):
+            print(line)
             addArticle(line)
         counter += 1
 
@@ -38,6 +39,8 @@ def addArticle(line):
         paper = Newspaper(key=items[2], date_started=datetime.date(1200, 3, 1))
         paper.save()
 
+    print(items[3] + " " + items[4] + " " + items[5])
+
     issue, saved_i = Issue.objects.get_or_create(date_published=datetime.date(
         int(items[3]), int(items[4]), int(items[5])), newspaper=paper)
     if (not saved_i):
@@ -51,7 +54,7 @@ def addArticle(line):
 
 def qRun():
     wipeNews()
-    importArticles("documentMetadata_500.csv")
+    importArticles("Multi/multipleDocumentMetadata.csv")
 
 
 def main():

@@ -1,5 +1,7 @@
-//TEsting git
-var Topic = function () {
+/*
+  The topic object used to represent topics loaded into the system
+*/
+var TopicList = function () {
   this.count = 0;
   this.selected = [];
   this.colors = [
@@ -17,17 +19,17 @@ var Topic = function () {
   this.defaultColor = "#d8d8d8";
   this.averageColor = "#000000";
 }
-Topic.prototype.getSelected = function() {
+TopicList.prototype.getSelected = function() {
   return this.selected;
 };
-Topic.prototype.getColor = function(k) {
+TopicList.prototype.getColor = function(k) {
   k = parseInt(k);
   if (k == -1) {
     return this.averageColor;
   }
   return this.colors[this.getSelected().indexOf(k)]
 };
-Topic.prototype.add = function(k) {
+TopicList.prototype.add = function(k) {
   k = parseInt(k);
   if (this.contains(k)) {
     console.log("Already in it.");
@@ -52,23 +54,23 @@ Topic.prototype.add = function(k) {
   this.count++;
 };
 
-Topic.prototype.addAll = function (keys) {
+TopicList.prototype.addAll = function (keys) {
   for (var i = 0; i < keys.length; i++) {
     this.add(parseInt(keys[i]));
   }
 };
 
-Topic.prototype.full = function() {
+TopicList.prototype.full = function() {
   return this.count == 10;
 };
 
-Topic.prototype.contains = function(k) {
+TopicList.prototype.contains = function(k) {
   k = parseInt(k);
   return this.getSelected().indexOf(k) != -1;
 }
 
   //works for both topTen and selected
-Topic.prototype.addOrGet = function(k) {
+TopicList.prototype.addOrGet = function(k) {
   k = parseInt(k);
   var tempCol = this.add(k);
   if (tempCol == undefined) {
@@ -77,7 +79,7 @@ Topic.prototype.addOrGet = function(k) {
   return tempCol;
 };
 
-Topic.prototype.deleteSelected = function(k) {
+TopicList.prototype.deleteSelected = function(k) {
   k = parseInt(k);
   i = this.getSelected().indexOf(k);
   console.log(i);
@@ -87,7 +89,7 @@ Topic.prototype.deleteSelected = function(k) {
   }
 };
 
-Topic.prototype.nextColor = function() {
+TopicList.prototype.nextColor = function() {
   var ind = 0;
   if (this.count < this.getSelected().length){
     for (i = 0; i < this.getSelected().length; i++) {
@@ -102,14 +104,14 @@ Topic.prototype.nextColor = function() {
   return this.colors[ind];
 };
 
-Topic.prototype.clear = function() {
+TopicList.prototype.clear = function() {
   this.count = 0;
   this.selected = [];
 }
 
 // gets all topics in selection as objects, not just keys.
 // tRef is the list of objects to be used to translate the key into the object
-Topic.prototype.getSelectedAsTopics = function(tRef) {
+TopicList.prototype.getSelectedAsTopics = function(tRef) {
   var preSelected = [];
   for (var i = 0; i < this.getSelected().length; i++) {
     var tp = this.getSelected()[i];
@@ -120,11 +122,12 @@ Topic.prototype.getSelectedAsTopics = function(tRef) {
   }
   return preSelected;
 }
-Topic.prototype.empty = function() {
+
+TopicList.prototype.empty = function() {
   return this.count == 0;
 }
 
-Topic.prototype.getKeys = function() {
+TopicList.prototype.getKeys = function() {
   return this.getSelected().reduce(function (r, a) {
         if (a != undefined) {
             r.push(a);
@@ -133,7 +136,7 @@ Topic.prototype.getKeys = function() {
     }, []);
 }
 
-Topic.prototype.copyFrom = function(keys) {
+TopicList.prototype.copyFrom = function(keys) {
   console.log(keys);
   this.clear();
   for (var i = 0; i < keys.length; i++) {
