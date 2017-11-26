@@ -60,6 +60,17 @@ class Topic(models.Model):
         raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
+    def percentByPaper(self, paper_id):
+        """
+        Gets the topic percentage relative to a newspapers
+        @param paper_id : the newspaper
+        """
+        atrs = self.articletopicrank_set.filter(
+            article__issue__newspaper__id=paper_id)
+        ct = atrs.count()
+        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
+        return raw_perc.quantize(Decimal('1.000'))
+
     def toJSON(self, includeArticles=True):
         """
         Returns dict representation of the Topic

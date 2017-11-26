@@ -27,6 +27,7 @@ function updateMapLocations(keys) {
         clearMapData();
       }
       addMapData(data);
+      updateMapInfo(data);
       if (keys.length == 0) {
         $("#map-wrapper").css("display","none");
         // fix map resizes issue
@@ -95,11 +96,6 @@ function addMapData(locations) {
           fillOpacity: 0.4
         }
         var popupOptions = {maxWidth: 500};
-        var tr = '<tr id="" class="location info">'
-          + '<td class="p-title">' + '</td>'
-          + '<td class="t-pie"></td>'
-          + '<td class="t-bars"></td>'
-        + '</tr>'
         var popupContent = '<div>'
             + '<h4>' + "Topic " + feature.properties.topic + '</h4>'
             + '<span>' + feature.properties.count + '%</span>'
@@ -127,23 +123,40 @@ function addMapData(locations) {
   }).addTo(map);
 }
 
+var updateMapInfo = function(data) {
+  $("#map-info table").html("");
+  console.log("MAP INFO");
+  console.log(data);
+  $.each(data, function(loc_id, loc_data) {
+    console.log("HERE: " + loc_id)
+    var section = "<tbody data-loc='" + loc_id + "'>";
+    $.each(loc_data.papers, function(paper_id, paper_data){
+      section += "<tr>"
+        + "<td class='title'>" + paper_data.title + "</td>"
+        + "<td class='pie'></td>"
+        + "<td class='bars'></td>"
+      + "</tr>";
+    });
+    section += "</tbody>";
+    $("#map-info table").append(section);
+  });
+}
 
-
-var pie = new d3pie(document.querySelector('#n1 .t-pie'), {
-  size: {
-    canvasHeight: 120,
-    canvasWidth: 140
-  },
-  header: {
-		title: {
-			text: ""
-		}
-	},
-	data: {
-		content: [
-			{ value: 1.3, color: "#0000ff" },
-			{ value: 1.4, color: "#00ffff" },
-			{ value: 97.3, color: "#d8d8d8"},
-		]
-	}
-});
+// var pie = new d3pie(document.querySelector('#n1 .t-pie'), {
+//   size: {
+//     canvasHeight: 120,
+//     canvasWidth: 140
+//   },
+//   header: {
+// 		title: {
+// 			text: ""
+// 		}
+// 	},
+// 	data: {
+// 		content: [
+// 			{ value: 1.3, color: "#0000ff" },
+// 			{ value: 1.4, color: "#00ffff" },
+// 			{ value: 97.3, color: "#d8d8d8"},
+// 		]
+// 	}
+// });

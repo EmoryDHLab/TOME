@@ -54,23 +54,51 @@ def allTopicsAsJSON(request):
 
 
 def locationMap(request):
+    """
+    Returns JSON describing each location and its component topics
+        {
+            'location_id': {
+                'location' : {  Location JSON  },
+                'topics' : { # by rank
+                    0 :
+                }
+            },
+
+        }
+    """
     keys = json.loads(request.GET.get("json_data"))
     topics = Topic.objects.filter(key__in=keys["topics"]).order_by('rank')
+    papers = Newspaper.objects.all()
     locs_json = {}
     locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
         .filter(newspaper_count__gt=0)
-    print("LOCATIONS: " + str(locs))
-    articleCount = Article.objects.all().count()
     for loc in locs:
         l = {}
         l['location'] = loc.toJSON()
         l['topics'] = {}
+        l['papers'] = {}
+        # for each topic
         for i in range(len(topics)):
+            # for each newspaper
             t = topics[i]
             l["topics"][i] = {
                 'key': t.key,
                 'score': t.percentByLocation(loc.id)
             }
+            for paper in papers.filter(location__id=loc.id):
+                try:
+                    score = t.percentByPaper(paper.id)
+                except:
+                    score = 0
+                if (paper.id not in l["papers"]):
+                    l["papers"][paper.id] = {
+                        "title": paper.title,
+                        "topics": {}
+                    }
+                l["papers"][paper.id]["topics"][i] = {
+                    'key': t.key,
+                    'score': score
+                }
         locs_json[loc.id] = l
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')
