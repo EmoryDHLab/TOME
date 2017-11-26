@@ -680,6 +680,12 @@ input[type='range'].vertical {
 .leaflet-control {
   z-index: 99;
 }
+
+.grid-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 /*-----------------------------DOCUMENT DETAILS ------------------------------*/
 
 .column-wrap{

@@ -95,6 +95,11 @@ function addMapData(locations) {
           fillOpacity: 0.4
         }
         var popupOptions = {maxWidth: 500};
+        var tr = '<tr id="" class="location info">'
+          + '<td class="p-title">' + '</td>'
+          + '<td class="t-pie"></td>'
+          + '<td class="t-bars"></td>'
+        + '</tr>'
         var popupContent = '<div>'
             + '<h4>' + "Topic " + feature.properties.topic + '</h4>'
             + '<span>' + feature.properties.count + '%</span>'
@@ -121,3 +126,24 @@ function addMapData(locations) {
       }
   }).addTo(map);
 }
+
+
+
+var pie = new d3pie(document.querySelector('#n1 .t-pie'), {
+  size: {
+    canvasHeight: 120,
+    canvasWidth: 140
+  },
+  header: {
+		title: {
+			text: ""
+		}
+	},
+	data: {
+		content: [
+			{ value: 1.3, color: "#0000ff" },
+			{ value: 1.4, color: "#00ffff" },
+			{ value: 97.3, color: "#d8d8d8"},
+		]
+	}
+});
