@@ -149,7 +149,6 @@ function updateTopicsSelected(e) {
       }
       console.log(data);
       createTopicOverTimeVis(topics.getKeys(), data);
-      createDeltaRankChart(topics.getKeys());
       createTopicsByPaper(topics.getKeys(),data);
       updateMapLocations(topics.getKeys());
       loadArticles(topics.getKeys())
