@@ -148,12 +148,13 @@ var updateMapInfo = function(data) {
   console.log(data);
   $.each(data, function(loc_id, loc_data) {
     console.log("HERE: " + loc_id)
-    var section = "<tbody data-loc='" + loc_id + "'>";
+    var section = "<tbody data-loc='" + loc_id + "'></tbody>";
+    $("#map-info table").append(section)
     $.each(loc_data.papers, function(paper_id, paper_data) {
       var pieData = {
         size: {
-          canvasHeight: 120,
-          canvasWidth: 120
+          canvasHeight: 250,
+          canvasWidth: 250
         },
         header: {
           title: {
@@ -162,21 +163,38 @@ var updateMapInfo = function(data) {
         },
         data: {
           content: []
-        }
+        },
+        misc: {
+		      colors: {
+	          segments: []
+          }
+		    }
       }
-      pieData.data.content
-      console.log(paper_data);
-      section += "<tr data-paper-id='" + paper_id + "'>"
+      var perc = 100;
+      $.each(paper_data.topics, function(id, topic) {
+        perc -= topic.score;
+        pieData.data.content.push({
+          label:topic.key,
+          value: topic.score
+        });
+        pieData.misc.colors.segments.push(topics.getColor(topic.key));
+      });
+      pieData.data.content.push({
+        label: "Unselected",
+        value: perc
+      });
+      pieData.misc.colors.segments.push(topics.defaultColor);
+      console.log(pieData.data.content);
+      var subsection = "<tr data-paper-id='" + paper_id + "'>"
         + "<td class='title'>" + paper_data.title + "</td>"
         + "<td class='pie'></td>"
         + "<td class='bars'></td>"
       + "</tr>";
+      var el = $(subsection)[0];
+      console.log(el);
+      var pie = new d3pie(el.getElementsByClassName('pie')[0], pieData);
+      $("#map-info table [data-loc='" + loc_id + "']").append(el);
     });
-    section += "</tbody>";
-    el = $(section)[0];
-    console.log(el);
-    var pie = new d3pie(el.getElementsByClassName('pie')[0], );
-    $("#map-info table").append(el);
   });
 
 }
