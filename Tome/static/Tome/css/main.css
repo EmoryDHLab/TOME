@@ -669,7 +669,7 @@ input[type='range'].vertical {
 
 .leaflet-popup,
 .leaflet-popup-close-button {
-  color: white;
+  color: black;
 }
 
 .leaflet-popup h4,

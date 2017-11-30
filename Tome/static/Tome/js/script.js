@@ -23,9 +23,6 @@ var scrollTop = function() {
 function navChange(id, scrollToIt) {
   $("nav .active").removeClass("active");
   $("nav li").filter(function() {
-    console.log(this);
-    console.log(this.children[0].getAttribute('href'));
-    console.log("#" + id);
     return this.children[0].getAttribute('href') == "#" + id;
   }).addClass("active");
   if (scrollToIt) {
@@ -65,10 +62,8 @@ window.onscroll = function() {
     var buffer = 20;
     var elTop = $(this).offset().top;
     var elBottom = $(this).offset().top + $(this).outerHeight(true);
-    console.log(elTop , " <= ", winBottom);
     return $(this).css('display') != 'none' && elTop + buffer < winBottom;
   }).slice(-1)[0];
-  console.log(currentSection);
   if (currentSection) {
     navChange(currentSection.id, false);
   }
