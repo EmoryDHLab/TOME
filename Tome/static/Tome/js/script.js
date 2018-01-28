@@ -144,7 +144,6 @@ function updateTopicsSelected(e) {
       }
       console.log(data);
       createTopicOverTimeVis(topics.getKeys(), data);
-      createTopicsByPaper(topics.getKeys(),data);
       updateMapLocations(topics.getKeys());
       loadArticles(topics.getKeys())
       // endLoad();

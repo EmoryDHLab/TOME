@@ -142,59 +142,236 @@ function addMapData(locations) {
   }).addTo(map);
 }
 
+var getPieData = function(paper_data) {
+  var pieData = {
+    size: {
+      canvasHeight: 250,
+      canvasWidth: 250
+    },
+    header: {
+      title: {
+        text: ""
+      }
+    },
+    data: {
+      content: []
+    },
+    misc: {
+      colors: {
+        segments: []
+      }
+    },
+    labels: {
+  		outer: {
+  			pieDistance: 14
+  		},
+  		inner: {
+  			format: "none",
+  			hideWhenLessThanPercentage: 100
+  		},
+  		mainLabel: {
+  			fontSize: 11
+  		},
+  		percentage: {
+  			color: "#ffffff",
+  			decimalPlaces: 0
+  		},
+  		value: {
+  			color: "#adadad",
+  			fontSize: 11
+  		},
+  		lines: {
+  			enabled: true
+  		},
+  		truncation: {
+  			enabled: true
+  		}
+  	},
+    effects: {
+  		load: {
+  			speed: 500
+  		},
+  		pullOutSegmentOnClick: {
+  			effect: "none",
+  			speed: 400,
+  			size: 8
+  		}
+  	}
+  }
+  var perc = 100;
+  $.each(paper_data.topics, function(id, topic) {
+    perc -= topic.score;
+    pieData.data.content.push({
+      label: "Topic " + topic.key,
+      value: topic.score
+    });
+    pieData.misc.colors.segments.push(topics.getColor(topic.key));
+  });
+  pieData.data.content.push({
+    label: "Unselected",
+    value: perc
+  });
+  pieData.misc.colors.segments.push(topics.defaultColor);
+  return pieData;
+}
+
+/*
+ *
+ * Used for getting the bar next to the pie charts in the map section
+ * paper: the paper data (location, topics, etc)
+ * paperId: the id of the paper
+ *
+ */
+function getPercCompBar(paperId, paperData) {
+  var totalPerc = 0;
+  var shifts = {};
+  $.each(paperData['topics'], function(i, tpc) {
+    var percent = tpc.score;
+    totalPerc += percent;
+    shifts[tpc.key] = totalPerc - percent;
+  });
+  console.log(paperData);
+  var margin = {top: 10, right: 30, bottom: 50, left: 30};
+
+  var sizes = {
+    width : $(".bars").innerWidth()
+      - margin.left - margin.right,
+    offset : 5,
+    height : 40,
+    gap: 30
+  };
+
+  var scale = {
+    x: d3.scale.linear()
+    .domain([0, totalPerc])
+    .range([0, sizes.width])
+    .clamp(true),
+    overall: d3.scale.linear()
+      .domain([0, 100])
+      .range([0, sizes.width])
+      .clamp(true),
+  };
+
+  var axis = {
+    x: d3.svg.axis().scale(scale.x).orient("bottom"),
+  }
+  axisPadding = 1;
+
+  var line = d3.svg.line()
+    .x(function(d) { return d.x; })
+    .y(function(d) { return d.y; });
+  var area = d3.svg.area()
+    .x( function(d) { return d.x } )
+    .y0( function(d) { return sizes.height + sizes.gap } )
+    .y1( function(d) { return d.y } );
+  var graph = d3.select(".paper[data-paper-id='" + paperId + "'] .bars").append("svg")
+    .attr("width", sizes.width + margin.left + margin.right)
+    .attr("height", (2 * sizes.height + sizes.gap) + margin.top + margin.bottom)
+
+  var overallBar = graph.append("g")
+    .attr("transform", "translate(" + margin.left + "," + 0 + ")")
+    .selectAll('rect').data([
+      {score: totalPerc, other: false},
+      {score: 100 - totalPerc, other: true}
+    ])
+      .enter().append('rect')
+        .attr('x', function(d) { return (d.other) ? scale.overall(totalPerc) : 0;})
+        .attr('y', function(d) { return 0;})
+        .attr('width', function(d) {
+          console.log("Key: " + d.other + "SCORE: " + d.score, scale.overall(d.score));
+          return scale.overall(d.score);
+        })
+        .attr('height', function(d) {
+          return sizes.height;
+        })
+        .style('fill', function(d) {
+          return (d.other) ? '#d8d8d8' : '#eeb17e';
+        })
+        .append("title")
+          .text(function(d) {
+            var s = (d.other) ? "Other topics: " : "Selected Topics: ";
+            s += roundToPlace(d.score, 3) + "%";
+            return s;
+          });
+  graph.append('path').data([[
+      {x: 0, y: sizes.height},
+      {x: scale.overall(totalPerc), y: sizes.height},
+      {x: sizes.width, y: (sizes.height + sizes.gap)}
+    ]
+  ])
+    .attr('transform',"translate(" + margin.left + "," + 0 + ")")
+    .style("stroke", "#eeb17e")
+    .style("fill", "#ffcc8e")
+    .attr('class', 'area')
+    .attr('d', area);
+  // graph.append('path').data([[
+  //   {x: scale.overall(totalPerc), y: sizes.height},
+  //   {x: sizes.width, y: (sizes.height + sizes.gap)}
+  // ]])
+  //   .attr('transform',"translate(" + margin.left + "," + 0 + ")")
+  //   .style("stroke", "#eeb17e")
+  //   .attr('class', 'line')
+  //   .attr('d', line);
+
+  var splitTopics = graph.append("g")
+    .attr("transform", "translate(" + margin.left + "," + (sizes.height + sizes.gap) + ")");
+    splitTopics.selectAll('rect').data(Object.values(paperData['topics']))
+      .enter().append('rect')
+        .attr('x', function(d) {return scale.x(shifts[d.key]);})
+        .attr('y', 0)
+        .attr('width',function(d) {
+          console.log("SCORE: " + d.score);
+          return scale.x(d.score);
+        })
+        .attr('height',function(d) {
+          return sizes.height;
+        })
+        .style('fill', function(d) {
+          return topics.getColor(d.key);
+        })
+        .append("title")
+          .text(function(d) {
+            var s = "Topic " + d.key + ": "
+              + roundToPlace(d.score, 3) + "%"
+            return s;
+          })
+  graph.append("g")
+    .classed("x axis", true)
+    .attr("transform", "translate(" + margin.left + ","+ (2 * sizes.height + sizes.gap) +")")
+    .call(axis.x)
+    .append("text")
+      .attr("class", "x label")
+      .attr("text-anchor", "center")
+      .attr("dy", "2.5em")
+      .attr("x", function(d) {
+        return (sizes.width - 40)/ 2;
+      })
+      .text("% of Newspaper");
+}
+
 var updateMapInfo = function(data) {
-  $("#map-info table").html("");
+  $("#map-info div").html("");
   console.log("MAP INFO");
   console.log(data);
   $.each(data, function(loc_id, loc_data) {
     console.log("HERE: " + loc_id)
-    var section = "<tbody data-loc='" + loc_id + "'></tbody>";
-    $("#map-info table").append(section)
+    var section = "<div class='paper-loc' data-loc='" + loc_id + "'>"
+      + "</div>";
+    $("#map-info #papers-in-loc").append(section)
     $.each(loc_data.papers, function(paper_id, paper_data) {
-      var pieData = {
-        size: {
-          canvasHeight: 250,
-          canvasWidth: 250
-        },
-        header: {
-          title: {
-            text: ""
-          }
-        },
-        data: {
-          content: []
-        },
-        misc: {
-		      colors: {
-	          segments: []
-          }
-		    }
-      }
-      var perc = 100;
-      $.each(paper_data.topics, function(id, topic) {
-        perc -= topic.score;
-        pieData.data.content.push({
-          label:topic.key,
-          value: topic.score
-        });
-        pieData.misc.colors.segments.push(topics.getColor(topic.key));
-      });
-      pieData.data.content.push({
-        label: "Unselected",
-        value: perc
-      });
-      pieData.misc.colors.segments.push(topics.defaultColor);
-      console.log(pieData.data.content);
-      var subsection = "<tr data-paper-id='" + paper_id + "'>"
-        + "<td class='title'>" + paper_data.title + "</td>"
-        + "<td class='pie'></td>"
-        + "<td class='bars'></td>"
-      + "</tr>";
+      var pieData = getPieData(paper_data);
+      var subsection = "<div class='paper' data-paper-id='" + paper_id + "'>"
+          + "<h3 class='title'>" + paper_data.title
+            + " (" + loc_data.location.city + ")"
+          + "</h3>"
+          + "<div class='pie'></div>"
+          + "<div class='bars'></div>"
+        + "</div>";
       var el = $(subsection)[0];
       console.log(el);
-      var pie = new d3pie(el.getElementsByClassName('pie')[0], pieData);
-      $("#map-info table [data-loc='" + loc_id + "']").append(el);
+      //var pie = new d3pie(el.getElementsByClassName('pie')[0], pieData);
+      $("#map-info #papers-in-loc [data-loc='" + loc_id + "']").append(el);
+      getPercCompBar(paper_id, paper_data);
     });
   });
-
 }
