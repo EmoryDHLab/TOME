@@ -13,8 +13,8 @@
 }
 
 /* Make sure the fixed header will overlap everything else */
-.wrapper *:not(nav) {
-    z-index: 1;
+.wrapper *:not(nav):not(.slider-handle-icon) {
+  z-index: 1;
 }
 
 .flex-container {

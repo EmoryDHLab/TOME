@@ -142,104 +142,38 @@ function addMapData(locations) {
   }).addTo(map);
 }
 
-var getPieData = function(paper_data) {
-  var pieData = {
-    size: {
-      canvasHeight: 250,
-      canvasWidth: 250
-    },
-    header: {
-      title: {
-        text: ""
-      }
-    },
-    data: {
-      content: []
-    },
-    misc: {
-      colors: {
-        segments: []
-      }
-    },
-    labels: {
-  		outer: {
-  			pieDistance: 14
-  		},
-  		inner: {
-  			format: "none",
-  			hideWhenLessThanPercentage: 100
-  		},
-  		mainLabel: {
-  			fontSize: 11
-  		},
-  		percentage: {
-  			color: "#ffffff",
-  			decimalPlaces: 0
-  		},
-  		value: {
-  			color: "#adadad",
-  			fontSize: 11
-  		},
-  		lines: {
-  			enabled: true
-  		},
-  		truncation: {
-  			enabled: true
-  		}
-  	},
-    effects: {
-  		load: {
-  			speed: 500
-  		},
-  		pullOutSegmentOnClick: {
-  			effect: "none",
-  			speed: 400,
-  			size: 8
-  		}
-  	}
-  }
-  var perc = 100;
-  $.each(paper_data.topics, function(id, topic) {
-    perc -= topic.score;
-    pieData.data.content.push({
-      label: "Topic " + topic.key,
-      value: topic.score
-    });
-    pieData.misc.colors.segments.push(topics.getColor(topic.key));
-  });
-  pieData.data.content.push({
-    label: "Unselected",
-    value: perc
-  });
-  pieData.misc.colors.segments.push(topics.defaultColor);
-  return pieData;
-}
-
 /*
  *
- * Used for getting the bar next to the pie charts in the map section
- * paper: the paper data (location, topics, etc)
- * paperId: the id of the paper
+ * function to make the percent comparison bars
+ * @param selector (String) css selector for the desired containing element
+ * @param topicData (object) the topic data for use in the bar construction
+ *           - Must contain score and key attributes
+ * @param styles (object) optional styles to apply
  *
  */
-function getPercCompBar(paperId, paperData) {
+function makePercCompBar(selector, topicData, styles={}) {
   var totalPerc = 0;
   var shifts = {};
-  $.each(paperData['topics'], function(i, tpc) {
+  $.each(topicData, function(i, tpc) {
     var percent = tpc.score;
     totalPerc += percent;
     shifts[tpc.key] = totalPerc - percent;
   });
-  console.log(paperData);
-  var margin = {top: 10, right: 30, bottom: 50, left: 30};
+  var margin = (styles.margin == undefined) ?
+    {top: 10, right: 30, bottom: 50, left: 30} : styles.margin;
 
-  var sizes = {
-    width : $(".bars").innerWidth()
+  var sizes = (styles.sizes == undefined) ? {
+    width : $(selector).innerWidth()
       - margin.left - margin.right,
     offset : 5,
     height : 40,
+    upperHeight: 20,
     gap: 30
-  };
+  } : styles.sizes;
+
+  var labels = (styles.labels == undefined) ? {
+    percents: "% of Newspaper"
+  } : styles.labels;
 
   var scale = {
     x: d3.scale.linear()
@@ -255,18 +189,16 @@ function getPercCompBar(paperId, paperData) {
   var axis = {
     x: d3.svg.axis().scale(scale.x).orient("bottom"),
   }
-  axisPadding = 1;
 
-  var line = d3.svg.line()
-    .x(function(d) { return d.x; })
-    .y(function(d) { return d.y; });
   var area = d3.svg.area()
     .x( function(d) { return d.x } )
     .y0( function(d) { return sizes.height + sizes.gap } )
     .y1( function(d) { return d.y } );
-  var graph = d3.select(".paper[data-paper-id='" + paperId + "'] .bars").append("svg")
+
+  var graph = d3.select(selector).append("svg")
     .attr("width", sizes.width + margin.left + margin.right)
-    .attr("height", (2 * sizes.height + sizes.gap) + margin.top + margin.bottom)
+    .attr("height", sizes.height + sizes.upperHeight + sizes.gap + margin.top
+            + margin.bottom);
 
   var overallBar = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + 0 + ")")
@@ -278,11 +210,10 @@ function getPercCompBar(paperId, paperData) {
         .attr('x', function(d) { return (d.other) ? scale.overall(totalPerc) : 0;})
         .attr('y', function(d) { return 0;})
         .attr('width', function(d) {
-          console.log("Key: " + d.other + "SCORE: " + d.score, scale.overall(d.score));
           return scale.overall(d.score);
         })
         .attr('height', function(d) {
-          return sizes.height;
+          return sizes.upperHeight;
         })
         .style('fill', function(d) {
           return (d.other) ? '#d8d8d8' : '#eeb17e';
@@ -290,13 +221,13 @@ function getPercCompBar(paperId, paperData) {
         .append("title")
           .text(function(d) {
             var s = (d.other) ? "Other topics: " : "Selected Topics: ";
-            s += roundToPlace(d.score, 3) + "%";
+            s += roundToPlace(d.score, 3) + labels.percents;
             return s;
           });
   graph.append('path').data([[
-      {x: 0, y: sizes.height},
-      {x: scale.overall(totalPerc), y: sizes.height},
-      {x: sizes.width, y: (sizes.height + sizes.gap)}
+      {x: 0, y: sizes.upperHeight},
+      {x: scale.overall(totalPerc), y: sizes.upperHeight},
+      {x: sizes.width, y: (sizes.upperHeight + sizes.gap)}
     ]
   ])
     .attr('transform',"translate(" + margin.left + "," + 0 + ")")
@@ -304,18 +235,12 @@ function getPercCompBar(paperId, paperData) {
     .style("fill", "#ffcc8e")
     .attr('class', 'area')
     .attr('d', area);
-  // graph.append('path').data([[
-  //   {x: scale.overall(totalPerc), y: sizes.height},
-  //   {x: sizes.width, y: (sizes.height + sizes.gap)}
-  // ]])
-  //   .attr('transform',"translate(" + margin.left + "," + 0 + ")")
-  //   .style("stroke", "#eeb17e")
-  //   .attr('class', 'line')
-  //   .attr('d', line);
 
+  // adds the second bar
   var splitTopics = graph.append("g")
-    .attr("transform", "translate(" + margin.left + "," + (sizes.height + sizes.gap) + ")");
-    splitTopics.selectAll('rect').data(Object.values(paperData['topics']))
+    .attr("transform", "translate(" + margin.left + ","
+            + (sizes.upperHeight + sizes.gap) + ")");
+    splitTopics.selectAll('rect').data(Object.values(topicData))
       .enter().append('rect')
         .attr('x', function(d) {return scale.x(shifts[d.key]);})
         .attr('y', 0)
@@ -332,12 +257,15 @@ function getPercCompBar(paperId, paperData) {
         .append("title")
           .text(function(d) {
             var s = "Topic " + d.key + ": "
-              + roundToPlace(d.score, 3) + "%"
+              + roundToPlace(d.score, 3) + labels.percents
             return s;
           })
+
+  // add the x axis at the bottom
   graph.append("g")
     .classed("x axis", true)
-    .attr("transform", "translate(" + margin.left + ","+ (2 * sizes.height + sizes.gap) +")")
+    .attr("transform", "translate(" + margin.left + ","
+            + (sizes.height + sizes.upperHeight + sizes.gap) +")")
     .call(axis.x)
     .append("text")
       .attr("class", "x label")
@@ -346,7 +274,26 @@ function getPercCompBar(paperId, paperData) {
       .attr("x", function(d) {
         return (sizes.width - 40)/ 2;
       })
-      .text("% of Newspaper");
+      .text(labels.percents);
+}
+
+/*
+ *
+ * Used for getting the bar next to the pie charts in the map section
+ * paper: the paper data (location, topics, etc)
+ * paperId: the id of the paper
+ *
+ */
+function getPaperCompBars(paperId, paperData) {
+  var selector = ".paper[data-paper-id='" + paperId + "'] .bars";
+  var topicData = paperData['topics'];
+  makePercCompBar(selector, topicData);
+}
+
+function makeTopicCompBars(topicData) {
+  var selector = "#topic-comp-bars";
+  $("#topic-comp-bars").html("");
+  makePercCompBar(selector, topicData, {labels:{percents:"% of Corpus"}});
 }
 
 var updateMapInfo = function(data) {
@@ -359,7 +306,6 @@ var updateMapInfo = function(data) {
       + "</div>";
     $("#map-info #papers-in-loc").append(section)
     $.each(loc_data.papers, function(paper_id, paper_data) {
-      var pieData = getPieData(paper_data);
       var subsection = "<div class='paper' data-paper-id='" + paper_id + "'>"
           + "<h3 class='title'>" + paper_data.title
             + " (" + loc_data.location.city + ")"
@@ -369,9 +315,8 @@ var updateMapInfo = function(data) {
         + "</div>";
       var el = $(subsection)[0];
       console.log(el);
-      //var pie = new d3pie(el.getElementsByClassName('pie')[0], pieData);
       $("#map-info #papers-in-loc [data-loc='" + loc_id + "']").append(el);
-      getPercCompBar(paper_id, paper_data);
+      getPaperCompBars(paper_id, paper_data);
     });
   });
 }

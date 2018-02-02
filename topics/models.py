@@ -62,12 +62,19 @@ class Topic(models.Model):
 
     def percentByPaper(self, paper_id):
         """
-        Gets the topic percentage relative to a newspapers
+        Gets the topic percentage relative to a newspaper
         @param paper_id : the newspaper
         """
+        # get all topics within the given paper
         atrs = self.articletopicrank_set.filter(
             article__issue__newspaper__id=paper_id)
+
+        # count how many articles there are
         ct = atrs.count()
+
+        # get a raw percentage by aggregating the scores of the articles
+        # then dividing that by the number of articles in total
+        # then multiply by 100 to get a percentage
         raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
