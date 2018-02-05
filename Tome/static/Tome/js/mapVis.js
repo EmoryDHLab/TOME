@@ -297,26 +297,25 @@ function makeTopicCompBars(topicData) {
 }
 
 var updateMapInfo = function(data) {
-  $("#map-info div").html("");
-  console.log("MAP INFO");
-  console.log(data);
+  $(".papers-col").html("");
+  paperCount = 0;
   $.each(data, function(loc_id, loc_data) {
-    console.log("HERE: " + loc_id)
-    var section = "<div class='paper-loc' data-loc='" + loc_id + "'>"
-      + "</div>";
-    $("#map-info #papers-in-loc").append(section)
     $.each(loc_data.papers, function(paper_id, paper_data) {
-      var subsection = "<div class='paper' data-paper-id='" + paper_id + "'>"
+      var subsection = "<div class='paper' data-paper-id='" + paper_id
+        + "' data-paper-loc='" + loc_id + "'>"
           + "<h3 class='title'>" + paper_data.title
             + " (" + loc_data.location.city + ")"
           + "</h3>"
-          + "<div class='pie'></div>"
           + "<div class='bars'></div>"
         + "</div>";
       var el = $(subsection)[0];
-      console.log(el);
-      $("#map-info #papers-in-loc [data-loc='" + loc_id + "']").append(el);
+      if (paperCount < 3) {
+        $(".papers-col.left").append(el);
+      } else {
+        $(".papers-col.right").append(el);
+      }
       getPaperCompBars(paper_id, paper_data);
+      paperCount++;
     });
   });
 }

@@ -688,12 +688,16 @@ input[type='range'].vertical {
 
 /*----------------------------MAP AUXILLIARY VIS------------------------------*/
 
-#map-info h2 {
-  margin: 0.3em 0;
+.paper h3 {
+  margin-top: 0;
 }
 
 .paper {
-  padding-left: 1em;
+  padding-left: .5em;
+}
+
+.papers-col {
+  padding: 1em;
 }
 
 /*-----------------------------DOCUMENT DETAILS-------------------------------*/
