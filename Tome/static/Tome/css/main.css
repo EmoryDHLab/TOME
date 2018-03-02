@@ -700,6 +700,48 @@ input[type='range'].vertical {
   padding: 1em;
 }
 
+/*------------------------------DOCUMENT TABLE--------------------------------*/
+.rsp-table {
+  width: 75%;
+}
+
+
+.rsp-table .rsp-table-header {
+  height: 30px;
+  box-sizing: border-box;
+}
+
+.rsp-table-body {
+  height: 50vh;
+  overflow-y:scroll;
+  box-sizing: border-box;
+}
+
+.rsp-table-body .article p {
+  margin: 0;
+  height: 1.5em;
+  padding-left: 10px;
+  overflow: hidden;
+}
+
+.rsp-table-header h4,
+.rsp-table-body .article p {
+  box-sizing: border-box;
+  display: inline-block;
+  /* min-width: 100px; */
+  width: 10%;
+}
+.rsp-table-header h4:nth-child(2),
+.rsp-table-body .article p:nth-child(2) {
+  /* min-width: 200px; */
+  width:40%;
+}
+.rsp-table-header h4:nth-child(4),
+.rsp-table-body .article p:nth-child(4) {
+  /* min-width: 150px; */
+  width:20%;
+}
+
 /*-----------------------------DOCUMENT DETAILS-------------------------------*/
 
 .column-wrap{

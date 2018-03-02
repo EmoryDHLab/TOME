@@ -168,7 +168,29 @@
           </div>
         </div>
       </div>
-      <!-- <hr class="section-separator"/> -->
+      <div id='documents' class='section' style="display: none;">
+        <h2>Documents</h2>
+        <hr class="dark thick"/>
+        <div class="rsp-table">
+          <div class="rsp-table-header">
+            <h4>Rank</h4><!--
+         --><h4>Article</h4><!--
+         --><h4>Date</h4><!--
+         --><h4>Newspaper</h4><!--
+         --><h4>Prevalence</h4><!--
+         --><h4>Top Topics</h4>
+          </div>
+          <div class="rsp-table-body articles"></div>
+        </div>
+        <div class='controls'>
+          <button id="more-articles">Load More</button>
+          <p>
+            Showing
+            <span class="loaded-articles"></span> of
+            <span class="total-articles"></span> articles.
+          </p>
+        </div>
+      </div>
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
         <hr class="dark thick"/>

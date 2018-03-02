@@ -1,10 +1,10 @@
-from django.db.models import Sum, Count
+from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import render
 import simplejson as json
 
 from .models import Topic, ArticleTopicRank
-from news.models import Location, Article, Newspaper
+from news.models import Location, Newspaper, Article
 
 
 # Create your views here.
@@ -104,20 +104,98 @@ def locationMap(request):
     return HttpResponse(locs_json, content_type='application/json')
 
 
-def getArticles(request):
-    keys = json.loads(request.GET.get("json_data"))
-    atrs = ArticleTopicRank.objects.filter(topic__key__in=keys['topics'])
-    start = keys["start_at"]
-    count = keys["count"]
-    atrs = atrs[start:start+count]
-    i = 0
-    tempD = {}
-    for atr in atrs:
-        tOb = atr.article.toJSON()
-        tOb["topics"] = atr.article.getTopTopics(3, True, keys['topics'])
-        tempD[i] = tOb
-        i += 1
-    return HttpResponse(json.dumps(tempD), content_type='application/json')
+def constructArticleTableData(keys, count, received_articles):
+    json_response = {}
+    total_received_articles = len(received_articles)
+    # determine which the articles we want
+    id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
+        .exclude(article__key__in=received_articles)\
+        .values('article')\
+        .annotate(score=Sum('score')).order_by("-score")\
+        .values_list('article__key',
+                     'article__title',
+                     'score',
+                     'article__issue__date_published',
+                     'article__issue__newspaper__title')[:count]
+    relevant = list(id_score_tups)
+    # Get all atrs which have not yet been sent, within the given topics
+    # Then preselect the articles to we can access them easily later
+    atr_tups = ArticleTopicRank.objects.filter(
+            topic__key__in=keys,
+            article__key__in=[k for (k, t, s, d, n) in relevant])\
+        .values_list("article__key", "topic__key", "score")
+    # collect and format the article topic ranks for use later
+    atrs = {}
+    for atr in atr_tups:
+        article_key, topic_key, score = atr
+        atr_object = {
+            "key": topic_key,
+            "score": score
+        }
+        if article_key not in atrs:
+            atrs[article_key] = []
+        atrs[article_key].append(atr_object)
+    # construct article list
+    articles = []
+    ct = total_received_articles
+    for article in relevant:
+        key, title, score, date, newspaper = article
+        art_dict = {
+            "title": title,
+            "key": key,
+            "score": score,
+            "date": str(date),
+            "newspaper": newspaper,
+            "rank": ct,
+            "topics": atrs[key]
+        }
+        articles.append(art_dict)
+        ct += 1
+    json_response["articles"] = articles
+    json_response["show_count"] = total_received_articles + count
+    json_response["total_count"] = Article.objects.count()
+    return json_response
+
+
+def getArticleTableData(request):
+    '''
+    This function responds with json as seen below. Articles given have limited
+    information
+    {
+        "articles" : [                // articles ordered by collective scr
+            {                           // the best correlated article
+                "title": "article.title",       // the article title
+                "key": 1,                       // the article key
+                "score": 0.512,                 // sum score of givn topics
+                "rank": 0                       // ranked # 1
+                "date": ""                   // date object
+                "topics": [                     // the individual topics
+                    { "key": 0, "score": 0.500 }, // highest rnked topic
+                    .                                // score from atr
+                    .
+                    .
+                ]
+            },
+        },
+        "show_count" : len(received_articles) + count,
+        "total_count" : Article.objects.count()
+    }'''
+    # get important request data
+    reqData = json.loads(request.GET.get("json_data"))
+    # the topic keys we want to include
+    keys = reqData['topics']
+    # the number of articles to get
+    count = reqData["count"]
+    # set up dictionary for response
+    if count is None or count < 1:
+        return HttpResponse({"error": "invalid article request"},
+                            content_type='application/json')
+    # the keys of all articles already in the client
+    received_articles = reqData['articles']
+    json_response = constructArticleTableData(keys, count, received_articles)
+
+    return HttpResponse(json.dumps(json_response),
+                        content_type='application/json')
 
 
 def topicsByPaper(request):

@@ -545,6 +545,7 @@ function viewTenInit(e) {
         return offset.y + "px";
       })
 }
+
 function viewAllInit(e) {
   offset.y = offset.x;
   setVertRange(0, 99);

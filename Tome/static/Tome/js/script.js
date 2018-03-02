@@ -1,8 +1,6 @@
 /*
   Controls basic interaction on the site, and also has AJAX calls for data
 */
-
-var nextArticle = 0;
 var LOADING = false;
 
 var previousSearch = "";
@@ -17,6 +15,30 @@ var scrollTop = function() {
   return (window.pageYOffset !== undefined) ? window.pageYOffset :
     (document.documentElement || document.body.parentNode ||
     document.body).scrollTop;
+}
+
+function getScrollBarWidth () {
+    var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body'),
+        widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
+    $outer.remove();
+    return 100 - widthWithScroll;
+};
+
+function isOverflowing(search) {
+    var container = document.querySelectorAll(search)[0];
+    return container.scrollHeight > container.clientHeight;
+}
+
+function getArticleCount() {
+  return document.querySelectorAll('#documents .articles .article').length;
+}
+
+function getLoadedArticleKeys() {
+  articleKeys = [];
+  for (element of document.querySelectorAll('#documents .articles .article')) {
+    articleKeys.push(element.dataset.articleKey);
+  }
+  return articleKeys;
 }
 
 // given an id, change the nav menu to have that selected
@@ -69,9 +91,9 @@ window.onscroll = function() {
   }
 
   if(winBottom >= $(document).height() - 200) {
-    if(!topics.empty() && (nextArticle != 0) && !LOADING) {
-      startMiniLoad();
-      loadAdditionalArticles();
+    if(!topics.empty() && (getArticleCount() != 0) && !LOADING) {
+      //startMiniLoad();
+      //loadAdditionalArticles();
     }
   }
 };
@@ -133,11 +155,13 @@ function updateTopicsSelected(e) {
       });
       if (topics.count > 0) {
         d3.select("#topic-details").style("display","block");
+        d3.select("#documents").style("display","block");
         d3.select("#document-details").style("display","block");
         $("#topic-link").addClass("available");
         $("#document-link").addClass("available");
       } else {
         d3.select("#topic-details").style("display","none");
+        d3.select("#documents").style("display","none");
         d3.select("#document-details").style("display","none");
         $("#topic-link").removeClass("available").removeClass("active");
         $("#document-link").removeClass("available").removeClass("active");
@@ -146,7 +170,7 @@ function updateTopicsSelected(e) {
       createTopicOverTimeVis(topics.getKeys(), data);
       updateMapLocations(topics.getKeys());
       makeTopicCompBars(data);
-      loadArticles(topics.getKeys())
+      loadArticles(topics.getKeys());
       // endLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -239,15 +263,54 @@ function addArticleToDocumentDetails(rank, data) {
       + '</div>'
     + '</div>'
   + '</div>'
-
   column.append(articleInfo)
 }
 
-function loadAdditionalArticles(count=6) {
-    loadArticles(topics.getKeys(), nextArticle, count);
+function addArticleToDocuments(article) {
+  var articleDiv = document.createElement("div");
+    articleDiv.className = "article";
+    articleDiv.dataset.articleKey = article.key;
+  var count = document.createElement("p");
+    count.innerHTML =  article.rank + 1;
+    count.className = "count";
+    $(articleDiv).append(count);
+  var title = document.createElement("p");
+    title.innerHTML = (article.title != '') ? article.title : "Article " + article.key;
+    title.className = "title";
+    $(articleDiv).append(title);
+  var date = document.createElement("p");
+    date.innerHTML = article.date;
+    date.className = "date";
+    $(articleDiv).append(date);
+  var newspaper = document.createElement("p");
+    newspaper.innerHTML = article.newspaper;
+    newspaper.className = "paper-title";
+    $(articleDiv).append(newspaper);
+  var prevalence = document.createElement("p");
+    prevalence.innerHTML = article.score;
+    $(articleDiv).append(prevalence);
+  var topTops = document.createElement("p");
+    topTops.innerHTML = "N/A";
+    $(articleDiv).append(topTops);
+  $("#documents .articles").append(articleDiv);
+  if (isOverflowing("#documents .articles")) {
+    var shift = getScrollBarWidth();
+    $("#documents .articles").css("margin-right","-" + shift+"px");
+  } else {
+    $("#documents .articles").css("padding-right", "0px");
+  }
 }
 
-function loadArticles(keys, start=0, count=6) {
+function loadAdditionalArticles(count=20) {
+  loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
+}
+
+function clearArticlesTable() {
+  $(".column").html("");
+  $("#documents .articles").html("");
+}
+
+function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
   startMiniLoad();
   $.ajax({
     type : "GET",
@@ -255,22 +318,25 @@ function loadArticles(keys, start=0, count=6) {
     data : {
       json_data : JSON.stringify({
         'topics' : keys,
-        'start_at': start,
+        'articles': excludeArticles,
         'count': count
       })
     },
     success : function(data) {
-      if (start != nextArticle) {
-        nextArticle = 0;
-        $(".column").html("");
+      if (overwrite) {
+        clearArticlesTable()
       }
       console.log(data);
-      $.each(data,function(rank, d) {
-        addArticleToDocumentDetails(parseInt(start) + parseInt(rank), d);
+      articles = data.articles;
+      $.each(articles, function(rank, article) {
+        addArticleToDocuments(article)
       })
-      nextArticle += count;
       var h = $(".left.column .article-info").first().outerHeight(true);
       $(".article-info").css("min-height", h);
+      $(".loaded-articles").html($("tr.article").length);
+      $(".total-articles").html(Object.values(article_counts).reduce(function(acc, v) {
+        return acc + v;
+      }), 0);
       endMiniLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -279,6 +345,9 @@ function loadArticles(keys, start=0, count=6) {
   });
 }
 
+$("#more-articles").click(function() {
+  loadAdditionalArticles();
+});
 
 $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
 $("nav").on("click", "li.available:not(.active) a", function(e){

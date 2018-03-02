@@ -338,6 +338,7 @@ class Article(models.Model):
         Converts article to a dict which can later be converted to json
         Example format:
         {
+            "key" : 111
             "date" : "01/02/1999",
             "editor" : "James Jamerson",
             "title" : "A Modest Proposal",
@@ -347,6 +348,7 @@ class Article(models.Model):
         }
         """
         tempD = {}
+        tempD["key"] = self.key
         tempD["date"] = "{0}/{1}/{2}".format(self.month, self.day, self.year)
         if (self.issue.editor is not None):
             tempD["editor"] = self.issue.editor

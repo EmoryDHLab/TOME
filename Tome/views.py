@@ -11,7 +11,8 @@ def index(request):
     data["corpus"] = corpus
 
     # get the article counts by each year
-    arts = Article.objects.filter(issue__newspaper__corpus=data['corpus'])
+    # arts = Article.objects.filter(issue__newspaper__corpus=data['corpus'])
+    arts = Article.objects.all()
     counts = {}
     for i in range(corpus.date_started.year, corpus.date_ended.year + 1):
         c = arts.filter(issue__date_published__year=i).count()
