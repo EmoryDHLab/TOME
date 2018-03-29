@@ -152,7 +152,7 @@ def constructArticleTableData(keys, count, received_articles):
         articles.append(art_dict)
         ct += 1
     json_response["articles"] = articles
-    json_response["show_count"] = total_received_articles + count
+    json_response["show_count"] = total_received_articles + len(articles)
     json_response["total_count"] = Article.objects.count()
     return json_response
 
@@ -168,7 +168,7 @@ def getArticleTableData(request):
                 "key": 1,                       // the article key
                 "score": 0.512,                 // sum score of givn topics
                 "rank": 0                       // ranked # 1
-                "date": ""                   // date object
+                "date": ""                      // date object
                 "topics": [                     // the individual topics
                     { "key": 0, "score": 0.500 }, // highest rnked topic
                     .                                // score from atr

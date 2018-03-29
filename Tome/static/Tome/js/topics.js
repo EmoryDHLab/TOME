@@ -22,12 +22,14 @@ var TopicList = function () {
 TopicList.prototype.getSelected = function() {
   return this.selected;
 };
+
 TopicList.prototype.getColor = function(k) {
-  k = parseInt(k);
-  if (k == -1) {
+  var k = parseInt(k);
+  var i = this.getSelected().indexOf(k);
+  if (k == -1 || i == -1) {
     return this.averageColor;
   }
-  return this.colors[this.getSelected().indexOf(k)]
+  return this.colors[i]
 };
 TopicList.prototype.add = function(k) {
   k = parseInt(k);
@@ -121,6 +123,20 @@ TopicList.prototype.getSelectedAsTopics = function(tRef) {
     }
   }
   return preSelected;
+}
+
+//Return array of topics in form { key: <key>, color: "<hex value>"}
+TopicList.prototype.getSelectedWithColor = function() {
+  var topicsWithColors = [];
+  var selected = this.getSelected();
+  for (var i = 0; i < this.getSelected().length; i++) {
+    var k = this.getSelected()[i]
+    topicsWithColors.push({
+      key: k,
+      color: this.getColor(k) // this is an inefficient solution unfortunately
+    });
+  }
+  return topicsWithColors;
 }
 
 TopicList.prototype.empty = function() {

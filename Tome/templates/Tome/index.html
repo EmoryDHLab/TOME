@@ -5,11 +5,10 @@
     <title>TOME</title>
     {% load static %}
     {% load i18n %}
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
     <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet' />
-    <link
-      href="{% static "Tome/font-awesome-4.7.0/css/font-awesome.min.css" %}"
-      rel="stylesheet" type="text/css"/>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet'/>
 
     <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
       type="text/css"/>
@@ -29,10 +28,10 @@
             <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
           </li>
           <li id="document-link" class="">
-            <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
+            <a href="#document-details"><h4>DOCUMENTS</h4></a>
           </li>
-          <li id="notes-link" class="available">
-            <h4>NOTES</h4>
+          <li id="document-details-link" class="">
+            <h4>DOCUMENT DETAILS</h4>
           </li>
         </ul>
         <hr>
@@ -71,7 +70,7 @@
             <h2>Topics
               <div class="pop-up-wrap">
                 <button class="btn-dark topic-sort">
-                  <i class="fa fa-sort-amount-desc" aria-hidden="true"></i>
+                  <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
                 </button>
                 <ul class="pop-up sort-menu">
                   <li class="heading"><h5>SORT BY</h5></li>
@@ -171,16 +170,39 @@
       <div id='documents' class='section' style="display: none;">
         <h2>Documents</h2>
         <hr class="dark thick"/>
-        <div class="rsp-table">
-          <div class="rsp-table-header">
-            <h4>Rank</h4><!--
-         --><h4>Article</h4><!--
-         --><h4>Date</h4><!--
-         --><h4>Newspaper</h4><!--
-         --><h4>Prevalence</h4><!--
-         --><h4>Top Topics</h4>
+        <div class="view-switch">
+          <div class='controls vs-controls'>
+            <div class="switch-buttons">
+              <button class='active' type="button" name="tbl" data-target='doof'>Table</button>
+              <button type='button' name="dnm" data-target='doof'>Dust & Magnet</button>
+            </div>
           </div>
-          <div class="rsp-table-body articles"></div>
+          <div id='doof' class="vs-frame">
+            <div class="rsp-table vs-item active" data-item-name='tbl'>
+              <div class="rsp-table-header">
+                <h4>Rank</h4><!--
+             --><h4>Article</h4><!--
+             --><h4>Date</h4><!--
+             --><h4>Newspaper</h4><!--
+             --><h4>Prevalence</h4><!--
+             --><h4>Top Topics</h4>
+              </div>
+              <div class="rsp-table-body articles"></div>
+            </div>
+            <div id="dnm-vis" class="dnm vs-item" data-item-name='dnm'>
+              <div class="dnm dnm-controls">
+                <button id="dnm-zoom-reset">
+                  <i class="fas fa-expand" aria-hidden="true"></i>
+                </button>
+                <button id="dnm-zoom-in">
+                  <i class="fas fa-search-plus"></i>
+                </button>
+                <button id="dnm-zoom-out">
+                  <i class="fas fa-search-minus"></i>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         <div class='controls'>
           <button id="more-articles">Load More</button>
@@ -196,9 +218,6 @@
         <hr class="dark thick"/>
 
         <div class="column-wrap">
-          <div class="left column"></div>
-          <div class="middle column"></div>
-          <div class="right column"></div>
         </div>
         <div class="miniload" style="display:none;">
           <img src="{% static "Tome/img/miniloader.svg" %}" alt="loading"/>
@@ -208,8 +227,10 @@
 
     <!-- Scripts -->
     <script src="{% static "Tome/js/d3.min.js" %}"></script>
+    <script src="https://cdn.rawgit.com/Caged/d3-tip/master/index.js" charset="utf-8"></script>
     <script src="{% static "Tome/js/jquery-3.2.1.min.js" %}"></script>
     <script src="{% static "Tome/js/polypatches.js" %}"></script>
+    <script src="{% static "Tome/js/dnmVis.js" %}"></script>
     <script src="{% static "Tome/js/topics.js" %}"></script>
     <script src="{% static "Tome/js/mapVis.js" %}"></script>
     <script>

@@ -19,5 +19,6 @@ from news import views
 app_name = 'news'
 urlpatterns = [
     url(r'^$', views.index, name='index'),
+    url(r'^article/(?P<article_key>[0-9]+)/', views.article_detail),
     url(r'^(?P<newspaper_id>[0-9]+)/', views.detail, name='detail'),
 ]

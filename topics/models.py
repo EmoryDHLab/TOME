@@ -114,19 +114,27 @@ class Topic(models.Model):
         @param bracket : whether to wrap the word in brackets
         """
         # get all the words
-        words = self.words.all()
-        words_out = []
+        words = self.words.all().values_list("text", flat=True)[:max_words]
+        out = ""
         brk = ("", "")
         # get only up to the max
-        for i in range(max_words):
-            if (i >= len(words)):
-                # if there are no more words listed
-                break
-            words_out.append(str(words[i]))
+        count = 0
+        for word in words:
+            if (count < max_words - 1):
+                out += word + ", "
+            else:
+                out += word
+            count += 1
         if (bracket):
             # apply brackets if need be
             brk = (" [", "]")
-        return brk[0] + ", ".join(words_out) + brk[1]
+        return brk[0] + out + brk[1]
+
+    def getWordList(self, length=10):
+        words = self.wordtopicrank_set.all() \
+            .order_by('-score') \
+            .values_list('word__text', flat=True)[:length]
+        return list(words)
 
     def calculateScore(self):
         """

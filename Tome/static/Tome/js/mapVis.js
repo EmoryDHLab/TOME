@@ -9,14 +9,6 @@ var visLayer;
 var circleScale = 10;
 var maxScore = 0;
 
-var truncateDecimals = function (number, digits) {
-    var multiplier = Math.pow(10, digits),
-        adjustedNum = number * multiplier,
-        truncatedNum = Math[adjustedNum < 0 ? 'ceil' : 'floor'](adjustedNum);
-
-    return truncatedNum / multiplier;
-};
-
 // GeoJSON data: see http://geojson.org/ for the full description of this format.
 //
 // In these lines, we create some random points. This, of course, you can change:
@@ -36,8 +28,6 @@ function updateMapLocations(keys) {
         clearMapData();
       }
       console.log(data);
-      addMapData(data);
-      updateMapInfo(data);
       if (keys.length == 0) {
         $("#map-wrapper").css("display","none");
         // fix map resizes issue
@@ -47,6 +37,8 @@ function updateMapLocations(keys) {
         // fix map resizes issue
         map.invalidateSize();
       }
+      addMapData(data);
+      updateMapInfo(data);
       // endLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -102,7 +94,6 @@ function addMapData(locations) {
         size = 10;
         console.log(feature.properties);
         var markerOptions = {
-          //radius: feature.properties.count * circleScale,
           radius: size,
           fillColor: tClr,
           color: tClr,
@@ -210,6 +201,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .attr('x', function(d) { return (d.other) ? scale.overall(totalPerc) : 0;})
         .attr('y', function(d) { return 0;})
         .attr('width', function(d) {
+          console.log(d, sizes.width);
           return scale.overall(d.score);
         })
         .attr('height', function(d) {

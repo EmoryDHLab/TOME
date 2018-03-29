@@ -2,7 +2,7 @@
   Controls basic interaction on the site, and also has AJAX calls for data
 */
 var LOADING = false;
-
+const DNM_ID = "dnm-vis"
 var previousSearch = "";
 
 var sortOpen = false;
@@ -36,7 +36,7 @@ function getArticleCount() {
 function getLoadedArticleKeys() {
   articleKeys = [];
   for (element of document.querySelectorAll('#documents .articles .article')) {
-    articleKeys.push(element.dataset.articleKey);
+    articleKeys.push(element.dataset.key);
   }
   return articleKeys;
 }
@@ -156,12 +156,14 @@ function updateTopicsSelected(e) {
       if (topics.count > 0) {
         d3.select("#topic-details").style("display","block");
         d3.select("#documents").style("display","block");
+        d3.select(".d3-tip").style("display","block");
         d3.select("#document-details").style("display","block");
         $("#topic-link").addClass("available");
         $("#document-link").addClass("available");
       } else {
         d3.select("#topic-details").style("display","none");
         d3.select("#documents").style("display","none");
+        d3.select(".d3-tip").style("display","none");
         d3.select("#document-details").style("display","none");
         $("#topic-link").removeClass("available").removeClass("active");
         $("#document-link").removeClass("available").removeClass("active");
@@ -224,8 +226,12 @@ function updateTopicsList(search) {
   });
 }
 
-function addArticleToDocumentDetails(rank, data) {
-  var r = rank % 3
+function addArticleToDocumentDetails(data) {
+  if (articleSelected(data.key)) {
+    return false;
+  }
+  var ct = document.getElementsByClassName('article-info').length,
+      r = ct % 3;
   if (r < 1) {
     column = $(".middle.column")
   } else if (r < 2) {
@@ -233,8 +239,8 @@ function addArticleToDocumentDetails(rank, data) {
   } else {
     column = $(".right.column")
   }
-  articleInfo = '<div class="article-info">'
-    + '<h3>' + (rank + 1) + '. ' + data.title + '</h3>'
+  articleInfo = '<div class="article-info" data-key=' + data.key + '>'
+    + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
     + '<div class="indent">'
       + '<ol class="general-info no-dec">'
         + '<li>EDITOR: ' + data.editor + '</li>'
@@ -251,9 +257,18 @@ function addArticleToDocumentDetails(rank, data) {
                 + 'Topic <span class="color-box key" '
                   +'style="background-color:' + topics.getColor(t.key)
                   + '">' + t.key + '</span> &mdash; '
-                + 'Scored <span class="score">' + t.atr_score + '</span>'
+                + 'Scored <span class="score">' + t.score + '</span>'
                 + '<p class="topic-words indent">'
-                    + wordObjToString(t.words)
+                    + (function(words) {
+                        var out = "";
+                        for (var i = 0; i < words.length; i++) {
+                          out += words[i]
+                          if (i + 1 < words.length) {
+                            out += ", "
+                          }
+                        }
+                        return out;
+                      })(t.words)
                 + '</p>'
               + '</li>';
             });
@@ -263,13 +278,19 @@ function addArticleToDocumentDetails(rank, data) {
       + '</div>'
     + '</div>'
   + '</div>'
-  column.append(articleInfo)
+  $('.column-wrap').append(articleInfo);
+  return true;
+}
+
+function removeArticleDetails(key) {
+  $('.article-info[data-key="' + key + '"]').remove();
 }
 
 function addArticleToDocuments(article) {
+  console.log(article)
   var articleDiv = document.createElement("div");
     articleDiv.className = "article";
-    articleDiv.dataset.articleKey = article.key;
+    articleDiv.dataset.key = article.key;
   var count = document.createElement("p");
     count.innerHTML =  article.rank + 1;
     count.className = "count";
@@ -287,10 +308,9 @@ function addArticleToDocuments(article) {
     newspaper.className = "paper-title";
     $(articleDiv).append(newspaper);
   var prevalence = document.createElement("p");
-    prevalence.innerHTML = article.score;
+    prevalence.innerHTML = truncateDecimals(article.score, 4);
     $(articleDiv).append(prevalence);
-  var topTops = document.createElement("p");
-    topTops.innerHTML = "N/A";
+  var topTops = getStyledTopics(article.topics);
     $(articleDiv).append(topTops);
   $("#documents .articles").append(articleDiv);
   if (isOverflowing("#documents .articles")) {
@@ -301,7 +321,25 @@ function addArticleToDocuments(article) {
   }
 }
 
-function loadAdditionalArticles(count=20) {
+function getStyledTopics(articleTopics, count=3) {
+  var topTops = document.createElement("p"),
+      i = 0;
+  while (count > 0 && i < articleTopics.length){
+    var t = document.createElement("div"),
+        k = articleTopics[i].key;
+        color = topics.getColor(k);
+    t.style.backgroundColor = color;
+    t.className = "color-box";
+    t.innerHTML = k;
+    topTops.appendChild(t);
+    count--;
+    i++;
+  }
+  topTops.className = "top-topics"
+  return topTops;
+}
+
+function loadAdditionalArticles(count=50) {
   loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
 }
 
@@ -310,7 +348,21 @@ function clearArticlesTable() {
   $("#documents .articles").html("");
 }
 
-function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
+function addArticlesToDustAndMagnet(articles, wipeDust) {
+  // can't clear the old one, we have to add to it! hmm....
+  // probably just add to an fData object as we go.
+  renderFromArticleData(DNM_ID, articles,
+    topics.getSelected().filter(function(k) {
+      return k != undefined;
+    }).map(function(k) {
+      return { name: k, fill: topics.getColor(k) };
+    }), wipeDust);
+}
+
+function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
+  console.log(keys);
+  console.log(excludeArticles);
+  console.log(count);
   startMiniLoad();
   $.ajax({
     type : "GET",
@@ -331,15 +383,41 @@ function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
       $.each(articles, function(rank, article) {
         addArticleToDocuments(article)
       })
+      addArticlesToDustAndMagnet(articles, overwrite);
       var h = $(".left.column .article-info").first().outerHeight(true);
       $(".article-info").css("min-height", h);
-      $(".loaded-articles").html($("tr.article").length);
-      $(".total-articles").html(Object.values(article_counts).reduce(function(acc, v) {
-        return acc + v;
-      }), 0);
+      $(".loaded-articles").html(data.show_count);
+      $(".total-articles").html(data.total_count);
       endMiniLoad();
     },
     error : function(textStatus, errorThrown) {
+      console.log(textStatus);
+    }
+  });
+}
+
+function articleSelected(key) {
+  var existCheck = ".article-info[data-key='" + key + "']";
+  if (document.querySelectorAll(existCheck).length > 0) {
+    return true;
+  }
+  return false;
+}
+
+function getArticleDetails(articleKey, useSelectedTopics=true, count=5) {
+  $.ajax({
+    type: "GET",
+    url: "/news/article/" + articleKey,
+    data: {
+      json_data : JSON.stringify({
+        'topics' : (useSelectedTopics) ? topics.getKeys() : [],
+        'topic_count': count
+      })
+    },
+    success: function(data) {
+      addArticleToDocumentDetails(data)
+    },
+    error: function(textStatus, errorThrown) {
       console.log(textStatus);
     }
   });
@@ -353,7 +431,7 @@ $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
 $("nav").on("click", "li.available:not(.active) a", function(e){
   e.preventDefault();
   navChange(this.getAttribute("href").substring(1), true)
-  $(".active").removeClass("active");
+  $("li.active").removeClass("active");
   $(this.parentNode).addClass("active");
 });
 
@@ -449,6 +527,52 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortTopicList();
 });
 
+$("body").on("dblclick", '.article', function(e) {
+  var target = e.currentTarget,
+      key = target.dataset.key;
+  if (articleSelected(key)){
+    deselectArticle(key);
+  } else {
+    selectArticle(key);
+  }
+});
+
+$("body").on("click", '#dnm-zoom-reset', function(e) {
+  resetDNMZoom(DNM_ID);
+});
+
+$("body").on("click", '#dnm-zoom-in', function(e) {
+  zoomIn(DNM_ID);
+});
+
+$("body").on("click", '#dnm-zoom-out', function(e) {
+  zoomOut(DNM_ID);
+});
+
+function switchView(switchViewId, viewItemName) {
+  var itemNameQuery = "#" + switchViewId + " .vs-item[data-item-name='" + viewItemName + "']";
+  console.log($("vs-item.active"));
+  $("#" + switchViewId + " .vs-item.active").removeClass('active');
+  $(itemNameQuery).addClass('active');
+}
+
+$("body").on("click", ".view-switch button", function(e) {
+  console.log(e.currentTarget.dataset);
+  switchView(e.currentTarget.dataset.target, e.currentTarget.name);
+});
+
+function resetDNMZoom(id) {
+  resetZoomPan(id);
+}
+
+function selectArticle(key) {
+  getArticleDetails(key); // select the article
+  $('.article[data-key="' + key + '"]').addClass('selected');
+}
+function deselectArticle(key) {
+  removeArticleDetails(key);
+  $('.article[data-key="' + key + '"]').removeClass('selected');
+}
 function sortTopicList() {
   switch (sortMode) {
     case 0:
