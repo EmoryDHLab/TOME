@@ -5,6 +5,23 @@ var LOADING = false;
 const DNM_ID = "dnm-vis"
 var previousSearch = "";
 
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+var csrftoken = getCookie('csrftoken');
+
 var sortOpen = false;
 var sortMode = 0;
 
@@ -365,8 +382,9 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
   console.log(count);
   startMiniLoad();
   $.ajax({
-    type : "GET",
+    type : "POST",
     url : articles_link,
+    beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
     data : {
       json_data : JSON.stringify({
         'topics' : keys,

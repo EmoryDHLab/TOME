@@ -73,33 +73,33 @@ def locationMap(request):
     locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
         .filter(newspaper_count__gt=0)
     for loc in locs:
-        l = {}
-        l['location'] = loc.toJSON()
-        l['topics'] = {}
-        l['papers'] = {}
+        lc = {}
+        lc['location'] = loc.toJSON()
+        lc['topics'] = {}
+        lc['papers'] = {}
         # for each topic
         for i in range(len(topics)):
             # for each newspaper
             t = topics[i]
-            l["topics"][i] = {
+            lc["topics"][i] = {
                 'key': t.key,
                 'score': t.percentByLocation(loc.id)
             }
             for paper in papers.filter(location__id=loc.id):
                 try:
                     score = t.percentByPaper(paper.id)
-                except:
+                except Exception as e:
                     score = 0
-                if (paper.id not in l["papers"]):
-                    l["papers"][paper.id] = {
+                if (paper.id not in lc["papers"]):
+                    lc["papers"][paper.id] = {
                         "title": paper.title,
                         "topics": {}
                     }
-                l["papers"][paper.id]["topics"][i] = {
+                lc["papers"][paper.id]["topics"][i] = {
                     'key': t.key,
                     'score': score
                 }
-        locs_json[loc.id] = l
+        locs_json[loc.id] = lc
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')
 
@@ -181,7 +181,7 @@ def getArticleTableData(request):
         "total_count" : Article.objects.count()
     }'''
     # get important request data
-    reqData = json.loads(request.GET.get("json_data"))
+    reqData = json.loads(request.POST.get("json_data"))
     # the topic keys we want to include
     keys = reqData['topics']
     # the number of articles to get
