@@ -385,11 +385,11 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
     type : "POST",
     url : articles_link,
     beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-    data : {
-      'topics' : JSON.stringify(keys),
-      'articles': JSON.stringify(excludeArticles),
-      'count': count
-    },
+    data : JSON.stringify({
+      topics : keys,
+      articles: excludeArticles,
+      count: count
+    }),
     success : function(data) {
       if (overwrite) {
         clearArticlesTable()

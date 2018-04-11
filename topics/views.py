@@ -182,13 +182,14 @@ def getArticleTableData(request):
         "total_count" : Article.objects.count()
     }'''
     # the topic keys we want to include
-    keys = json.loads(request.POST.get("topics"))
+    dat = json.loads(request.body)
+    keys = dat['topics']
     print(keys)
     # the number of articles to get
-    count = int(request.POST.get("count", 0))
+    count = int(dat["count"])
     print(count)
     # the keys of all articles already in the client
-    received_articles = json.loads(request.POST.get("articles", []))
+    received_articles = dat['articles']
     print(received_articles)
     # set up dictionary for response
     if count is None or count < 1:
