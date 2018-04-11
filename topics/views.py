@@ -1,8 +1,8 @@
 from django.db.models import Count, Sum
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 import simplejson as json
-
 from .models import Topic, ArticleTopicRank
 from news.models import Location, Newspaper, Article
 
@@ -158,6 +158,7 @@ def constructArticleTableData(keys, count, received_articles):
     return json_response
 
 
+@csrf_exempt
 def getArticleTableData(request):
     '''
     This function responds with json as seen below. Articles given have limited
