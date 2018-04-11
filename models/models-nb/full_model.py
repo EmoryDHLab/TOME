@@ -13,27 +13,31 @@ documents = []
 #Also creates a file that stores the metadata of the articles
 
 print("hi")
-aFile = open("documentMetadata.csv", "w")
+aFile = open("documentMetadata_FULL.csv", "w")
 
 count=0
-contents = os.listdir("NationalAntiSlaveryStandard")
+newspapers = os.listdir("accessible")
 numFound = 0
-for content in contents:
-	if content[0] == "1":
-		subcontents = os.listdir("NationalAntiSlaveryStandard/" + content)
-		for afile in subcontents:
-			if "txt" in afile:
-				f = open("NationalAntiSlaveryStandard/" + content + "/" + afile)
-				documents.append(f.read())
-				f.close()
-				newline = str(numFound) + ",NationalAntiSlaveryStandard/" + content + "/" + afile + ","
-				mdfile = open("NationalAntiSlaveryStandard/" + content + "/" +  afile[:len(afile) - 3] + "md", "r")
-				lines = mdfile.readlines()
-				for line in lines:
-					newline += line.split(", ")[1].strip("\n") + ","
-				aFile.write(newline[:len(newline) - 1] + "\n")
-				numFound += 1
-			count += 1
+for newspaper in newspapers:
+	if newspaper != "TheCharlestonMercury-incomplete" and newspaper != 'VincennesCourant':
+		contents = os.listdir("accessible/" + newspaper)	
+
+		for content in contents:
+			if content[0] == "1":
+				subcontents = os.listdir("accessible/" + newspaper + "/"  + content)
+				for afile in subcontents:
+					if "txt" in afile:
+						f = open("accessible/" + newspaper + "/" +  content + "/" + afile)
+						documents.append(f.read())
+						f.close()
+						newline = str(numFound) + "," + newspaper + "/" + content + "/" + afile + ","
+						mdfile = open("accessible/" + newspaper + "/" +  content + "/" +  afile[:len(afile) - 3] + "md", "r")
+						lines = mdfile.readlines()
+						for line in lines:
+							newline += line.split(", ")[1].strip("\n") + ","
+						aFile.write(newline[:len(newline) - 1] + "\n")
+						numFound += 1
+					count += 1
 
 
 print("=========================", numFound)
@@ -60,7 +64,7 @@ for doc in texts:
 		frequency_texts.append(word)
 
 frequencies = Counter(frequency_texts)
-frequency_file = open('most_frequent.txt', 'w')
+frequency_file = open('most_frequent_FULL.txt', 'w')
 frequency_file.write('Total words: ' + str(len(frequencies.keys())) + '\n')
 most_frequent = frequencies.most_common(500)
 
@@ -90,7 +94,7 @@ result = lda.show_topics(100, 100, formatted = False)
 
 #Writes the topics to a file
 
-newFile = open("AntiSlaveryTopics_FULL100.txt", "w")
+newFile = open("AntiSlaveryTopics_FULL.txt", "w")
 
 for each in result:
 	newFile.write(str(each) + "\n")
@@ -101,7 +105,7 @@ for each in result:
 
 gen = lda.read_doctopics(lda.fdoctopics())
 
-newFile = open("docTopics_FULL100.txt", "w")
+newFile = open("docTopics_FULL", "w")
 
 for i in gen:
 	newFile.write(str(i) + "\n")

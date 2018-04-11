@@ -1,7 +1,7 @@
-afile = open("AntiSlaveryTopics_20.txt", "r")
+afile = open("Colored_Conventions.txt", "r")
 lines = afile.readlines()
 afile.close()
-newfile = open("AntiSlaveryTopics_20.csv", "w")
+newfile = open("Colored_Conventions.csv", "w")
 for line in lines:
 	newline = line.split(",")[0][1:] + ","
 	pairs = line.split(")")

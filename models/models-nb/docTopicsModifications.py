@@ -1,5 +1,5 @@
-afile = open("docTopics.txt", "r")
-newfile = open("docTopics.csv", "w")
+afile = open("Colored_Conventions_docTopics.txt", "r")
+newfile = open("Colored_Conventions_docTopics.csv", "w")
 lines = afile.readlines()
 count = 0
 for line in lines:
