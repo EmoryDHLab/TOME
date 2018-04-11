@@ -106,6 +106,7 @@ def locationMap(request):
 
 def constructArticleTableData(keys, count, received_articles):
     json_response = {}
+    print('getting article data:', keys, count, received_articles)
     total_received_articles = len(received_articles)
     # determine which the articles we want
     id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
@@ -180,18 +181,19 @@ def getArticleTableData(request):
         "show_count" : len(received_articles) + count,
         "total_count" : Article.objects.count()
     }'''
-    # get important request data
-    reqData = json.loads(request.POST.get("json_data"))
     # the topic keys we want to include
-    keys = reqData['topics']
+    keys = json.loads(request.POST.get("topics"))
+    print(keys)
     # the number of articles to get
-    count = reqData["count"]
+    count = int(request.POST.get("count", 0))
+    print(count)
+    # the keys of all articles already in the client
+    received_articles = json.loads(request.POST.get("articles", []))
+    print(received_articles)
     # set up dictionary for response
     if count is None or count < 1:
         return HttpResponse({"error": "invalid article request"},
                             content_type='application/json')
-    # the keys of all articles already in the client
-    received_articles = reqData['articles']
     json_response = constructArticleTableData(keys, count, received_articles)
 
     return HttpResponse(json.dumps(json_response),

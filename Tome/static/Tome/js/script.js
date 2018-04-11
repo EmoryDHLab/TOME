@@ -386,11 +386,9 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
     url : articles_link,
     beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
     data : {
-      json_data : JSON.stringify({
-        'topics' : keys,
-        'articles': excludeArticles,
-        'count': count
-      })
+      'topics' : JSON.stringify(keys),
+      'articles': JSON.stringify(excludeArticles),
+      'count': count
     },
     success : function(data) {
       if (overwrite) {
