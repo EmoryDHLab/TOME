@@ -543,7 +543,7 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortTopicList();
 });
 
-$("body").on("dblclick", '.article', function(e) {
+$("body").on("click", '.article', function(e) {
   var target = e.currentTarget,
       key = target.dataset.key;
   if (articleSelected(key)){
