@@ -76,12 +76,15 @@ function navChange(id, scrollToIt) {
 }
 
 function wordObjToString(arr, ct=-1) {
+  console.log(arr);
   var s = "";
-  if (ct != -1) {
+
+  if (ct != -1 && ct < arr.length) {
     var truncateAfter = ct;
   } else {
     var truncateAfter = arr.length;
   }
+
   for (var i = 0; i < truncateAfter; i++) {
       s += arr[i].word;
       s += (i < truncateAfter - 1 ) ? ", ": "";

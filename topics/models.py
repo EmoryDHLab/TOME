@@ -98,7 +98,7 @@ class Topic(models.Model):
         tempD["key"] = self.key
         tempD["score"] = self.score
         tempD["rank"] = self.rank
-        words = self.wordtopicrank_set.all()
+        words = self.wordtopicrank_set.all().order_by('-score')[:5]
         for word in words:
             tempD["words"].append(word.toJSON())
 
@@ -172,6 +172,9 @@ class WordTopicRank(models.Model):
         twice in the same topic)
         """
         unique_together = ('word', 'topic')
+        indexes = [
+            models.Index(fields=['-score'])
+        ]
 
     def toJSON(self):
         """
