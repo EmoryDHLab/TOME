@@ -1,6 +1,7 @@
 from news.models import Issue, Newspaper
 from Tome.helpers.data.helpers.metadatafix import getArticleFromLine,\
-    getPubDate, BASE_PATH, METADATA_TITLE
+    getPubDate, METADATA_TITLE
+from Tome.helpers.data.helpers.general import BASE_PATH
 from Tome.helpers.debug import Printer
 
 DATA_BASE_PATH = BASE_PATH
