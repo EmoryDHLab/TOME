@@ -1,5 +1,8 @@
 from topics.models import Topic, YearTopicRank
 from news.models import Corpus, Issue
+from Tome.helpers.data.helpers.debug import Printer
+
+progress = Printer(True)
 
 
 def wipeYTRs():
@@ -9,11 +12,13 @@ def wipeYTRs():
 def generateYTRs():
     dates = Issue.objects.dates("date_published", "year")
     corpus = Corpus.objects.all()[0]
-    topics = Topic.objects.all()
+    topics = Topic.objects.all().order_by('-score')
+
+    progress.reset()
 
     ct = 0
     for t in topics:
-        print(ct, "/ 100")
+        progress.log(ct, "/ 100")
         for date in dates:
             addYTR(date.year, t, corpus)
         ct += 1

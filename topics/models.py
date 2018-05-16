@@ -47,6 +47,9 @@ class Topic(models.Model):
     class Meta:
         """Nested class which puts topic in decending order by score"""
         ordering = ('-score',)
+        indexes = [
+            models.Index(fields=['key', '-score'])
+        ]
 
     def percentByLocation(self, loc_id):
         """
@@ -168,7 +171,6 @@ class WordTopicRank(models.Model):
         each word-topic pair to be unique (the same word should never appear
         twice in the same topic)
         """
-        ordering = ('-score',)
         unique_together = ('word', 'topic')
 
     def toJSON(self):
@@ -211,7 +213,6 @@ class ArticleTopicRank(models.Model):
         each article-topic pair to be unique (an article should never appear
         twice in the same topic)
         """
-        ordering = ('-score',)
         unique_together = ('article', 'topic')
 
     def toJSON(self):

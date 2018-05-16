@@ -111,6 +111,7 @@ def constructArticleTableData(keys, count, received_articles):
     # determine which the articles we want
     id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
         .exclude(article__key__in=received_articles)\
+        .order_by('-articletopicrank__score')\
         .values('article')\
         .annotate(score=Sum('score')).order_by("-score")\
         .values_list('article__key',
@@ -124,6 +125,7 @@ def constructArticleTableData(keys, count, received_articles):
     atr_tups = ArticleTopicRank.objects.filter(
             topic__key__in=keys,
             article__key__in=[k for (k, t, s, d, n) in relevant])\
+        .order_by('-score')\
         .values_list("article__key", "topic__key", "score")
     # collect and format the article topic ranks for use later
     atrs = {}

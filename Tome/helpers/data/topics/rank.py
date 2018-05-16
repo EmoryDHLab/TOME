@@ -1,4 +1,7 @@
 from topics.models import Topic, YearTopicRank
+from Tome.helpers.debug import Printer
+
+progress = Printer(True)
 
 
 def wipeRanks():
@@ -8,12 +11,12 @@ def wipeRanks():
 
 def generateRanks():
     i = 0
-    ts = Topic.objects.all()
+    ts = Topic.objects.all().order_by('-score')
     ytrs = YearTopicRank.objects.all()
     tCount = len(ts)
     ytrCount = len(ytrs)
     # mx = max([tCount, ytrCount])
-
+    progress.reset()
     while (i < tCount):
         t = ts[i]
         t.rank = i
@@ -28,11 +31,12 @@ def generateRanks():
         if (ytr.year != last_yr):
             last_yr = ytr.year
             rnk = 0
-        print(rnk)
         ytr.rank = rnk
         ytr.save(update_fields=["rank"])
         rnk += 1
         i += 1
+        if (i % 100):
+            progress.log("{0}/{1}".format(i, ytrCount))
 
 
 def qRun():
