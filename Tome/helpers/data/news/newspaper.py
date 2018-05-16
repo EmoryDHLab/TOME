@@ -1,11 +1,12 @@
 from news.models import Newspaper
-from Tome.helpers.data.helpers.metadatafix import getArticleFromLine
+from Tome.helpers.data.helpers.metadatafix import getArticleFromLine,\
+    METADATA_TITLE
 from Tome.helpers.data.helpers.general import BASE_PATH
 import datetime
 from Tome.helpers.debug import Printer
 
 DATA_BASE_PATH = BASE_PATH
-DATA_TITLE = 'documentMetadata_fixed'
+DATA_TITLE = METADATA_TITLE + '_fixed'
 
 out = Printer()
 
