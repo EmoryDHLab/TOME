@@ -8,7 +8,7 @@ from Tome.helpers.debug import Printer
 DATA_BASE_PATH = BASE_PATH
 DATA_TITLE = METADATA_TITLE + '_fixed'
 
-DEFAULT_LOCATION = Location.objects.get()
+DEFAULT_LOCATION = Location.objects.all()[0]
 
 out = Printer()
 
