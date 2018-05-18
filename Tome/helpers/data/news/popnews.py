@@ -18,6 +18,7 @@ def main():
     issue.main()
     divider.log("Article")
     article.main()
+    divider.log("DONE")
 
 
 if __name__ == '__main__':
