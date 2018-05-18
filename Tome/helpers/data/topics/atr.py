@@ -73,7 +73,7 @@ def aggregateScores():
 def updateTopicScores(score_dict):
     progress.reset()
     for (topic_key, score) in score_dict.items():
-        progress.log(topic_key, score)
+        progress.log("{0}, {1}".format(topic_key, score))
         Topic.objects.filter(key=topic_key).update(score=score)
 
 
