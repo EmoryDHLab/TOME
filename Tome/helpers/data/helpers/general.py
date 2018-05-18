@@ -52,7 +52,7 @@ def parse(fixfunc, title):
             closeFile(createFile(BASE_PATH + title + '_fixed.csv'))
             return
         if not skip:
-            addToNewFile(fixedLine, nm)
+            addToNewFile(fixedLine.strip(), nm)
         if (lineNumber % 100 == 0):
             progress.log(lineNumber)
         lineNumber += 1
