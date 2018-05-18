@@ -3,7 +3,7 @@ print_func = print
 DEFAULT_DECORATOR = "---------------------------------------"
 
 
-def d_print(output):
+def d_print(output, end='\n'):
     if not DEBUG:
         return
     else:
@@ -21,7 +21,7 @@ class Printer(object):
 
     def log(self, output):
         if (self.isInPlace and not self.needsReset):
-            self.print_func('\r', end='')
+            self.print_func('\r', '')
         if (self.needsReset):
             self.needsReset = False
         self.print_func(output)
