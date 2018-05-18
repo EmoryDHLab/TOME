@@ -1,4 +1,4 @@
-from news.models import Newspaper
+from news.models import Newspaper, Location
 from Tome.helpers.data.helpers.metadatafix import getArticleFromLine,\
     METADATA_TITLE
 from Tome.helpers.data.helpers.general import BASE_PATH
@@ -7,6 +7,8 @@ from Tome.helpers.debug import Printer
 
 DATA_BASE_PATH = BASE_PATH
 DATA_TITLE = METADATA_TITLE + '_fixed'
+
+DEFAULT_LOCATION = Location.objects.get()
 
 out = Printer()
 
@@ -48,7 +50,8 @@ def importPapers():
 
 
 def buildPaper(key, title, started):
-    return Newspaper(key=key, title=title, date_started=started)
+    return Newspaper(key=key, title=title, date_started=started,
+                     location=DEFAULT_LOCATION)
 
 
 def qRun():

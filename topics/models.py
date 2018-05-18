@@ -48,7 +48,7 @@ class Topic(models.Model):
         """Nested class which puts topic in decending order by score"""
         ordering = ('-score',)
         indexes = [
-            models.Index(fields=['key', '-score'])
+            models.Index(fields=['-score'])
         ]
 
     def percentByLocation(self, loc_id):
@@ -117,7 +117,7 @@ class Topic(models.Model):
         @param bracket : whether to wrap the word in brackets
         """
         # get all the words
-        words = self.words.all().values_list("text", flat=True)[:max_words]
+        words = self.getWordList(max_words)
         out = ""
         brk = ("", "")
         # get only up to the max
@@ -135,8 +135,8 @@ class Topic(models.Model):
 
     def getWordList(self, length=10):
         words = self.wordtopicrank_set.all() \
-            .order_by('-score') \
-            .values_list('word__text', flat=True)[:length]
+            .order_by('-score')[:length] \
+            .values_list('word__text', flat=True)
         return list(words)
 
     def calculateScore(self):
@@ -173,7 +173,9 @@ class WordTopicRank(models.Model):
         """
         unique_together = ('word', 'topic')
         indexes = [
-            models.Index(fields=['-score'])
+            models.Index(fields=['word']),
+            models.Index(fields=['-score']),
+            models.Index(fields=['topic'])
         ]
 
     def toJSON(self):
@@ -267,6 +269,11 @@ class YearTopicRank(models.Model):
         """
         ordering = ('year', '-score')
         unique_together = ('year', 'topic')
+        indexes = [
+            models.Index(fields=['topic']),
+            models.Index(fields=['year']),
+            models.Index(fields=['year', '-score']),
+        ]
 
     def calculateScore(self):
         """Calculates and sets the score of topic during the given year"""

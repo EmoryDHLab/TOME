@@ -3,6 +3,8 @@ tomeenv/
 
 __pycache__/
 
+*.sql
+
 .cache/
 
 /static/
