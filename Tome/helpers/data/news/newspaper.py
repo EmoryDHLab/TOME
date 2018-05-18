@@ -8,7 +8,7 @@ from Tome.helpers.debug import Printer
 DATA_BASE_PATH = BASE_PATH
 DATA_TITLE = METADATA_TITLE + '_fixed'
 
-global defaultLoc
+defaultLoc = None
 
 out = Printer()
 
@@ -50,6 +50,7 @@ def importPapers():
 
 
 def buildPaper(key, title, started):
+    global defaultLoc
     return Newspaper(key=key, title=title, date_started=started,
                      location=defaultLoc)
 
@@ -60,5 +61,6 @@ def qRun():
 
 
 def main():
+    global defaultLoc
     defaultLoc = Location.objects.all()[0]
     qRun()
