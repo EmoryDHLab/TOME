@@ -51,7 +51,7 @@ def importPapers():
 
 def buildPaper(key, title, started):
     return Newspaper(key=key, title=title, date_started=started,
-                     location__id=DEFAULT_LOCATION)
+                     location=DEFAULT_LOCATION)
 
 
 def qRun():
