@@ -15,7 +15,7 @@ class Printer(object):
 
     def __init__(self, inPlace=False, printFunction=d_print):
         super(Printer, self).__init__()
-        self.isInPlace = False
+        self.isInPlace = inPlace
         self.print_func = printFunction
         self.needsReset = True
 

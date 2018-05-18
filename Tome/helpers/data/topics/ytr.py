@@ -1,6 +1,6 @@
 from topics.models import Topic, YearTopicRank
 from news.models import Corpus, Issue
-from Tome.helpers.data.helpers.debug import Printer
+from Tome.helpers.debug import Printer
 
 progress = Printer(True)
 
