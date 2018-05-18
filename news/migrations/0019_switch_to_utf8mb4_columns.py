@@ -12,4 +12,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            sql=[
+                'ALTER TABLE news_article MODIFY title VARCHAR(500) CHARSET '
+                + 'utf8mb4 COLLATE utf8mb4_unicode_ci'
+            ],
+            reverse_sql=[
+                'ALTER TABLE news_article MODIFY title VARCHAR(500)'
+            ]
+        )
     ]
