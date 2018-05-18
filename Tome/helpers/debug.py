@@ -1,5 +1,4 @@
 DEBUG = True
-print_func = print
 DEFAULT_DECORATOR = "---------------------------------------"
 
 
@@ -7,7 +6,7 @@ def d_print(output, end='\n'):
     if not DEBUG:
         return
     else:
-        print_func(output)
+        print(output, end=end)
 
 
 class Printer(object):
