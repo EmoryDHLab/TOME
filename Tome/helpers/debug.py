@@ -2,7 +2,7 @@ DEBUG = True
 DEFAULT_DECORATOR = "---------------------------------------"
 
 
-def d_print(output, end='\n'):
+def d_print(output='', end='\n'):
     if not DEBUG:
         return
     else:
@@ -22,8 +22,9 @@ class Printer(object):
         if (self.isInPlace and not self.needsReset):
             self.print_func('\r', '')
         if (self.needsReset):
+            self.print_func()
             self.needsReset = False
-        self.print_func(output)
+        self.print_func(output, '' if self.isInPlace else '\n')
 
     def reset(self):
         self.needsReset = True
