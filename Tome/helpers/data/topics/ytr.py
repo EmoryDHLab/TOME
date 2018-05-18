@@ -18,7 +18,7 @@ def generateYTRs():
 
     ct = 0
     for t in topics:
-        progress.log(ct, "/ 100")
+        progress.log("{} / 100".format(ct))
         for date in dates:
             addYTR(date.year, t, corpus)
         ct += 1
