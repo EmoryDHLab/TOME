@@ -1,6 +1,6 @@
 L.mapbox.accessToken = 'pk.eyJ1IjoidG9tZS1tYXBib3giLCJhIjoiY2o0a2E2YWg2MGhldTMycDM0aWx1OG94NCJ9.vsZa2d1a649RpQxmPQytZA';
 var map = L.mapbox.map('map', 'mapbox.dark',{ zoomControl:false })
-    .setView([36.8508, -76.2859], 4);
+    .setView([36.8508, -76.2859], 5);
 map.dragging.disable();
 map.touchZoom.disable();
 map.doubleClickZoom.disable();
