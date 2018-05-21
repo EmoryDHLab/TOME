@@ -25,6 +25,7 @@ def generateNTPs():
             ntp = buildNTP(p, t, score)
             ntps.append(ntp)
         NewspaperTopicPair.objects.bulk_create(ntps)
+        ct += 1
 
 
 def buildNTP(newspaper, topic, score):
