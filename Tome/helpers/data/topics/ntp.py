@@ -19,8 +19,8 @@ def generateNTPs():
         progress.log("{} / 100".format(ct))
         ntps = []
         for p in papers:
-            score = t.articletopicrank_set.objects\
-                .filter(article__issue__newspaper__id=p.id)\
+            score = t.articletopicrank_set.filter(
+                    article__issue__newspaper__id=p.id)\
                 .aggregate(paper_score=Sum('score'))['paper_score']
             ntp = buildNTP(p, t, score)
             ntps.append(ntp)
