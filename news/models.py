@@ -262,6 +262,9 @@ class Newspaper(models.Model):
                 return False
         return True
 
+    def countArticles(self):
+        return Article.objects.filter(issue__newspaper__id=self.id).count()
+
 
 class Issue(models.Model):
     """A collection of articles from the same date from the same newspaper"""

@@ -699,6 +699,7 @@ input[type='range'].vertical {
 
 .paper {
   padding-left: .5em;
+  height: 200px;
 }
 
 .papers-col {

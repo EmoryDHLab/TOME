@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Count
 from decimal import Decimal
+from news.models import Newspaper
 
 
 class Word(models.Model):
@@ -31,6 +33,9 @@ class Topic(models.Model):
         'news.Article', through='ArticleTopicRank')
     # [topics.WordTopicRank] All the words contained int the topic
     words = models.ManyToManyField(Word, through='WordTopicRank')
+    # [topics.NewspaperTopicPair] Cached values to score by papers faster
+    papers = models.ManyToManyField('news.Newspaper',
+                                    through='NewspaperTopicPair')
     # [Integer] the topic's rank within the corpus
     rank = models.IntegerField(default=-1)
 
@@ -56,11 +61,12 @@ class Topic(models.Model):
         Returns the topics percentage relevance at a location
         @param loc_id : the id of a location
         """
-        atrs = self.articletopicrank_set.filter(
-            article__issue__newspaper__location__id=loc_id)
-        ct = atrs.count()
+        ntps = self.newspapertopicpair_set.filter(
+            newspaper__location__id=loc_id)
+        ct = Newspaper.objects.filter(location__id=loc_id)\
+            .aggregate(article_count=Count('issue__article'))['article_count']
         # caluclate the percentage
-        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
+        raw_perc = 100 * (sum(ntps.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def percentByPaper(self, paper_id):
@@ -69,16 +75,18 @@ class Topic(models.Model):
         @param paper_id : the newspaper
         """
         # get all topics within the given paper
-        atrs = self.articletopicrank_set.filter(
-            article__issue__newspaper__id=paper_id)
+        # atrs = self.articletopicrank_set.filter(
+        #     article__issue__newspaper__id=paper_id)
+        ntps = self.newspapertopicpair_set.filter(newspaper__id=paper_id)
 
         # count how many articles there are
-        ct = atrs.count()
+        ct = Newspaper.objects.filter(id=paper_id)\
+            .aggregate(article_count=Count('issue__article'))['article_count']
 
         # get a raw percentage by aggregating the scores of the articles
         # then dividing that by the number of articles in total
         # then multiply by 100 to get a percentage
-        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
+        raw_perc = 100 * (sum(ntps.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def toJSON(self, includeArticles=True):
@@ -303,3 +311,23 @@ class YearTopicRank(models.Model):
     def __str__(self):
         """Returns the YearTopicRank as a string"""
         return str(self.year) + ": " + str(self.score)
+
+
+class NewspaperTopicPair(models.Model):
+    """Caches a topic's score by paper to calculate paper scores faster"""
+    # [topics.Topic] the topic associated with the given year
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    # [news.Newspaper] the newspaper to pair the topic with
+    newspaper = models.ForeignKey('news.Newspaper', on_delete=models.CASCADE)
+    # [Decimal] the score associated with the Topic that year
+    score = models.DecimalField(max_digits=16, decimal_places=10, default=0)
+
+    class Meta:
+        ordering = ['topic__key', '-score']
+        indexes = [
+            models.Index(fields=['topic', '-score'])
+        ]
+
+    def __str__(self):
+        """Returns the string representation of the NTP"""
+        return
