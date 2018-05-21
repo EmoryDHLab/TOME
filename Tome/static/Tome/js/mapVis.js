@@ -292,7 +292,12 @@ function makeTopicCompBars(topicData) {
 var updateMapInfo = function(data) {
   $(".papers-col").html("");
   paperCounter = 0;
-  paperCount = loc_data.papers.length;
+  paperCount = 0;
+  $.each(data, function(loc_id, loc_data) {
+    $.each(loc_data.papers, function(paper_id, paper_data) {
+      paperCount++;
+    }
+  });
   leftColPaperCount = Math.floor((paperCount + 3) / 2);
   $.each(data, function(loc_id, loc_data) {
     $.each(loc_data.papers, function(paper_id, paper_data) {
