@@ -1,7 +1,7 @@
 from topics.models import Topic, NewspaperTopicPair
 from news.models import Newspaper
 from Tome.helpers.debug import Printer
-from django.db.model import Sum
+from django.db.models import Sum
 progress = Printer(True)
 
 
