@@ -1,6 +1,6 @@
 L.mapbox.accessToken = 'pk.eyJ1IjoidG9tZS1tYXBib3giLCJhIjoiY2o0a2E2YWg2MGhldTMycDM0aWx1OG94NCJ9.vsZa2d1a649RpQxmPQytZA';
 var map = L.mapbox.map('map', 'mapbox.dark',{ zoomControl:false })
-    .setView([36.8508, -76.2859], 5);
+    .setView([36.8508, -76.2859], 4);
 map.dragging.disable();
 map.touchZoom.disable();
 map.doubleClickZoom.disable();
@@ -103,13 +103,14 @@ function addMapData(locations) {
         }
         var popupOptions = { maxWidth: 500 };
         var popupContent = '<div>';
-        var s = (feature.properties.topics.length > 1) ? "s" : "";
-        popupContent += '<h6>' + "Topic" + s + " ";
-        $.each(feature.properties.topics, function(i, topic) {
-          var c = (i + 1 >= feature.properties.topics.length) ? "" : ", ";
-          popupContent += topic.key + c;
-        });
-        popupContent += '</h6>';
+        // var s = (feature.properties.topics.length > 1) ? "s" : "";
+        // popupContent += '<h6>' + "Topic" + s + " ";
+        // $.each(feature.properties.topics, function(i, topic) {
+        //   var c = (i + 1 >= feature.properties.topics.length) ? "" : ", ";
+        //   popupContent += topic.key + c;
+        // });
+        // popupContent += '</h6>';
+        popupContent += '<h6>' + feature.properties.name + "</h6>";
         popupContent += '<span>' + truncateDecimals(feature.properties.count, 4)
           + '%</span>' + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
