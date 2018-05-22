@@ -173,6 +173,7 @@ class WordTopicRank(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     # [Decimal] the score representing how important the word is to the topic
     score = models.DecimalField(max_digits=16, decimal_places=10)
+    rank = models.IntegerField(default=-1)
 
     class Meta:
         """
