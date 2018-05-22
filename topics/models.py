@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Sum
 from decimal import Decimal
 from news.models import Newspaper
 
@@ -61,12 +61,13 @@ class Topic(models.Model):
         Returns the topics percentage relevance at a location
         @param loc_id : the id of a location
         """
-        ntps = self.newspapertopicpair_set.filter(
-            newspaper__location__id=loc_id)
+        ntp_score = self.newspapertopicpair_set.filter(
+            newspaper__location__id=loc_id)\
+            .aggregate(total_score=Sum('score'))['total_score']
         ct = Newspaper.objects.filter(location__id=loc_id)\
             .aggregate(article_count=Count('issue__article'))['article_count']
         # caluclate the percentage
-        raw_perc = 100 * (sum(ntps.values_list('score', flat=True)) / ct)
+        raw_perc = 100 * (ntp_score / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def percentByPaper(self, paper_id):

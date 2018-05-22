@@ -3,11 +3,10 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 import simplejson as json
-from .models import Topic, ArticleTopicRank
-from news.models import Location, Newspaper, Article
+from .models import Topic, ArticleTopicRank, NewspaperTopicPair
+from news.models import Newspaper, Article
 
 
-# Create your views here.
 def index(request):
     topics_list = Topic.objects.all()
     topics_len = len(topics_list)
@@ -67,40 +66,44 @@ def locationMap(request):
         }
     """
     keys = json.loads(request.GET.get("json_data"))
-    topics = Topic.objects.filter(key__in=keys["topics"]).order_by('rank')
-    papers = Newspaper.objects.all()
+    # get the scores by paper, annotate with paper article count
+    ntps = NewspaperTopicPair.objects.select_related('newspaper__location')\
+        .select_related('topic').filter(topic__key__in=keys["topics"])\
+        .annotate(article__count=Count('newspaper__issue__article'))\
+        .order_by('newspaper', 'topic__score')
     locs_json = {}
-    locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
-        .filter(newspaper_count__gt=0)
-    for loc in locs:
-        lc = {}
-        lc['location'] = loc.toJSON()
-        lc['topics'] = {}
-        lc['papers'] = {}
-        # for each topic
-        for i in range(len(topics)):
-            # for each newspaper
-            t = topics[i]
-            lc["topics"][i] = {
-                'key': t.key,
-                'score': t.percentByLocation(loc.id)
+    # locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
+    #     .filter(newspaper_count__gt=0)
+    topic_counter = 0
+    paper_counter = 0
+    for ntp in ntps:
+        paper = ntp.newspaper
+        loc = paper.location
+        topic = ntp.topic
+        lc = {} if (loc.id not in locs_json) else locs_json[loc.id]
+        if not lc:
+            lc['location'] = loc.toJSON()
+            lc['topics'] = {}
+            lc['papers'] = {}
+        if (paper.id not in lc["papers"]):
+            paper_counter += 1
+            topic_counter = 0
+            lc["papers"][paper.id] = {
+                "title": paper.title,
+                "topics": {}
             }
-            for paper in papers.filter(location__id=loc.id):
-                try:
-                    score = t.percentByPaper(paper.id)
-                except Exception as e:
-                    score = 0
-                if (paper.id not in lc["papers"]):
-                    lc["papers"][paper.id] = {
-                        "title": paper.title,
-                        "topics": {}
-                    }
-                lc["papers"][paper.id]["topics"][i] = {
-                    'key': t.key,
-                    'score': score
-                }
+        lc["papers"][paper.id]["topics"][topic_counter] = {
+            'key': topic.key,
+            'score': 100 * (ntp.score / ntp.article__count)
+        }
+        lc['topics'][topic_counter] = {
+            'key': topic.key,
+            'score': topic.percentByLocation(loc.id)
+        }
+        topic_counter += 1
         locs_json[loc.id] = lc
     locs_json = json.dumps(locs_json)
+    print("GENERATED LOCATION DATA POINTS FOR {} Papers".format(paper_counter))
     return HttpResponse(locs_json, content_type='application/json')
 
 
