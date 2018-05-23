@@ -12,19 +12,21 @@ def wipeWordRanks():
 
 def generateRanks():
     topics = Topic.objects.all()
-    i = 0
+    ct = 0
     for topic in topics:
         wtrs = topic.wordtopicrank_set.order_by('-score')
+        i = 0
         try:
             with transaction.atomic():
                 for wtr in wtrs:
                     wtr.rank = i
                     wtr.save()
-                    if (i % 1000 == 0):
-                        progress.log("{}/".format(i))
                     i += 1
         except IntegrityError:
             wipeWordRanks()
+            progress.log("ERROR")
+        progress.log("{}/100".format(ct))
+        ct += 1
 
 
 def validateWordRanks():
