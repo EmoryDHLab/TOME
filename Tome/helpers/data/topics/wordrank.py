@@ -3,6 +3,7 @@ from Tome.helpers.debug import Printer
 from django.db import IntegrityError, transaction
 
 out = Printer()
+progress = Printer(True)
 
 
 def wipeWordRanks():
@@ -20,7 +21,7 @@ def generateRanks():
                     wtr.rank = i
                     wtr.save()
                     if (i % 1000 == 0):
-                        out.log("{}/".format(i))
+                        progress.log("{}/".format(i))
                     i += 1
         except IntegrityError:
             wipeWordRanks()
