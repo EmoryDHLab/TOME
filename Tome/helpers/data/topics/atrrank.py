@@ -27,7 +27,7 @@ def generateRanks():
             wipeATRRanks()
             progress.log("ERROR")
         ct += 1
-        progress.log("{}/100".format(ct))
+        progress.log("\n{}/100".format(ct))
     out.log()
 
 
