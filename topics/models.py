@@ -224,6 +224,7 @@ class ArticleTopicRank(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     # [Decimal] the score associated
     score = models.DecimalField(max_digits=16, decimal_places=10)
+    rank = models.IntegerField(default=-1)
 
     class Meta:
         """
@@ -252,6 +253,7 @@ class ArticleTopicRank(models.Model):
         tempD["topic"] = self.topic.key
         tempD["article"] = self.article.id
         tempD["score"] = self.score
+        tempD["rank"] = self.rank
         tempD["year"] = self.article.year
         return tempD
 
