@@ -25,8 +25,8 @@ def generateRanks():
         except IntegrityError:
             wipeWordRanks()
             progress.log("ERROR")
-        progress.log("{}/100".format(ct))
         ct += 1
+        progress.log("{}/100".format(ct))
 
 
 def validateWordRanks():
