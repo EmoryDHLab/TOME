@@ -151,6 +151,7 @@ function makePercCompBar(selector, topicData, styles={}) {
     totalPerc += percent;
     shifts[tpc.key] = totalPerc - percent;
   });
+  console.log(totalPerc);
   var margin = (styles.margin == undefined) ?
     {top: 10, right: 30, bottom: 50, left: 30} : styles.margin;
 
@@ -286,6 +287,7 @@ function getPaperCompBars(paperId, paperData) {
 function makeTopicCompBars(topicData) {
   var selector = "#topic-comp-bars";
   $("#topic-comp-bars").html("");
+  console.log(topicData);
   makePercCompBar(selector, topicData, {labels:{percents:"% of Corpus"}});
 }
 

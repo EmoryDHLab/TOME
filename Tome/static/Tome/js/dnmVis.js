@@ -15,11 +15,11 @@ function convertTopicData(articleData) {
 
 const DNM = {
     tip: d3.tip()
-                .attr('class', 'd3-tip')
-                .offset([-10, 0])
-                .html(function(d) {
-                    return "<strong>"+ d.name +"</strong>";
-                }),
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+                return "<strong>"+ d.name +"</strong>";
+            }),
     zoom: d3.behavior.zoom().scaleExtent([0.1, 10]),
     panelHeight: 50,
     width: 500,
@@ -55,7 +55,8 @@ function render(id, fData, newKeys, wipeDust=false) {
     if (wipeDust) {
         DNM.data = [];
     }
-    DNM.data= DNM.data.concat(fData);
+    DNM.data = DNM.data.concat(fData);
+    console.log(DNM.data);
     newKeys.forEach(function(key) {
         var exists = DNM.keys.find(function(k){
             return k.name == key.name;

@@ -112,9 +112,9 @@ def constructArticleTableData(keys, count, received_articles):
     print('getting article data:', keys, count, received_articles)
     total_received_articles = len(received_articles)
     # determine which the articles we want
+    # .order_by('topic', '-score')\
     id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
         .exclude(article__key__in=received_articles)\
-        .order_by('-articletopicrank__score')\
         .values('article')\
         .annotate(score=Sum('score')).order_by("-score")\
         .values_list('article__key',

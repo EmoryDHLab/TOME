@@ -90,7 +90,7 @@ class Topic(models.Model):
         raw_perc = 100 * (sum(ntps.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
-    def toJSON(self, includeArticles=True):
+    def toJSON(self, includedArticles=10):
         """
         Returns dict representation of the Topic
         @param includeArticles : whether to include articles in the json
@@ -105,16 +105,17 @@ class Topic(models.Model):
         """
         tempD = {'words': []}
         tempD["key"] = self.key
+        tempD["id"] = self.id
         tempD["score"] = self.score
         tempD["rank"] = self.rank
-        words = self.wordtopicrank_set.all().order_by('-score')[:5]
-        for word in words:
-            tempD["words"].append(word.toJSON())
+        words = self.wordtopicrank_set.filter(rank__lt=10)\
+            .order_by('rank')[:10]
+        for wtr in words:
+            tempD["words"].append(wtr.toJSON())
 
-        if (includeArticles):
+        if (includedArticles > 0):
             tempD['articles'] = []
-            # TODO change includeArticles to article count so it isn't capped
-            articles = self.articletopicrank_set.all()[:10]
+            articles = self.articletopicrank_set.all()[:includedArticles]
             for article in articles:
                 tempD["articles"].append(article.toJSON())
         return tempD
@@ -143,8 +144,8 @@ class Topic(models.Model):
         return brk[0] + out + brk[1]
 
     def getWordList(self, length=10):
-        words = self.wordtopicrank_set.all() \
-            .order_by('-score')[:length] \
+        words = self.wordtopicrank_set.filter(rank__lt=length) \
+            .order_by('rank')\
             .values_list('word__text', flat=True)
         return list(words)
 
@@ -184,7 +185,7 @@ class WordTopicRank(models.Model):
         unique_together = ('word', 'topic')
         indexes = [
             models.Index(fields=['word']),
-            models.Index(fields=['-score']),
+            models.Index(fields=['topic', 'rank']),
             models.Index(fields=['topic'])
         ]
 
@@ -196,6 +197,7 @@ class WordTopicRank(models.Model):
             "word" : "dog",
             "score" : Decimal('0.094'),
             "topic" : 45
+            "rank" : 0
         }
         -- Note that 45 is the key corresponding to the topic --
         """
@@ -203,6 +205,7 @@ class WordTopicRank(models.Model):
         tempD["word"] = self.word.text
         tempD["score"] = self.score
         tempD["topic"] = self.topic.key
+        tempD["rank"] = self.rank
         return tempD
 
     def __str__(self):
@@ -229,6 +232,9 @@ class ArticleTopicRank(models.Model):
         twice in the same topic)
         """
         unique_together = ('article', 'topic')
+        indexes = [
+            models.Index(fields=['topic', '-score'])
+        ]
 
     def toJSON(self):
         """

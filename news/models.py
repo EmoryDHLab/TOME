@@ -388,7 +388,7 @@ class Article(models.Model):
         for atr in atrs:
             if asJSON:
                 # if there the topics need to be jsonable
-                tempD[ct] = atr.topic.toJSON(False)
+                tempD[ct] = atr.topic.toJSON(0)
             else:
                 # if they don't need to be jsonable
                 tempD[ct] = atr.topic
