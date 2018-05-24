@@ -15,24 +15,25 @@ def generateRanks():
     ct = 0
     for topic in topics:
         atrs = topic.articletopicrank_set.order_by('-score')
-        i = 0
-        try:
-            with transaction.atomic():
-                for atr in atrs:
-                    atr.rank = i
-                    atr.save()
-                    i += 1
-                    progress.log('{}'.format(i))
-        except IntegrityError:
-            wipeATRRanks()
-            progress.log("ERROR")
+        if not validateATRRanks(atrs):
+            i = 0
+            try:
+                with transaction.atomic():
+                    for atr in atrs:
+                        atr.rank = id
+                        atr.save()
+                        i += 1
+                        progress.log('{}'.format(i))
+            except IntegrityError:
+                wipeATRRanks()
+                progress.log("ERROR")
         ct += 1
-        progress.log("\n{}/100".format(ct))
+        progress.log("\n{}/100\n".format(ct))
     out.log()
 
 
-def validateATRRanks():
-    return ArticleTopicRank.objects.filter(rank=-1).count() == 0
+def validateATRRanks(set=ArticleTopicRank.objects):
+    return set.filter(rank=-1).count() == 0
 
 
 def qRun():
