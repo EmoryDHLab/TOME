@@ -38,7 +38,7 @@ def validateATRRanks(set=ArticleTopicRank.objects):
 
 def qRun():
     out.log('Clearing atr ranks')
-    wipeATRRanks()
+    # wipeATRRanks()
     out.log('Generating atr ranks')
     generateRanks()
     out.log('Validating')

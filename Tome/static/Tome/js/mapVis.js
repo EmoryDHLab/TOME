@@ -52,6 +52,30 @@ function clearMapData() {
   maxScore = 0;
 }
 
+function createLocationMarker(loc) {
+  var locationMarker = {
+    type: 'Feature',
+    properties: {
+      name: loc.location.city + ", " + loc.location.state,
+      topics: [],
+      count: 0
+    },
+    geometry: {
+      type: 'Point',
+      coordinates: [loc.location.lng, loc.location.lat]
+    }
+  };
+  $.each(loc.topics, function(i, t) {
+    console.log("ADDING NEW TOPIC TO " + loc.location.city);
+    locationMarker.properties.topics.push(t);
+    locationMarker.properties.count += t.score;
+  });
+  if (locationMarker.properties.count > maxScore) {
+    maxScore = locationMarker.properties.count;
+  }
+  return locationMarker;
+}
+
 function addMapData(locations) {
   var geoJsonData = {
     type: "FeatureCollection",
@@ -59,27 +83,7 @@ function addMapData(locations) {
   };
   $.each(locations, function (id, loc) {
     console.log(loc);
-    var locationMarker = {
-      type: 'Feature',
-      properties: {
-        name: loc.location.city + ", " + loc.location.state,
-        topics: [],
-        count: 0
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [loc.location.lng, loc.location.lat]
-      }
-    };
-    $.each(loc.topics, function(i, t) {
-      console.log("ADDING NEW TOPIC TO " + loc.location.city);
-      locationMarker.properties.topics.push(t);
-      locationMarker.properties.count += t.score;
-    });
-    if (locationMarker.properties.count > maxScore) {
-      maxScore = locationMarker.properties.count;
-    }
-    geoJsonData.features.push(locationMarker);
+    geoJsonData.features.push(createLocationMarker(loc));
   });
 
   visLayer = L.geoJson(geoJsonData, {

@@ -306,6 +306,7 @@ function addDustParticles(container, reset) {
 }
 
 function renderFromArticleData(id, articleData, newKeys, wipeDust) {
+    console.log(articleData);
     render(id, convertTopicData(articleData), newKeys, wipeDust);
     console.log("RENDERED");
 }
