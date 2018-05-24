@@ -76,19 +76,11 @@ function navChange(id, scrollToIt) {
 }
 
 function wordObjToString(arr, ct=-1) {
-  console.log(arr);
-  var s = "";
-
-  if (ct != -1 && ct < arr.length) {
-    var truncateAfter = ct;
-  } else {
-    var truncateAfter = arr.length;
-  }
-
-  for (var i = 0; i < truncateAfter; i++) {
-      s += arr[i].word;
-      s += (i < truncateAfter - 1 ) ? ", ": "";
-  }
+  var s = arr.slice(0, (ct != -1 && ct < arr.length) ? ct : arr.length)
+    .map(function(x) { return x.word })
+    .reduce(function(str, word) {
+      return str + ((str === "") ? "" : ", ") + word
+    },"")
   return s;
 }
 
@@ -100,7 +92,6 @@ window.onscroll = function() {
   }
   var winBottom = $(window).scrollTop() + $(window).height();
   var currentSection = $(".section").filter(function() {
-
     var buffer = 20;
     var elTop = $(this).offset().top;
     var elBottom = $(this).offset().top + $(this).outerHeight(true);
@@ -161,13 +152,13 @@ function updateTopicsSelected(e) {
       $.each(data, function(key, val) {
         output += "<span class='topic-title' data-topic='"
           + val.key + "'>"
-        if (topics.count == 1) {
+        if (topics.count === 1) {
           output += "<div class='color-box' style='background-color:"
             + topics.getColor(val.key) + "'>&nbsp;&nbsp;&nbsp;</div>";
           words = wordObjToString(val.words.slice(0,10));
         }
         output += "<span>TOPIC " + val.key + "</span>";
-        output += (words != "") ? "<span class='topic-words'>&ndash;&nbsp;"
+        output += (words !== "") ? "<span class='topic-words'>&ndash;&nbsp;"
           + words + "</span>" : "";
         output += "</span>";
         $("#topic-titles").append(output);
@@ -215,35 +206,50 @@ function updateTopicsList(search) {
       var output = "";
       allTopicList = [];
       allKeys = [];
-      $.each(data, function(key, t) {
-        allTopicList.push({
-          key:t.key,
-          desc: wordObjToString(t.words, 10)
-        })
-        allKeys.push(t.key);
-        var cls = "";
-        var clr = "transparent";
-        if (topics.contains(t.key)){
-          cls = "selected";
-          clr = topics.getColor(t.key);
-        }
-        output = "<li data-topic=" + t.key + "data-rank="
-          + t.rank + " class='" + cls + "''>"
-            + "<span class='topic-words'>"
-              + wordObjToString(t.words, 5)
-            + "</span>" + "&nbsp;"
-            + "<span class='color-box' style='background-color:"
-              + clr
-            + "'></span>"
-          + "</li>";
-        $("#corpus-topics").append(output);
+      allTopicList = data.map(function(t) {
+        return { key:t.key, desc: wordObjToString(t.words, 10)}
       });
+      allKeys = allTopicList.map(function(t) { return t.key })
+      $("#corpus-topics").append(
+        data.map(function(t) {
+          return topicToListElement(t)
+        }).join(""));
+      // $.each(data, function(key, t) {
+      //   // allTopicList.push({
+      //   //   key:t.key,
+      //   //   desc: wordObjToString(t.words, 10)
+      //   // })
+      //   // allKeys.push(t.key);
+      //   // var cls = "";
+      //   // var clr = "transparent";
+      //   // if (topics.contains(t.key)){
+      //   //   cls = "selected";
+      //   //   clr = topics.getColor(t.key);
+      //   // }
+      //   $("#corpus-topics").append(output);
+      // });
       endLoad();
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
     }
   });
+}
+
+function topicToListElement(t) {
+  var inTopics = topics.contains(t.key);
+  var cls = (inTopics) ? "selected" : "";
+  var clr = (inTopics) ? topics.getColor(t.key) : "transparent";
+  output = "<li data-topic=" + t.key + "data-rank="
+    + t.rank + " class='" + cls + "''>"
+      + "<span class='topic-words'>"
+        + wordObjToString(t.words, 5)
+      + "</span>" + "&nbsp;"
+      + "<span class='color-box' style='background-color:"
+        + clr
+      + "'></span>"
+    + "</li>";
+    return output;
 }
 
 function addArticleToDocumentDetails(data) {

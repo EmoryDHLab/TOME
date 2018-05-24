@@ -20,7 +20,7 @@ def generateRanks():
             try:
                 with transaction.atomic():
                     for atr in atrs:
-                        atr.rank = id
+                        atr.rank = i
                         atr.save()
                         i += 1
                         progress.log('{}'.format(i))
