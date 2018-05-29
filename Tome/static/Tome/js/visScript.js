@@ -705,7 +705,7 @@ function switchTopic(key) {
 
 //VIS 1
 function getVisData(keys, withAVG) {
-  var dataTMP = [];
+    var dataTMP = [];
   //for each key
   $.each(keys, function(k ,v) {
     // for each year
@@ -771,7 +771,8 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     y: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return 100 * t.score / article_counts[t.year];
+        console.log(t);
+        return t.percentage;
       })
     }), 0])
     .range([0, sizes.height])
@@ -780,7 +781,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     yPerc: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return 100 * t.score / article_counts[t.year];
+        return t.percentage;
       })
     }), 0])
     .range([0, sizes.height])
@@ -792,7 +793,9 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   }
   var line = d3.svg.line()
   .x(function(d) { return scale.x(d.year); })
-  .y(function(d) { return scale.y(100 * d.score / article_counts[d.year]); })
+  .y(function(d) {
+    return scale.y(d.percentage);
+  })
   .interpolate("linear");
 
   var graph = d3.select("#topic-score-chart").append("svg").data(visData)

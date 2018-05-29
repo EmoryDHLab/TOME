@@ -51,9 +51,9 @@ class Topic(models.Model):
 
     class Meta:
         """Nested class which puts topic in decending order by score"""
-        ordering = ('-score',)
+        ordering = ('rank',)
         indexes = [
-            models.Index(fields=['-score']),
+            models.Index(fields=['rank']),
             models.Index(fields=['key'])
         ]
 
@@ -282,6 +282,11 @@ class YearTopicRank(models.Model):
     # [Integer] the rank of the topic that year
     rank = models.IntegerField(default=-1)
 
+    percentage = models.DecimalField(max_digits=13, decimal_places=10,
+                                     default=0)
+
+    article_count = models.IntegerField(default=-1)
+
     class Meta:
         """
         Nested class to order by year, then decending score
@@ -318,6 +323,7 @@ class YearTopicRank(models.Model):
         tempD["year"] = self.year
         tempD["score"] = self.score
         tempD["rank"] = self.rank
+        tempD["percentage"] = self.percentage
         return tempD
 
     def __str__(self):

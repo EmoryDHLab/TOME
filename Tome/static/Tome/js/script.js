@@ -203,36 +203,23 @@ function updateTopicsList(search) {
     type : "GET",
     url : all_topic_list_link,
     data : {
-      json_data : JSON.stringify({'keywords' : search})
+      json_data : JSON.stringify({'word' : search})
     },
     success : function(data) {
       console.log("UPDATE TOPICS");
-      $("#corpus-topics").html("");
-      var output = "";
-      allTopicList = [];
-      allKeys = [];
-      allTopicList = Object.values(data).map(function(t) {
-        return { key:t.key, desc: wordObjToString(t.words, 10)}
+      alert(data);
+      $(".search-result").removeClass('.search-result')
+      listElementsSorted = $("#corpus-topics li").detach().sort(function(a, b) {
+        console.log(a.dataset.rank, b.dataset.rank)
+        return a.dataset.rank - b.dataset.rank;
       });
-      allKeys = allTopicList.map(function(t) { return t.key })
-      $("#corpus-topics").append(
-        data.map(function(t) {
-          return topicToListElement(t)
-        }).join(""));
-      // $.each(data, function(key, t) {
-      //   // allTopicList.push({
-      //   //   key:t.key,
-      //   //   desc: wordObjToString(t.words, 10)
-      //   // })
-      //   // allKeys.push(t.key);
-      //   // var cls = "";
-      //   // var clr = "transparent";
-      //   // if (topics.contains(t.key)){
-      //   //   cls = "selected";
-      //   //   clr = topics.getColor(t.key);
-      //   // }
-      //   $("#corpus-topics").append(output);
-      // });
+      $("#corpus-topics").append(listElementsSorted);
+      data.reverse()
+        .forEach(function(tKey) {
+          var curr = $("#corpus-topics [data-topic='" + tKey + "']").detach()
+          curr.addClass('search-result');
+          $("#corpus-topics").prepend(curr);
+      });
       endLoad();
     },
     error : function(textStatus, errorThrown) {
@@ -503,7 +490,7 @@ $(".topic-list").on("click", "li", function(e) {
   topicSelectionTimeout = setTimeout(function() {
     updateTopicsSelected(e);
   }, TOPIC_SELECTION_PAUSE_TIME)
-  sortTopicList();
+  //sortTopicList();
 });
 
 function topicSelectionHandler(element, event) {
@@ -571,7 +558,7 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortMode = sType;
   $('.sort-menu li[data-sort=' + sType + ']').addClass('selected');
   $('.sort-menu li:not([data-sort=' + sType + '])').removeClass('selected');
-  sortTopicList();
+  //sortTopicList();
 });
 
 $("body").on("click", '.article', function(e) {

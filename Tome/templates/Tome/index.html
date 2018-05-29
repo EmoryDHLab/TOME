@@ -256,7 +256,7 @@
       data_start_year = parseInt('{{ corpus.date_started.year }}');
       data_end_year = parseInt('{{ corpus.date_ended.year }}');
       data_n_range = data_end_year - data_start_year + 1;
-      article_counts = JSON.parse('{{ article_count | safe }}');
+      // article_counts = JSON.parse('{{ article_count | safe }}');
     </script>
     <script src="{% static "Tome/js/visScript.js" %}"></script>
     <script src="{% static "Tome/js/script.js" %}"></script>

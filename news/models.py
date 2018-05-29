@@ -144,7 +144,7 @@ class Corpus(models.Model):
         @param yr : the year from which to get topics
         """
         # get a list of ytrs in the given year
-        topics = self.yeartopicrank_set.filter(year=yr).order_by("-score")
+        topics = self.yeartopicrank_set.filter(year=yr).order_by("rank")
         json_tops = []
         # for each ytr, get the topic
         for t in topics:

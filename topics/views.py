@@ -29,26 +29,17 @@ def topicsAsJSON(request):
     return HttpResponse(topics_json, content_type='application/json')
 
 
+# Returns an ordered list of topic keys to the client so that we can reorder on
+# the client
 def allTopicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
-    if ("keywords" in keys):
-        keywords = keys["keywords"].strip()
-        tokens = keywords.split(" ")
-    topics = []
-    topics.append(Topic.objects.filter(
-        words__text__in=tokens).distinct().order_by('-wordtopicrank__score'))
-    topics.append(Topic.objects.exclude(words__text__in=tokens).distinct())
-    topics_json = {}
-    rank = 1
-    for qset in topics:
-        ids = []
-        for t in qset:
-            if (t.id not in ids):
-                ids.append(t.id)
-                topics_json[rank] = t.toJSON()
-                rank += 1
-
-    topics_json = json.dumps(topics_json)
+    word = keys["word"].strip()
+    topics = list(Topic.objects.prefetch_related('words')
+                  .select_related('wordtopicrank')
+                  .filter(words__text=word)
+                  .distinct().order_by('-wordtopicrank__score')
+                  .values_list('key', flat=True))
+    topics_json = json.dumps(topics)
     return HttpResponse(topics_json, content_type='application/json')
 
 
@@ -113,7 +104,10 @@ def constructArticleTableData(keys, count, received_articles):
     total_received_articles = len(received_articles)
     # determine which the articles we want
     # .order_by('topic', '-score')\
-    id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
+    id_score_tups = ArticleTopicRank.objects \
+        .select_related('article') \
+        .select_related('topic') \
+        .filter(topic__key__in=keys)\
         .exclude(article__key__in=received_articles)\
         .values('article')\
         .annotate(score=Sum('score')).order_by("-score")\
@@ -125,7 +119,10 @@ def constructArticleTableData(keys, count, received_articles):
     relevant = list(id_score_tups)
     # Get all atrs which have not yet been sent, within the given topics
     # Then preselect the articles to we can access them easily later
-    atr_tups = ArticleTopicRank.objects.filter(
+    atr_tups = ArticleTopicRank.objects \
+        .select_related('article') \
+        .select_related('topic') \
+        .filter(
             topic__key__in=keys,
             article__key__in=[k for (k, t, s, d, n) in relevant])\
         .order_by('-score')\
