@@ -705,7 +705,7 @@ function switchTopic(key) {
 
 //VIS 1
 function getVisData(keys, withAVG) {
-    var dataTMP = [];
+  var dataTMP = [];
   //for each key
   $.each(keys, function(k ,v) {
     // for each year
@@ -721,16 +721,20 @@ function getVisData(keys, withAVG) {
       var avgPoint = {
         rank : -1,
         score : 0,
+        percentage: 0,
         topic : -1,
         year : 0,
       }
       for (var j = 0; j < dataTMP.length; j++) {
         avgPoint.year = dataTMP[j][i].year;
         avgPoint.score += dataTMP[j][i].score;
+        avgPoint.percentage += dataTMP[j][i].percentage;
       }
       avgPoint.score /= dataTMP.length
+      avgPoint.percentage /= dataTMP.length
       avgLine.push(avgPoint);
     }
+    console.log(avgLine);
     dataTMP.push(avgLine);
   }
   return dataTMP;
@@ -809,7 +813,8 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
-    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 3 : 1.5})
+    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 2 : 1.5})
+    .style("stroke-dasharray", function(d) { return (value[0].topic == -1) ? "4 3" : "0"})
     .attr("d", line(value));
   })
   g.append("g")

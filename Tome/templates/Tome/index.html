@@ -31,7 +31,7 @@
             <a href="#document-details"><h4>DOCUMENTS</h4></a>
           </li>
           <li id="document-details-link" class="">
-            <h4>DOCUMENT DETAILS</h4>
+            <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
           </li>
         </ul>
         <hr>
@@ -60,7 +60,7 @@
         <hr>
       </div>
       <div id="search" class="flex-container flex-center">
-        <h2>Search keyword(s):</h2>
+        <h2>Search keyword:</h2>
         <input name="keyword" type="text"/>
         <input class="btn-dark" name="submit-search" type="submit"/>
       </div>
@@ -217,12 +217,11 @@
       </div>
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
+        <p class="sub-heading">
+          Select articles above to see their details here
+        </p>
         <hr class="dark thick"/>
-
         <div class="column-wrap">
-        </div>
-        <div class="miniload" style="display:none;">
-          <img src="{% static "Tome/img/miniloader.svg" %}" alt="loading"/>
         </div>
       </div>
     </div>

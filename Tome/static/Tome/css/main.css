@@ -68,6 +68,12 @@ h4 {
   font-family: 'Poppins', sans-serif;
 }
 
+.sub-heading {
+  margin-top:-15px;
+  font-style: italic;
+  font-family: 'Poppins', sans-serif;
+}
+
 label {
   padding-bottom: 10px;
   font-family: 'Poppins', sans-serif;

@@ -173,6 +173,7 @@ function updateTopicsSelected(e) {
         d3.select("#document-details").style("display","block");
         $("#topic-link").addClass("available");
         $("#document-link").addClass("available");
+        $("#document-details-link").addClass("available");
       } else {
         d3.select("#topic-details").style("display","none");
         d3.select("#documents").style("display","none");
@@ -180,6 +181,9 @@ function updateTopicsSelected(e) {
         d3.select("#document-details").style("display","none");
         $("#topic-link").removeClass("available").removeClass("active");
         $("#document-link").removeClass("available").removeClass("active");
+        $("#document-details-link").removeClass("available")
+          .removeClass("active");
+
       }
       console.log(data);
       Promise.all([
