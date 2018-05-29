@@ -16,34 +16,37 @@ var maxScore = 0;
 // from an external file with AJAX, or loaded from Mapbox automatically.
 
 function updateMapLocations(keys) {
-  $.ajax({
-    type : "GET",
-    url : map_data_link,
-    data : {
-      json_data : JSON.stringify({'topics' : keys})
-    },
-    success : function(data) {
-      console.log(data);
-      if (visLayer != undefined){
-        clearMapData();
+  return new Promise(function(resolve, reject) {
+    $.ajax({
+      type : "GET",
+      url : map_data_link,
+      data : {
+        json_data : JSON.stringify({'topics' : keys})
+      },
+      success : function(data) {
+        console.log(data);
+        if (visLayer != undefined){
+          clearMapData();
+        }
+        console.log(data);
+        if (keys.length == 0) {
+          $("#map-wrapper").css("display","none");
+          // fix map resizes issue
+          map.invalidateSize();
+        } else {
+          $("#map-wrapper").css("display","block");
+          // fix map resizes issue
+          map.invalidateSize();
+        }
+        addMapData(data);
+        updateMapInfo(data);
+        resolve()
+      },
+      error : function(textStatus, errorThrown) {
+        console.log(textStatus);
+        reject(errorThrown);
       }
-      console.log(data);
-      if (keys.length == 0) {
-        $("#map-wrapper").css("display","none");
-        // fix map resizes issue
-        map.invalidateSize();
-      } else {
-        $("#map-wrapper").css("display","block");
-        // fix map resizes issue
-        map.invalidateSize();
-      }
-      addMapData(data);
-      updateMapInfo(data);
-      // endLoad();
-    },
-    error : function(textStatus, errorThrown) {
-      console.log(textStatus);
-    }
+    });
   });
 }
 
@@ -148,13 +151,15 @@ function addMapData(locations) {
  *
  */
 function makePercCompBar(selector, topicData, styles={}) {
-  var totalPerc = 0;
-  var shifts = {};
-  $.each(topicData, function(i, tpc) {
-    var percent = tpc.score;
-    totalPerc += percent;
-    shifts[tpc.key] = totalPerc - percent;
-  });
+  var topicValues = Object.values(topicData);
+  var topicPercData = topicValues.reduce(function(percObj, tpc) {
+    console.log(percObj, tpc);
+    percObj.total += tpc.score;
+    percObj.shifts[tpc.key] = percObj.total - tpc.score;
+    return percObj;
+  },{total: 0, shifts:{}});
+  var shifts = topicPercData.shifts;
+  var totalPerc = topicPercData.total;
   console.log(totalPerc);
   var margin = (styles.margin == undefined) ?
     {top: 10, right: 30, bottom: 50, left: 30} : styles.margin;
@@ -238,7 +243,7 @@ function makePercCompBar(selector, topicData, styles={}) {
   var splitTopics = graph.append("g")
     .attr("transform", "translate(" + margin.left + ","
             + (sizes.upperHeight + sizes.gap) + ")");
-    splitTopics.selectAll('rect').data(Object.values(topicData))
+    splitTopics.selectAll('rect').data(topicValues)
       .enter().append('rect')
         .attr('x', function(d) {return scale.x(shifts[d.key]);})
         .attr('y', 0)
@@ -284,15 +289,22 @@ function makePercCompBar(selector, topicData, styles={}) {
  */
 function getPaperCompBars(paperId, paperData) {
   var selector = ".paper[data-paper-id='" + paperId + "'] .bars";
-  var topicData = paperData['topics'];
+  var topicData = Object.values(paperData['topics']);
+  console.log(topicData);
   makePercCompBar(selector, topicData);
 }
 
-function makeTopicCompBars(topicData) {
+function makeTopicCompBars(data) {
   var selector = "#topic-comp-bars";
   $("#topic-comp-bars").html("");
+  var topicData = Object.values(data)
+    .map(function(topic) {
+      topic.score = topic.percentage;
+      return topic;
+    });
   console.log(topicData);
   makePercCompBar(selector, topicData, {labels:{percents:"% of Corpus"}});
+  return Promise.resolve();
 }
 
 var updateMapInfo = function(data) {

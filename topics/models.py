@@ -53,7 +53,8 @@ class Topic(models.Model):
         """Nested class which puts topic in decending order by score"""
         ordering = ('-score',)
         indexes = [
-            models.Index(fields=['-score'])
+            models.Index(fields=['-score']),
+            models.Index(fields=['key'])
         ]
 
     def percentByLocation(self, loc_id):
@@ -107,6 +108,7 @@ class Topic(models.Model):
         tempD["key"] = self.key
         tempD["id"] = self.id
         tempD["score"] = self.score
+        tempD["percentage"] = self.percentage
         tempD["rank"] = self.rank
         words = self.wordtopicrank_set.filter(rank__lt=10)\
             .order_by('rank')[:10]

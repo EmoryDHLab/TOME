@@ -23,7 +23,8 @@ def generateRanks():
                         atr.rank = i
                         atr.save()
                         i += 1
-                        progress.log('{}'.format(i))
+                        if (i % 1000 == 0):
+                            progress.log('{}k'.format(i % 1000))
             except IntegrityError:
                 wipeATRRanks()
                 progress.log("ERROR")

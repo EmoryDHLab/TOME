@@ -748,7 +748,7 @@ function showOrHideSection(selector, keyLength) {
 function createTopicOverTimeVis(keys, data, withAVG=true) {
   showOrHideSection("#topic-score-chart-wrapper", keys.length)
   if (keys.length == 0){
-    return;
+    return Promise.resolve();
   }
   d3.select("#topic-score-chart").html("");
   $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
@@ -835,8 +835,8 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   $("#selected-topics").css("height", $("#topic-score-chart-inner-wrapper").height());
   $.each(data, function(key, tData) {
     var words = wordObjToString(tData.words, 10)
-    spaces = ""
-    for(var i = 2 - key.toString().length; i > 0; i--) {
+    var spaces = "";
+    for (var i = 2 - key.toString().length; i > 0; i--) {
       spaces += "&nbsp;&nbsp;";
     }
     var el = "<li data-topic=" + key + " data-rank=" + tData.rank + ">"
@@ -855,4 +855,5 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
            + "</li>";
    $("#selected-topics-list").append(el);
   }
+  return Promise.resolve();
 }

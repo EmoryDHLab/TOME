@@ -4,6 +4,8 @@
 var LOADING = false;
 const DNM_ID = "dnm-vis"
 var previousSearch = "";
+var topicSelectionTimeout = null;
+const TOPIC_SELECTION_PAUSE_TIME = 800;
 
 function getCookie(name) {
     var cookieValue = null;
@@ -125,17 +127,17 @@ function endLoad() {
 
 function startMiniLoad() {
   LOADING = true;
-  console.log("startMiniLoad");
-  $(".miniload").css("display","block");
+  console.log("load");
+  $("#loader").css("display","block");
 }
 function endMiniLoad() {
   LOADING = false;
   console.log("stopMiniLoad");
-  $(".miniload").css("display","none");
+  $("#loader").css("display","none");
 }
 
 function updateTopicsSelected(e) {
-  // startLoad();
+  startLoad();
   $.ajax({
     type : "GET",
     url : topic_data_link,
@@ -180,11 +182,14 @@ function updateTopicsSelected(e) {
         $("#document-link").removeClass("available").removeClass("active");
       }
       console.log(data);
-      createTopicOverTimeVis(topics.getKeys(), data);
-      updateMapLocations(topics.getKeys());
-      makeTopicCompBars(data);
-      loadArticles(topics.getKeys());
-      // endLoad();
+      Promise.all([
+        createTopicOverTimeVis(topics.getKeys(), data),
+        updateMapLocations(topics.getKeys()),
+        makeTopicCompBars(data),
+        loadArticles(topics.getKeys())
+      ]).then(function() {
+        endLoad();
+      });
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -206,7 +211,7 @@ function updateTopicsList(search) {
       var output = "";
       allTopicList = [];
       allKeys = [];
-      allTopicList = data.map(function(t) {
+      allTopicList = Object.values(data).map(function(t) {
         return { key:t.key, desc: wordObjToString(t.words, 10)}
       });
       allKeys = allTopicList.map(function(t) { return t.key })
@@ -390,16 +395,27 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
   console.log(excludeArticles);
   console.log(count);
   startMiniLoad();
-  $.ajax({
-    type : "POST",
-    url : articles_link,
-    beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-    data : JSON.stringify({
-      topics : keys,
-      articles: excludeArticles,
-      count: count
-    }),
-    success : function(data) {
+  const getArticles = new Promise(function (resolve, reject) {
+    $.ajax({
+      type : "POST",
+      url : articles_link,
+      beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
+      data : JSON.stringify({
+        topics : keys,
+        articles: excludeArticles,
+        count: count
+      }),
+      success : function(data) {
+        resolve(data);
+      },
+      error : function(textStatus, errorThrown) {
+        console.log(textStatus);
+        reject(errorThrown);
+      }
+    });
+  });
+  return (getArticles
+    .then(function(data) {
       if (overwrite) {
         clearArticlesTable()
       }
@@ -413,12 +429,11 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
       $(".article-info").css("min-height", h);
       $(".loaded-articles").html(data.show_count);
       $(".total-articles").html(data.total_count);
+      return;
+    })
+    .then(function() {
       endMiniLoad();
-    },
-    error : function(textStatus, errorThrown) {
-      console.log(textStatus);
-    }
-  });
+    }));
 }
 
 function articleSelected(key) {
@@ -477,17 +492,24 @@ $(".topic-list").on("mouseout", "li:not(.selected)", function(){
 });
 
 $(".topic-list").on("click", "li", function(e) {
+  clearTimeout(topicSelectionTimeout);
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {
     addTopicToSelected(t);
-    updateTopicsSelected(e);
   } else {
     removeTopicFromSelected(t);
-    updateTopicsSelected(e);
   }
+  topicSelectionTimeout = setTimeout(function() {
+    updateTopicsSelected(e);
+  }, TOPIC_SELECTION_PAUSE_TIME)
   sortTopicList();
 });
+
+function topicSelectionHandler(element, event) {
+
+}
+
 
 $("#clear-selected").on("click", function(e) {
   clearSelected();

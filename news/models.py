@@ -314,7 +314,10 @@ class Article(models.Model):
 
     class Meta:
         """Nested class to order articles by their issue's date"""
-        ordering = ('issue__date_published',)
+        # ordering = ('issue__date_published',)
+        indexes = [
+            models.Index(fields=['key'])
+        ]
 
     @property
     def day(self):
