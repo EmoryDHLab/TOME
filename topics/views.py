@@ -94,7 +94,6 @@ def locationMap(request):
         topic_counter += 1
         locs_json[loc.id] = lc
     locs_json = json.dumps(locs_json)
-    print("GENERATED LOCATION DATA POINTS FOR {} Papers".format(paper_counter))
     return HttpResponse(locs_json, content_type='application/json')
 
 

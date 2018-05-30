@@ -217,8 +217,10 @@ var updateCorpusChart = function() {
 var gridMap = new Map();
 var myChart = d3.select('#corpus-chart').append('svg')
   .attr({
-    height: height,
-    width: width,
+    height: '80vh',
+    width: '100%',
+    viewBox: "0 0 " + height + " " + width,
+    preserveAspectRatio: 'none'
   })
   .selectAll('g').data(rectdata)
   .enter().append('g')
@@ -288,13 +290,27 @@ var sThickness = 5;
 
 var sX = d3.scale.linear()
   .domain([0,data_n_range - 1])
-  .range([0,width])
+  .range([0, 100])
   .clamp(true);
 
 var sY = d3.scale.linear()
   .domain([0,99])
-  .range([0,height])
+  .range([0, 100])
   .clamp(true);
+
+var msX = function(mouseX) {
+  var scaled = mouseX * (data_n_range - 1) / $('#horizontal-slide').width()
+  if (scaled > data_n_range - 1) scaled = data_n_range - 1;
+  if (scaled < 0) scaled = 0;
+  return scaled;
+}
+
+var msY = function(mouseY) {
+  var scaled = mouseY * (99) / $('#vertical-slide').height()
+  if (scaled > 99) scaled = 99;
+  if (scaled < 0) scaled = 0;
+  return scaled;
+}
 
 var dispatch = d3.dispatch('maxChange','minChange', 'rescale');
 function appendSlider(selector, vertical = false, slideRange=[0,99]) {
@@ -306,8 +322,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     mouse: 0
   }
 
+
   var minimumVal = (vertical) ? slideRange[1] : slideRange[0],
       maximumVal = (vertical) ? slideRange[0] : slideRange[1];
+
+  var normalMin = minimumVal;
+  var normalMax = maximumVal;
+
+  if (slideRange[0] != 0 && !vertical) {
+    normalMin = 0;
+    normalMax = slideRange[1] - slideRange[0];
+  }
+
 
   if (vertical) {
     styles.move = 'top';
@@ -321,17 +347,17 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
 
   var sliderTray = slider.append("div")
     .attr('class',"slider-tray")
-    .style(styles.len, width + 'px')
+    .style(styles.len, '100%')
     .style(styles.thick, sThickness + 'px');
 
   var rangeBar = sliderTray.append("div")
     .attr('class', 'range-bar')
-    .style(styles.len, width + 'px')
+    .style(styles.len, '100%')
     .style(styles.thick, sThickness + 'px');
 
   var sliderHandleMax = slider.append("div")
     .attr('class', 'slider-handle max-handle')
-    .attr('data-value', maximumVal);
+    .attr('data-value', normalMax);
 
   if (vertical) {
     sliderHandleMax.style("top","0");
@@ -341,7 +367,7 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
 
   var sliderHandleMin = slider.append("div")
     .attr('class', 'slider-handle min-handle')
-    .attr('data-value', minimumVal);
+    .attr('data-value', normalMin);
 
   sliderHandleMax.append("div")
     .attr("class", "slider-handle-icon")
@@ -359,16 +385,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     .on("dragstart", function(){
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.minChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.minChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
     })
     .on("dragend", function(){
@@ -381,16 +409,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     .on("dragstart", function(){
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.maxChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.maxChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
     })
     .on("dragend", function(){
@@ -400,58 +430,55 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
   );
 }
 dispatch.on('maxChange', function(target, value, scl) {
-  value = Math.round(value); //round the value
-  coreVal = value; // save it to a temp
-  value = scl(value);
+  var coreVal = Math.round(value); // save it to a temp
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
   var min = p.select('.min-handle');
   if (p.classed('vertical')) {
-    var mnVal = parseInt(min.style('top').replace("px",""));
-    if (value < mnVal) {
+    var mnVal = parseInt(min.attr('data-value'));
+    if (coreVal < mnVal) {
       corpusSliders.y.maxVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px");
-      p.select(".range-bar").style('top', Math.round(value) + "px")
-        .style('height', Math.abs(mnVal - value) + 'px');
-      d3.select(target).select(".slider-handle-label")
-      .html(coreVal + 1);
-    }
-  } else {
-    var mnVal = parseInt(min.style('left').replace("px",""));
-    if (value > mnVal) {
-      corpusSliders.x.maxVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px")
-      p.select(".range-bar").style('left', Math.round(mnVal) + "px")
-        .style('width', Math.abs(mnVal - value) + "px");
-      d3.select(target).select(".slider-handle-label")
-      .html(corpusSliders.x.getAdjustedMax());
-    }
-  }
-});
-dispatch.on('minChange', function(target, value, scl) {
-  value = Math.round(value);
-  coreVal = value;
-  value = scl(value);
-  d3.select(target).attr('data-value', coreVal);
-  var p = d3.select(target.parentNode);
-  var max = p.select('.max-handle');
-  if (p.classed('vertical')) {
-    mxVal = parseInt(max.style('top').replace("px",""));
-    if (value > mxVal) {
-      corpusSliders.y.minVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px");
-      p.select(".range-bar").style('top', Math.round(mxVal) + "px")
-        .style('height', Math.abs(mxVal - value) + 'px');
+      d3.select(target).style('top', scl(coreVal) + "%");
+      p.select(".range-bar").style('top', scl(coreVal) + "%")
+        .style('height', scl(Math.abs(mnVal - coreVal)) + '%');
       d3.select(target).select(".slider-handle-label")
         .html(coreVal + 1);
     }
   } else {
-    var mxVal = parseInt(max.style('left').replace("px",""));
+    var mnVal = parseInt(min.attr('data-value'));
+    if (value > mnVal) {
+      corpusSliders.x.maxVal = coreVal;
+      d3.select(target).style('left', scl(coreVal) + "%")
+      p.select(".range-bar").style('left', scl(mnVal) + "%")
+        .style('width', scl(Math.abs(mnVal - coreVal)) + "%");
+      d3.select(target).select(".slider-handle-label")
+        .html(corpusSliders.x.getAdjustedMax());
+    }
+  }
+});
+dispatch.on('minChange', function(target, value, scl) {
+  var coreVal = Math.round(value);
+  console.log(coreVal);
+  d3.select(target).attr('data-value', coreVal);
+  var p = d3.select(target.parentNode);
+  var max = p.select('.max-handle');
+  if (p.classed('vertical')) {
+    var mxVal = parseInt(max.attr('data-value'));
+    if (coreVal > mxVal) {
+      corpusSliders.y.minVal = coreVal;
+      d3.select(target).style('top', scl(coreVal) + "%");
+      p.select(".range-bar").style('top', scl(mxVal) + "%")
+        .style('height', scl(Math.abs(mxVal - coreVal)) + '%');
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
+    }
+  } else {
+    var mxVal = parseInt(max.attr('data-value'));
     if (value < mxVal) {
       corpusSliders.x.minVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px");
-      p.select(".range-bar").style('left', Math.round(value) + "px")
-        .style('width', Math.abs(mxVal - value) + "px");
+      d3.select(target).style('left', scl(coreVal) + "%");
+      p.select(".range-bar").style('left', scl(coreVal) + "%")
+        .style('width', scl(Math.abs(mxVal - value)) + "%");
       d3.select(target).select(".slider-handle-label")
         .html(corpusSliders.x.getAdjustedMin());
     }
@@ -750,7 +777,7 @@ function showOrHideSection(selector, keyLength) {
 }
 
 function createTopicOverTimeVis(keys, data, withAVG=true) {
-  showOrHideSection("#topic-score-chart-wrapper", keys.length)
+  //showOrHideSection("#topic-score-chart-wrapper", keys.length)
   if (keys.length == 0){
     return Promise.resolve();
   }
@@ -761,9 +788,9 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   var margin = {top: 30, right: 30, bottom: 50, left: 80};
 
   var sizes = {
-    width : $(".wrapper").innerWidth()-$("#selected-topics").outerWidth(true)
+    width: $(".wrapper").innerWidth()-$("#selected-topics").outerWidth(true)
       - margin.left - margin.right,
-    height : 500 - margin.bottom - margin.top
+    height: 500 - margin.bottom - margin.top
   }
 
   var scale = {
@@ -803,8 +830,10 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   .interpolate("linear");
 
   var graph = d3.select("#topic-score-chart").append("svg").data(visData)
-  .attr("width", sizes.width + margin.left + margin.right)
-  .attr("height", sizes.height + margin.top + margin.bottom);
+  .attr("width", "100%")
+  // .attr("preserveAspectRatio", "none")
+  .attr("viewBox", "0 0 " + (sizes.width + margin.left + margin.right)
+        + " " + (sizes.height + margin.top + margin.bottom));
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   $.each(visData, function(key, value) {

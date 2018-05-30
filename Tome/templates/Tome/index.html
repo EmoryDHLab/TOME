@@ -66,7 +66,7 @@
       </div>
 
       <div class="section flex-container" id="overview">
-        <div class='topics flex-col-25'>
+        <div class='topics'>
             <h2>Topics
               <div class="pop-up-wrap">
                 <button class="btn-dark topic-sort">
@@ -94,11 +94,11 @@
             {% endfor %}
           </ol>
           <ul id="corpus-ten-topics" class="topic-list" style="display:none"></ul>
-          <button id="clear-selected" name="clear-selected" class="btn-dark">
+          <button id="clear-selected" name="clear-selected" class="btn-lite">
             Clear Selected
           </button>
         </div>
-        <div class='vis-wrap flex-col-75'>
+        <div class='vis-wrap'>
           <h2 class="chart-title">Topics ranked by % of entire corpus</h2>
           <div class="vis-no-title">
             <div class="vert-slide-wrap">
@@ -138,7 +138,7 @@
       <div id="topic-details" class="section" style='display: none;'>
         <h2 id="topic-titles"></h2>
         <hr class="dark thick"/>
-        <div id="topic-score-chart-wrapper" style='display: none;'>
+        <div id="topic-score-chart-wrapper">
           <div id="selected-topics">
             <h2>Selected topics</h2>
             <div class="list-wrapper">
@@ -207,11 +207,11 @@
           </div>
         </div>
         <div class='controls'>
-          <button id="more-articles">Load More</button>
           <p>
             Showing
-            <span class="loaded-articles"></span> of
-            <span class="total-articles"></span> articles.
+            <span class="loaded-articles">0</span> of
+            <span class="total-articles">370k</span> articles.
+            <button id="more-articles" class= "btn-lite">Load More</button>
           </p>
         </div>
       </div>
@@ -221,7 +221,7 @@
           <p class="sub-heading">
             Select articles above to see their details here
           </p>
-          <button id='clear-articles' class='btn-dark'>Deselect All</button>
+          <button id='clear-articles' class='btn-lite'>Deselect All</button>
         </div>
         <hr class="dark thick"/>
         <div class="column-wrap">

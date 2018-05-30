@@ -124,10 +124,16 @@ input[type='button']:hover{
   border:2px solid transparent;
   padding: 2px 5px;
   transition: border 0.3s;
+  text-decoration: underline;
 }
 
 .btn-lite:hover {
   border: 2px solid #4a4a4a;
+}
+
+.btn-lite.active {
+  border: 2px solid #4a4a4a;
+  text-decoration: none;
 }
 
 .section {
@@ -309,9 +315,14 @@ li.active {
 
 }
 
+.topics {
+  flex: 0 1 400px;
+}
+
 .topic-list {
   overflow-y: auto;
   padding-right: 10px;
+  height: 80vh;
 }
 .topic-list li {
   position: relative;
@@ -495,6 +506,7 @@ ul .color-box i{
 #vertical-slide {
   margin: auto;
   width: 1px;
+  height: 80vh;
 }
 .vertical .slider-tray {
   transform: translateX(-50%);
@@ -518,11 +530,13 @@ ul .color-box i{
 .vis-wrap {
   position: relative;
   margin-left: auto;
+  flex: 1 1 600px;
 }
 
 .vis-no-title {
-  display: inline-block;
+  display: inline-flex;
   position: relative;
+  width: 100%;
 }
 
 .chart-title {
@@ -530,9 +544,11 @@ ul .color-box i{
 }
 
 .chart-wrap {
-  position: absolute;
+  position: relative;
+  display: inline-block;
   top: 0;
   right: 0;
+  width: 100%;
 }
 
 .out {
@@ -567,6 +583,10 @@ input[type='range'].vertical {
   left: 100%;
   -webkit-transform-origin: left top;
   width: 700px;
+}
+
+.slider-range.vertical {
+  position: relative;
 }
 
 /* ---------------------- End Slider Styles ---------------------- */
@@ -676,6 +696,7 @@ input[type='range'].vertical {
 
 #topic-score-chart-wrapper {
   margin-top: 2em;
+  display: flex;
 }
 
 .c-wrap {

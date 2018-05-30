@@ -36,6 +36,9 @@ var scrollTop = function() {
     document.body).scrollTop;
 }
 
+// $('document').on('resize', function(e))
+
+
 function getScrollBarWidth () {
     var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body'),
         widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
@@ -112,11 +115,7 @@ window.onscroll = function() {
 };
 
 appendSlider("#vertical-slide", true);
-appendSlider("#horizontal-slide", false,
-  [data_start_year - 1, data_end_year - 1]);
-
-d3.select(".vis-no-title")
-  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
+appendSlider("#horizontal-slide", false, [data_start_year - 1, data_end_year - 1]);
 
 function startLoad() {
   $("#loader").css("display","block");
