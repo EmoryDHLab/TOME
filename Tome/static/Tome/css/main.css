@@ -113,6 +113,23 @@ input[type='button']:hover{
   border:none;
   padding: 2px 5px;
 }
+
+.btn-lite {
+  border-radius: 2px;
+  box-sizing:border-box;
+  background-color: transparent;
+  font-family: 'Cabin', sans-serif;
+  font-size: 14px;
+  color: #4a4a4a;
+  border:2px solid transparent;
+  padding: 2px 5px;
+  transition: border 0.3s;
+}
+
+.btn-lite:hover {
+  border: 2px solid #4a4a4a;
+}
+
 .section {
   margin-bottom: 2em;
   margin-top: -40px;
@@ -312,6 +329,11 @@ ul.topic-list {
 ul.topic-list .topic-words {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.topic-list li.search-result {
+  font-weight: 550;
+  /* font-style: italic; */
 }
 
 /*.topic-words {
@@ -708,6 +730,7 @@ input[type='range'].vertical {
 }
 #doof {
   min-height: calc(1.5em*21);
+  overflow: hidden;
 }
 
 .vs-item {
@@ -722,20 +745,24 @@ input[type='range'].vertical {
   z-index: 2 !important;
   background-color: white;
 }
+.vs-controls {
+  padding: 10px 0;
+}
 
-.switch-buttons button {
-  border-radius: 3px;
-  border-style: solid;
-  border-color: black;
-  color: black;
-  background: green;
+.switch-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.switch-buttons button.active {
+  border: 2px solid #4a4a4a;
 }
 
 
 /*------------------------------DOCUMENT TABLE--------------------------------*/
 .rsp-table {
   width: 75%;
-  height:
 }
 .rsp-table .rsp-table-header {
   height: 1.5em;
@@ -743,25 +770,30 @@ input[type='range'].vertical {
 }
 .rsp-table-header {
   background-color: white;
+  width: 100%;
+  overflow-y:scroll;
 }
 .rsp-table-body {
   height: calc(100% - 1.5em);
   overflow-y:scroll;
   box-sizing: border-box;
+  width: 100%;
 }
-.rsp-table-body .article {
+
+.rsp-table-body > div {
   height: 1.5em;
   background-color: white;
+  width: 100%;
 }
 
 .rsp-table-body .article.selected {
   font-weight:bold;
 }
 
-.rsp-table-body .article:nth-child(2n + 1){
+.rsp-table-body > div:nth-child(2n + 1){
   background-color: #dfdfdf;
 }
-.rsp-table-body .article p {
+.rsp-table-body > div p {
   line-height: 1.5em;
   margin: 0;
   height: 100%;
@@ -769,7 +801,7 @@ input[type='range'].vertical {
 }
 
 .rsp-table-header h4,
-.rsp-table-body .article p {
+.rsp-table-body > div p {
   box-sizing: border-box;
   display: inline-block;
   padding: 0px 5px;
@@ -778,16 +810,16 @@ input[type='range'].vertical {
 }
 
 .rsp-table-header h4:last-child,
-.rsp-table-body .article p:last-child {
+.rsp-table-body > div p:last-child {
   width: 20%;
 }
 .rsp-table-header h4:nth-child(2),
-.rsp-table-body .article p:nth-child(2) {
+.rsp-table-body > div p:nth-child(2) {
   /* min-width: 200px; */
   width: 30%;
 }
 .rsp-table-header h4:nth-child(4),
-.rsp-table-body .article p:nth-child(4) {
+.rsp-table-body > div p:nth-child(4) {
   /* min-width: 150px; */
   width: 20%;
 }
@@ -881,6 +913,32 @@ input[type='range'].vertical {
 }
 
 /*-----------------------------DOCUMENT DETAILS-------------------------------*/
+
+#clear-articles {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  transform: translateX(-100%);
+  display: inline-block;
+  width: 8em;
+}
+#doc-sub {
+  position: relative;
+}
+
+.article-head {
+  display: flex;
+  align-items: center;
+}
+
+.article-head button {
+  flex: 0 0 40px;
+  height: 40px;
+}
+
+.article-head h3 {
+  flex: 1 1 100%;
+}
 
 .column-wrap {
   display: flex;

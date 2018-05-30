@@ -211,8 +211,7 @@ function updateTopicsList(search) {
     },
     success : function(data) {
       console.log("UPDATE TOPICS");
-      alert(data);
-      $(".search-result").removeClass('.search-result')
+      $(".search-result").removeClass('search-result')
       listElementsSorted = $("#corpus-topics li").detach().sort(function(a, b) {
         console.log(a.dataset.rank, b.dataset.rank)
         return a.dataset.rank - b.dataset.rank;
@@ -261,8 +260,13 @@ function addArticleToDocumentDetails(data) {
   } else {
     column = $(".right.column")
   }
-  articleInfo = '<div class="article-info" data-key=' + data.key + '>'
-    + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
+  articleInfo = '<div class="article-info removable" data-key=' + data.key + '>'
+    + '<div class=article-head>'
+      + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
+      + '<button class="delete btn-lite">'
+        + '<i class="fas fa-trash-alt" aria-hidden="true"></i>'
+      + '</button>'
+    + '</div>'
     + '<div class="indent">'
       + '<ol class="general-info no-dec">'
         + '<li>EDITOR: ' + data.editor + '</li>'
@@ -454,6 +458,12 @@ function getArticleDetails(articleKey, useSelectedTopics=true, count=5) {
   });
 }
 
+function clearSelectedArticles() {
+  $('.article.selected').removeClass('selected');
+  $('.article-info').remove()
+}
+
+
 $("#more-articles").click(function() {
   loadAdditionalArticles();
 });
@@ -597,7 +607,17 @@ function switchView(switchViewId, viewItemName) {
 $("body").on("click", ".view-switch button", function(e) {
   console.log(e.currentTarget.dataset);
   switchView(e.currentTarget.dataset.target, e.currentTarget.name);
+  $(e.currentTarget).parent().children('.active').removeClass('active');
+  $(e.currentTarget).addClass('active');
 });
+
+$("#document-details").on('click', '#clear-articles', function(e) {
+  clearSelectedArticles()
+});
+
+$("#document-details").on('click','button.delete', function(e) {
+  deselectArticle($(e.currentTarget).parents(".removable").data('key'))
+})
 
 function resetDNMZoom(id) {
   resetZoomPan(id);

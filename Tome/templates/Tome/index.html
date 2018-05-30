@@ -28,7 +28,7 @@
             <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
           </li>
           <li id="document-link" class="">
-            <a href="#document-details"><h4>DOCUMENTS</h4></a>
+            <a href="#documents"><h4>DOCUMENTS</h4></a>
           </li>
           <li id="document-details-link" class="">
             <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
@@ -175,8 +175,8 @@
         <div class="view-switch">
           <div class='controls vs-controls'>
             <div class="switch-buttons">
-              <button class='active' type="button" name="tbl" data-target='doof'>Table</button>
-              <button type='button' name="dnm" data-target='doof'>Dust & Magnet</button>
+              <button class='active btn-lite' type="button" name="tbl" data-target='doof'>Table</button>
+              <button class='btn-lite' type='button' name="dnm" data-target='doof'>Dust & Magnet</button>
             </div>
           </div>
           <div id='doof' class="vs-frame">
@@ -217,9 +217,12 @@
       </div>
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
-        <p class="sub-heading">
-          Select articles above to see their details here
-        </p>
+        <div id="doc-sub">
+          <p class="sub-heading">
+            Select articles above to see their details here
+          </p>
+          <button id='clear-articles' class='btn-dark'>Deselect All</button>
+        </div>
         <hr class="dark thick"/>
         <div class="column-wrap">
         </div>
