@@ -69,7 +69,6 @@ function createLocationMarker(loc) {
     }
   };
   $.each(loc.topics, function(i, t) {
-    console.log("ADDING NEW TOPIC TO " + loc.location.city);
     locationMarker.properties.topics.push(t);
     locationMarker.properties.count += t.score;
   });
@@ -91,7 +90,6 @@ function addMapData(locations) {
 
   visLayer = L.geoJson(geoJsonData, {
       pointToLayer: function(feature, latlng) {
-        console.log("MAPY T : " + feature.properties.topics);
         //var tClr = topics.getColor(feature.properties.topic);
         //if (tClr === undefined) return;
         tClr = ["#ffffff"];
@@ -118,7 +116,7 @@ function addMapData(locations) {
         // });
         // popupContent += '</h6>';
         popupContent += '<h6>' + feature.properties.name + "</h6>";
-        popupContent += '<span>' + truncateDecimals(feature.properties.count, 4)
+        popupContent += '<span>' + truncateDecimals(feature.properties.count, 2)
           + '%</span>' + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
         circle.bindPopup(popupContent, popupOptions);
@@ -168,13 +166,14 @@ function makePercCompBar(selector, topicData, styles={}) {
     width : $(selector).innerWidth()
       - margin.left - margin.right,
     offset : 5,
-    height : 40,
+    height : 20,
     upperHeight: 20,
-    gap: 30
+    gap: 20
   } : styles.sizes;
 
   var labels = (styles.labels == undefined) ? {
-    percents: "% of Newspaper"
+    percents: "Percentage of newspaper"
+    shortened: "% of newspaper"
   } : styles.labels;
 
   var scale = {
@@ -189,7 +188,10 @@ function makePercCompBar(selector, topicData, styles={}) {
   };
 
   var axis = {
-    x: d3.svg.axis().scale(scale.x).orient("bottom"),
+    x: d3.svg.axis()
+        .scale(scale.x)
+        .ticks(6)
+        .orient("bottom"),
   }
 
   var area = d3.svg.area()
@@ -224,7 +226,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .append("title")
           .text(function(d) {
             var s = (d.other) ? "Other topics: " : "Selected Topics: ";
-            s += roundToPlace(d.score, 3) + labels.percents;
+            s += roundToPlace(d.score, 3) + ' ' + labels.shortened;
             return s;
           });
   graph.append('path').data([[
@@ -260,7 +262,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .append("title")
           .text(function(d) {
             var s = "Topic " + d.key + ": "
-              + roundToPlace(d.score, 3) + labels.percents
+              + roundToPlace(d.score, 3) + + labels.shortened
             return s;
           })
 
@@ -303,37 +305,31 @@ function makeTopicCompBars(data) {
       return topic;
     });
   console.log(topicData);
-  makePercCompBar(selector, topicData, {labels:{percents:"% of Corpus"}});
+  makePercCompBar(selector, topicData, {
+    labels: {
+      percents:"Percentage of corpus",
+      shortened: "% of corpus"
+    }
+  });
   return Promise.resolve();
 }
 
 var updateMapInfo = function(data) {
-  $(".papers-col").html("");
-  paperCounter = 0;
-  paperCount = 0;
-  $.each(data, function(loc_id, loc_data) {
-    $.each(loc_data.papers, function(paper_id, paper_data) {
-      paperCount++;
-    });
-  });
-  leftColPaperCount = Math.floor((paperCount + 3) / 2);
+  $(".paper").remove();
   $.each(data, function(loc_id, loc_data) {
     $.each(loc_data.papers, function(paper_id, paper_data) {
       var subsection = "<div class='paper' data-paper-id='" + paper_id
         + "' data-paper-loc='" + loc_id + "'>"
-          + "<h3 class='title'>" + paper_data.title
-            + " (" + loc_data.location.city + ")"
+          + "<h3 class='title'>" + paper_data.title + "</h3>"
+          + "<h3 class='subtitle'>"
+            + loc_data.location.city + ', '
+            + loc_data.location.state
           + "</h3>"
           + "<div class='bars'></div>"
         + "</div>";
       var el = $(subsection)[0];
-      if (paperCounter < leftColPaperCount) {
-        $(".papers-col.left").append(el);
-      } else {
-        $(".papers-col.right").append(el);
-      }
+      $(".papers-col").append(el);
       getPaperCompBars(paper_id, paper_data);
-      paperCounter++;
     });
   });
 }

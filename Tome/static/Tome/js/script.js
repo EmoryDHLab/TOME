@@ -211,10 +211,14 @@ function updateTopicsList(search) {
     success : function(data) {
       console.log("UPDATE TOPICS");
       $(".search-result").removeClass('search-result')
+      $(".searched").removeClass('searched')
       listElementsSorted = $("#corpus-topics li").detach().sort(function(a, b) {
         console.log(a.dataset.rank, b.dataset.rank)
         return a.dataset.rank - b.dataset.rank;
       });
+      if (data.length > 0) {
+        $("#corpus-topics").addClass('searched')
+      }
       $("#corpus-topics").append(listElementsSorted);
       data.reverse()
         .forEach(function(tKey) {
@@ -259,6 +263,17 @@ function addArticleToDocumentDetails(data) {
   } else {
     column = $(".right.column")
   }
+
+  var months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  var datestuff = data.date.split('/')
+  console.log(datestuff)
+  var month = months[parseInt(datestuff[0]) - 1],
+      day = datestuff[1],
+      year = datestuff[2];
   articleInfo = '<div class="article-info removable" data-key=' + data.key + '>'
     + '<div class=article-head>'
       + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
@@ -267,13 +282,11 @@ function addArticleToDocumentDetails(data) {
       + '</button>'
     + '</div>'
     + '<div class="indent">'
-      + '<ol class="general-info no-dec">'
-        + '<li>EDITOR: ' + data.editor + '</li>'
-        + '<li>DATE: ' + data.date + '</li>'
-        + '<li>NEWSPAPER: ' + data.newspaper + '</li>'
-        + '<li>LOCATION: ' + data.location + '</li>'
-      + '</ol>'
-      + '<h4>Top topics from selected:</h4>'
+      + '<p>'
+        + data.newspaper + ', ' + month + ' ' + day + ', ' + year
+      + '</p>'
+      + '<p><a target="blank" href="#document-details">view complete text</a></p>'
+      + '<h5>Top selected topics:</h5>'
       + '<ol class="topic-info no-dec indent">'
         + (function(tops) {
             var out = "";
@@ -364,7 +377,7 @@ function getStyledTopics(articleTopics, count=3) {
   return topTops;
 }
 
-function loadAdditionalArticles(count=50) {
+function loadAdditionalArticles(count=20) {
   loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
 }
 
@@ -384,7 +397,7 @@ function addArticlesToDustAndMagnet(articles, wipeDust) {
     }), wipeDust);
 }
 
-function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
+function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
   console.log(keys);
   console.log(excludeArticles);
   console.log(count);
@@ -556,7 +569,6 @@ $(".topic-sort").on('click', function(e){
 })
 
 $(window).on('click', function() {
-  console.log("NOT POP");
   if (sortOpen) {
     $('.sort-menu').css('display', 'none')
     sortOpen = false;
@@ -571,7 +583,7 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortMode = sType;
   $('.sort-menu li[data-sort=' + sType + ']').addClass('selected');
   $('.sort-menu li:not([data-sort=' + sType + '])').removeClass('selected');
-  //sortTopicList();
+  sortTopicList();
 });
 
 $("body").on("click", '.article', function(e) {
