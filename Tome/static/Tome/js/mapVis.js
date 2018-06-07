@@ -262,7 +262,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .append("title")
           .text(function(d) {
             var s = "Topic " + d.key + ": "
-              + roundToPlace(d.score, 3) + + labels.shortened
+              + roundToPlace(d.score, 3) + ' ' + labels.shortened
             return s;
           })
 
