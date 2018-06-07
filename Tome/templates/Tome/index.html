@@ -25,10 +25,10 @@
             <a href="#overview"><h4>OVERVIEW</h4></a>
           </li>
           <li id="topic-link" class="">
-            <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
+            <a href="#topic-details"><h4>TOPIC OVERVIEW</h4></a>
           </li>
           <li id="document-link" class="">
-            <a href="#documents"><h4>DOCUMENTS</h4></a>
+            <a href="#documents"><h4>DOCUMENT OVERVIEW</h4></a>
           </li>
           <li id="document-details-link" class="">
             <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
@@ -60,30 +60,29 @@
         <hr>
       </div>
       <div id="search" class="flex-container flex-center">
-        <h2>Search keyword:</h2>
+        <h2>Enter keyword:</h2>
         <input name="keyword" type="text"/>
         <input class="btn-dark" name="submit-search" type="submit"/>
       </div>
 
       <div class="section flex-container" id="overview">
         <div class='topics'>
-            <h2>Topics
-              <div class="pop-up-wrap">
-                <button class="btn-dark topic-sort">
-                  <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
-                </button>
-                <ul class="pop-up sort-menu">
-                  <li class="heading"><h5>SORT BY</h5></li>
-                  <li class="selected" data-sort="0"><span>Most Prevalent in Corpus</span></li>
-                  <li data-sort="1"><span>Most Similar to Selected</span></li>
-                  <li data-sort="2"><span>Selected at Top</span></li>
-                </ul>
-              </div>
-              <div class="view-ten-wrap">
-                <button class="btn-dark view-ten">View 10</button>
-                <button class="btn-dark view-all" \
-                  style="display:none">View All</button>
-              </div>
+          <h2>Topics
+            <div class="pop-up-wrap">
+              <button class="btn-dark topic-sort">
+                <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
+              </button>
+              <ul class="pop-up sort-menu">
+                <li class="heading"><h5>SORT BY</h5></li>
+                <li class="selected" data-sort="0"><span>Most Prevalent in Corpus</span></li>
+                <li data-sort="2"><span>Selected at Top</span></li>
+              </ul>
+            </div>
+            <div class="view-ten-wrap">
+              <button class="btn-dark view-ten">View 10</button>
+              <button class="btn-dark view-all" \
+                style="display:none">View All</button>
+            </div>
           </h2>
           <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
@@ -99,7 +98,7 @@
           </button>
         </div>
         <div class='vis-wrap'>
-          <h2 class="chart-title">Topics ranked by % of entire corpus</h2>
+          <h2 class="chart-title">Topics ranked by percentage of entire corpus</h2>
           <div class="vis-no-title">
             <div class="vert-slide-wrap">
               <label class="vertical-label">
@@ -146,31 +145,29 @@
             </div>
           </div>
           <div id="topic-score-chart-inner-wrapper" class="c-wrap">
-            <h2>Topic percentage per year</h2>
+            <h2>Topic percentage by year</h2>
             <div id="topic-score-chart"></div>
           </div>
         </div>
 
         <div id="topic-comp-wrapper">
-          <h2>Selected Topics in Context</h2>
+          <h2>Selected topics in context</h2>
           <div id="topic-comp-bars">
 
           </div>
         </div>
 
         <div id='map-wrapper' class='c-wrap' style="display: none;">
-          <h2>Topic scores by geographic location</h2>
-          <div class="grid-wrap">
-            <div>
+          <h2>Selected topics by location</h2>
+          <div class="two-col-wrap papers-col">
+            <div style="max-width: 100%; overflow: hidden;">
               <div id='map' style='width: 600px; height: 600px;'></div>
-              <div class="papers-col right"></div>
             </div>
-            <div class="papers-col left"></div>
           </div>
         </div>
       </div>
       <div id='documents' class='section' style="display: none;">
-        <h2>Documents</h2>
+        <h2>Document Overview</h2>
         <hr class="dark thick"/>
         <div class="view-switch">
           <div class='controls vs-controls'>
@@ -182,12 +179,12 @@
           <div id='doof' class="vs-frame">
             <div class="rsp-table vs-item active" data-item-name='tbl'>
               <div class="rsp-table-header">
-                <h4>Rank</h4><!--
-             --><h4>Article</h4><!--
-             --><h4>Date</h4><!--
-             --><h4>Newspaper</h4><!--
-             --><h4>Prevalence</h4><!--
-             --><h4>Top Topics</h4>
+                <h5>Rank</h5><!--
+             --><h5>Article Title</h5><!--
+             --><h5>Date</h5><!--
+             --><h5>Newspaper</h5><!--
+             --><h5>Prevalence</h5><!--
+             --><h5>Top Topics</h5>
               </div>
               <div class="rsp-table-body articles"></div>
             </div>
@@ -212,6 +209,9 @@
             <span class="loaded-articles">0</span> of
             <span class="total-articles">370k</span> articles.
             <button id="more-articles" class= "btn-lite">Load More</button>
+            <button id='clear-articles' class='btn-lite'>Clear selected</button>
+          </p>
+          <p>
           </p>
         </div>
       </div>
@@ -221,7 +221,6 @@
           <p class="sub-heading">
             Select articles above to see their details here
           </p>
-          <button id='clear-articles' class='btn-lite'>Deselect All</button>
         </div>
         <hr class="dark thick"/>
         <div class="column-wrap">
