@@ -682,13 +682,7 @@ function createTenList(keys) {
         .classed("color-box", true)
         .style("background-color", function(d){
           return (tenTopics.getColor(d.key));
-        })
-        .append("i")
-          .classed("fa fa-exchange", true)
-          .attr("aria-hidden", true)
-          .style("display", function(d) {
-            return (topics.contains(d.key)) ? "block" : "none";
-          });
+        });
   d3.selectAll("#corpus-ten-topics li")
     .append("p")
       .classed("topic-words", true)
@@ -855,7 +849,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
       .attr("dy", "-3.5em")
       .attr("dx", "-20%")
       .style("transform", "rotate(-90deg)")
-      .text("% of Corpus (per year)");
+      .text("% of corpus (by year)");
 
   g.append("g")
     .classed("x axis", true)

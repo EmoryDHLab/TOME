@@ -61,12 +61,29 @@ h3 {
   font-weight: bold;
 }
 
+h3.title {
+  margin-bottom: 0;
+}
+h3.subtitle {
+  margin-top: 10px;
+  margin-left: 10px;
+  font-size: .9em;
+}
+
 h4 {
   font-size: 14px;
   font-weight: bold;
   margin: 0;
   padding: 0;
   font-family: 'Poppins', sans-serif;
+}
+
+h5 {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+  font-family: 'Cabin', sans-serif;
+  font-size: 18px;
 }
 
 .sub-heading {
@@ -145,6 +162,7 @@ input[type='button']:hover{
 .pop-up-wrap {
   display: inline;
   position: relative;
+  z-index: 100 !important;
 }
 
 .pop-up {
@@ -161,7 +179,6 @@ input[type='button']:hover{
   background-color: white;
   border: 1px solid black;
   padding: 0;
-  z-index: 100;
 }
 
 .sort-menu li {
@@ -343,9 +360,8 @@ ul.topic-list .topic-words {
   text-overflow: ellipsis;
 }
 
-.topic-list li.search-result {
-  font-weight: 550;
-  /* font-style: italic; */
+.topic-list.searched li:not(.search-result){
+  color: #9f9f9f;
 }
 
 /*.topic-words {
@@ -360,6 +376,10 @@ ul.topic-list .topic-words {
 
 .color-box {
   display: inline-block;
+}
+
+#corpus-ten-topics li:not(.selected) .color-box {
+  opacity: 0.5;
 }
 
 ol .color-box {
@@ -672,11 +692,13 @@ input[type='range'].vertical {
   box-sizing: border-box;
   padding: 0;
   padding-right: 10px;
-  display: grid;
+  display: flex;
+  flex-flow: column;
 }
 
 #selected-topics>div {
   overflow: hidden;
+  flex: 1;
 }
 
 #selected-topics .view-toggle {
@@ -739,10 +761,14 @@ input[type='range'].vertical {
 .paper {
   padding-left: .5em;
   height: 200px;
+  display: inline-block;
+  width: 100%;
+  column-span: none;
 }
 
 .papers-col {
   padding: 1em;
+  column-count: 2;
 }
 
 /*-------------------------------VIEW SWITCHER--------------------------------*/
@@ -794,6 +820,7 @@ input[type='range'].vertical {
   width: 100%;
   overflow-y:scroll;
 }
+
 .rsp-table-body {
   height: calc(100% - 1.5em);
   overflow-y:scroll;
@@ -821,25 +848,29 @@ input[type='range'].vertical {
   overflow: hidden;
 }
 
-.rsp-table-header h4,
+.rsp-table-header h5{
+  box-sizing: border-box;
+  display: inline-block;
+  padding: 0px 5px;
+  width: 10%;
+}
 .rsp-table-body > div p {
   box-sizing: border-box;
   display: inline-block;
   padding: 0px 5px;
   width: 10%;
-
 }
 
-.rsp-table-header h4:last-child,
+.rsp-table-header h5:last-child,
 .rsp-table-body > div p:last-child {
   width: 20%;
 }
-.rsp-table-header h4:nth-child(2),
+.rsp-table-header h5:nth-child(2),
 .rsp-table-body > div p:nth-child(2) {
   /* min-width: 200px; */
   width: 30%;
 }
-.rsp-table-header h4:nth-child(4),
+.rsp-table-header h5:nth-child(4),
 .rsp-table-body > div p:nth-child(4) {
   /* min-width: 150px; */
   width: 20%;
@@ -934,6 +965,10 @@ input[type='range'].vertical {
 }
 
 /*-----------------------------DOCUMENT DETAILS-------------------------------*/
+
+.controls {
+  position: relative;
+}
 
 #clear-articles {
   position: absolute;
