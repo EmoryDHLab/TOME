@@ -172,7 +172,7 @@ function makePercCompBar(selector, topicData, styles={}) {
   } : styles.sizes;
 
   var labels = (styles.labels == undefined) ? {
-    percents: "Percentage of newspaper"
+    percents: "Percentage of newspaper",
     shortened: "% of newspaper"
   } : styles.labels;
 
