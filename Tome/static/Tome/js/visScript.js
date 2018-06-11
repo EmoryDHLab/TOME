@@ -509,6 +509,7 @@ var corpusSliders = {
 function switchMode(){
   // switch modes
   tenMode = !tenMode;
+
   //clear all colors
   d3.selectAll("#corpus-chart rect")
     .attr("fill", topics.defaultColor)
@@ -556,8 +557,6 @@ function viewTenInit(e) {
   updateCorpusChart();
   d3.select('.chart-title').text("Top Ten Topics");
   d3.select("#corpus-topics").classed(".ten-mode", true);
-  d3.select(".view-ten").style("display","none");
-  d3.select(".view-all").style("display","inline-block");
   d3.select("#vertical-slide").style("display","none");
   d3.select("#top-ten")
     .style("display","block")
@@ -578,8 +577,6 @@ function viewAllInit(e) {
   setVertRange(0, 99);
   updateCorpusChart();
   d3.select('.chart-title').text("Topics ranked by % of entire corpus");
-  d3.select(".view-ten").style("display", "inline-block");
-  d3.select(".view-all").style("display", "none");
   d3.select("#vertical-slide").style("display", "block");
   d3.select("#top-ten").style("display", "none");
   d3.selectAll("#corpus-chart rect").style("opacity", "1");
@@ -831,6 +828,13 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   $.each(visData, function(key, value) {
+    // var lineTip = d3.tip()
+    //   .attr('class', 'd3-tip')
+    //   .style('top', 0)
+    //   .style('left', 0)
+    //   .html(function(d) {
+    //     return "<strong>" + value[0].topic + "</strong>";
+    //   })
     g.append("path")
     .attr("fill", "none")
     .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
@@ -838,7 +842,16 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     .attr("stroke-linecap", "round")
     .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 2 : 1.5})
     .style("stroke-dasharray", function(d) { return (value[0].topic == -1) ? "4 3" : "0"})
-    .attr("d", line(value));
+    .attr("d", line(value))
+    // .call(lineTip)
+    // .on('mousemove', function(d) {
+    //   var x = d3.event.x,
+    //       y = d3.event.y;
+    //   lineTip.show(d);
+    //   lineTip.style('top', y);
+    //   lineTip.style('left', x);
+    // })
+    // .on('mouseout', lineTip.hide);
   })
   g.append("g")
     .classed("y axis", true)
@@ -865,7 +878,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   $("#selected-topics-list").html("");
   $("#selected-topics").css("height", $("#topic-score-chart-inner-wrapper").height());
   $.each(data, function(key, tData) {
-    var words = wordObjToString(tData.words, 10)
+    var words = wordObjToString(tData.words, 5)
     var spaces = "";
     for (var i = 2 - key.toString().length; i > 0; i--) {
       spaces += "&nbsp;&nbsp;";

@@ -29,7 +29,7 @@
   flex: .75;
 }
 
-.flex-center{
+.flex-center {
   -webkit-align-items: center;
   align-items: center;
   -webkit-justify-content: center;
@@ -86,8 +86,12 @@ h5 {
   font-size: 18px;
 }
 
+.sub-wrap {
+  position: relative;
+}
+
 .sub-heading {
-  margin-top:-15px;
+  /* margin-top:-15px; */
   font-style: italic;
   font-family: 'Poppins', sans-serif;
 }
@@ -111,7 +115,7 @@ button,
 input[role='button']:hover,
 input[type='submit']:hover,
 input[type='reset']:hover,
-input[type='button']:hover{
+input[type='button']:hover {
   cursor: pointer;
 }
 
@@ -241,12 +245,13 @@ ol.no-dec {
   padding-left:0;
 }
 
-#head-nav li{
+#head-nav li {
   list-style: none;
   white-space: nowrap;
   opacity: .5;
   flex:1;
   cursor: default;
+  padding: 0 10px;
 }
 
 #head-nav a {
@@ -314,7 +319,7 @@ li.active {
   border: solid 1px #979797;
   padding: 0px 5px;
 }
-#search input[name="keyword"]:focus{
+#search input[name="keyword"]:focus {
   outline: none !important;
   border-color: #719ECE;
   box-shadow: 0 0 5px #719ECE;
@@ -360,7 +365,7 @@ ul.topic-list .topic-words {
   text-overflow: ellipsis;
 }
 
-.topic-list.searched li:not(.search-result){
+.topic-list.searched li:not(.search-result) {
   color: #9f9f9f;
 }
 
@@ -405,6 +410,16 @@ ul.topic-list .topic-words {
   margin: 0;
   overflow: hidden;
 }
+
+.topic-title.active span,
+.topic-title:hover span {
+  text-decoration: underline;
+}
+
+.topic-title {
+  cursor: pointer;
+}
+
 ul.topic-list .color-box {
   box-sizing: border-box;
   position: absolute;
@@ -416,7 +431,7 @@ ul.topic-list .color-box {
   border-radius: 5px;
 }
 
-ul .color-box i{
+ul .color-box i {
   font-size: 1.2em;
   color: white;
   text-align: center;
@@ -426,8 +441,9 @@ ul .color-box i{
   transform: translate(-50%,-50%);
 }
 .view-ten-wrap {
-  display: inline-block;
-  float: right;
+  display: flex;
+  height: 25px;
+  align-items: center;
 }
 
 #clear-selected {
@@ -562,6 +578,7 @@ ul .color-box i{
 
 .chart-title {
   padding-left: 50px;
+  flex: 1;
 }
 
 .chart-wrap {
@@ -640,13 +657,12 @@ input[type='range'].vertical {
 }
 
 /*------------------------------ TOPIC DETAILS ----------------------------*/
-#topic-details > div{
+#topic-details > div {
   clear: both;
 }
 
 #topic-titles {
     margin-bottom: 0;
-    text-align: center;
 }
 
 #topic-titles .topic-words {
@@ -663,6 +679,12 @@ input[type='range'].vertical {
 #topic-titles .color-box {
   margin-right: .5em;
 }
+
+#topic-words {
+  margin-top: 0;
+  font-size: 0.9em;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -826,6 +848,32 @@ input[type='range'].vertical {
   overflow-y:scroll;
   box-sizing: border-box;
   width: 100%;
+  position: relative;
+}
+
+.rsp-table-body.loading {
+  overflow: hidden;
+}
+
+.rsp-table-body.loading .load-wrap {
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+}
+
+.load-wrap img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.rsp-table-body .load-wrap {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 0;
+  overflow: hidden;
 }
 
 .rsp-table-body > div {
@@ -838,7 +886,7 @@ input[type='range'].vertical {
   font-weight:bold;
 }
 
-.rsp-table-body > div:nth-child(2n + 1){
+.rsp-table-body > div:nth-child(2n + 1) {
   background-color: #dfdfdf;
 }
 .rsp-table-body > div p {
@@ -848,7 +896,7 @@ input[type='range'].vertical {
   overflow: hidden;
 }
 
-.rsp-table-header h5{
+.rsp-table-header h5 {
   box-sizing: border-box;
   display: inline-block;
   padding: 0px 5px;
@@ -861,6 +909,11 @@ input[type='range'].vertical {
   width: 10%;
 }
 
+.rsp-table-header h5:nth-child(5),
+.rsp-table-body > div p:nth-child(5) {
+  width: 15%;
+}
+
 .rsp-table-header h5:last-child,
 .rsp-table-body > div p:last-child {
   width: 20%;
@@ -868,7 +921,7 @@ input[type='range'].vertical {
 .rsp-table-header h5:nth-child(2),
 .rsp-table-body > div p:nth-child(2) {
   /* min-width: 200px; */
-  width: 30%;
+  width: 25%;
 }
 .rsp-table-header h5:nth-child(4),
 .rsp-table-body > div p:nth-child(4) {
@@ -978,9 +1031,6 @@ input[type='range'].vertical {
   display: inline-block;
   width: 8em;
 }
-#doc-sub {
-  position: relative;
-}
 
 .article-head {
   display: flex;
@@ -1002,13 +1052,13 @@ input[type='range'].vertical {
   position: relative;
 }
 
-.column-wrap .article-info{
+.column-wrap .article-info {
   padding: 5px 15px;
   box-sizing: border-box;
   /* margin-bottom: 5px; */
 }
 
-.column-wrap .article-info:nth-child(3n+1){
+.column-wrap .article-info:nth-child(3n+1) {
   width: 33%;
 }
 

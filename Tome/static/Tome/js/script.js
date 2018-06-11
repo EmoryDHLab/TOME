@@ -6,7 +6,8 @@ const DNM_ID = "dnm-vis"
 var previousSearch = "";
 var topicSelectionTimeout = null;
 const TOPIC_SELECTION_PAUSE_TIME = 800;
-
+const MAX_WORDS = 30;
+const ADDITIONAL_WORD_LIST = {}
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -83,12 +84,16 @@ function navChange(id, scrollToIt) {
 function wordObjToString(arr, ct=-1) {
   var s = arr.slice(0, (ct != -1 && ct < arr.length) ? ct : arr.length)
     .map(function(x) { return x.word })
+  return wordListToString(s);
+}
+
+function wordListToString(arr, ct=-1) {
+  var s = arr.slice(0, (ct != -1 && ct < arr.length) ? ct : arr.length)
     .reduce(function(str, word) {
       return str + ((str === "") ? "" : ", ") + word
     },"")
   return s;
 }
-
 window.onscroll = function() {
   if( scrollTop() >= hdr ) {
     mn.className = mns;
@@ -135,6 +140,30 @@ function endMiniLoad() {
   $("#loader").css("display","none");
 }
 
+function getTopicWords(topicKey) {
+  if (ADDITIONAL_WORD_LIST[topicKey]) {
+    return Promise.resolve(ADDITIONAL_WORD_LIST[topicKey])
+  }
+  return new Promise(function (resolve, reject) {
+    $.ajax({
+      type: "GET",
+      url: '/topics/' + topicKey + '/words',
+      data: {
+        count: MAX_WORDS,
+        offset: 0,
+      },
+      success: function (words) {
+        console.log('hit');
+        ADDITIONAL_WORD_LIST[topicKey] = words
+        return resolve(words)
+      },
+      error: function (xhr, ajaxOptions, err) {
+        return reject(err)
+      }
+    });
+  })
+}
+
 function updateTopicsSelected(e) {
   startLoad();
   $.ajax({
@@ -149,19 +178,20 @@ function updateTopicsSelected(e) {
       $("#topic-titles").html("");
       var output = "",
           words = "";
-
+      var first = true
       $.each(data, function(key, val) {
-        output += "<span class='topic-title' data-topic='"
+        output += "<span class='topic-title " + ((first) ? "active" : "")
+          + "' data-topic='"
           + val.key + "'>"
-        if (topics.count === 1) {
-          output += "<div class='color-box' style='background-color:"
-            + topics.getColor(val.key) + "'>&nbsp;&nbsp;&nbsp;</div>";
-          words = wordObjToString(val.words.slice(0,10));
+        if (first) {
+          first = false
+          getTopicWords(val.key)
+            .then(function (words) {
+              $('#topic-words').html(wordListToString(words, MAX_WORDS));
+            })
         }
+        console.log("WRD:", words);
         output += "<span>TOPIC " + val.key + "</span>";
-        output += (words !== "") ? "<span class='topic-words'>&ndash;&nbsp;"
-          + words + "</span>" : "";
-        output += "</span>";
         $("#topic-titles").append(output);
         output = "";
       });
@@ -383,7 +413,7 @@ function loadAdditionalArticles(count=20) {
 
 function clearArticlesTable() {
   $(".column").html("");
-  $("#documents .articles").html("");
+  $("#documents .articles .article").remove();
 }
 
 function addArticlesToDustAndMagnet(articles, wipeDust) {
@@ -401,7 +431,7 @@ function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
   console.log(keys);
   console.log(excludeArticles);
   console.log(count);
-  startMiniLoad();
+  $('.articles').addClass('loading');
   const getArticles = new Promise(function (resolve, reject) {
     $.ajax({
       type : "POST",
@@ -439,7 +469,7 @@ function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
       return;
     })
     .then(function() {
-      endMiniLoad();
+      $('.articles').removeClass('loading');
     }));
 }
 
@@ -530,11 +560,15 @@ $("#clear-selected").on("click", function(e) {
 });
 $(".view-ten").click(function(e) {
   console.log("view ten");
+  $(".view-ten").addClass("active");
+  $(".view-all").removeClass("active");
   switchMode();
 });
 
 $(".view-all").click(function(e) {
   console.log("view all");
+  $(".view-ten").removeClass("active");
+  $(".view-all").addClass("active");
   switchMode();
 });
 
@@ -586,6 +620,15 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortTopicList();
 });
 
+$('body').on('click', '.topic-title', function(e) {
+  $('.topic-title').removeClass('active')
+  $(e.currentTarget).addClass('active')
+  getTopicWords(e.currentTarget.dataset.topic)
+    .then(function (words) {
+      $('#topic-words').html(wordListToString(words, MAX_WORDS));
+    })
+})
+
 $("body").on("click", '.article', function(e) {
   var target = e.currentTarget,
       key = target.dataset.key;
@@ -622,7 +665,7 @@ $("body").on("click", ".view-switch button", function(e) {
   $(e.currentTarget).addClass('active');
 });
 
-$("#document-details").on('click', '#clear-articles', function(e) {
+$("body").on('click', '#clear-articles', function(e) {
   clearSelectedArticles()
 });
 

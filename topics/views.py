@@ -1,6 +1,6 @@
 from django.db.models import Count, Sum
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 import simplejson as json
 from .models import Topic, ArticleTopicRank, NewspaperTopicPair
@@ -15,6 +15,19 @@ def index(request):
         'topics_list': topics_list
     }
     return render(request, 'topics/index.html', context)
+
+
+def getTopicWords(request, key):
+    ct = int(request.GET.get("count"))
+    offset = int(request.GET.get("offset"))
+    if ct < 1:
+        return HttpResponseBadRequest('{"message": "count must be >= 1"}')
+    topic = get_object_or_404(Topic, key=key)
+    word_list = topic.words.prefetch_related('wordtopicrank')\
+        .order_by('wordtopicrank__rank')\
+        .values_list('text', flat=True)[offset:ct]
+    return HttpResponse(json.dumps(list(word_list)),
+                        content_type='application/json')
 
 
 def topicsAsJSON(request):

@@ -22,10 +22,10 @@
       <nav id="head-nav">
         <ul>
           <li id="overview-link" class="available active">
-            <a href="#overview"><h4>OVERVIEW</h4></a>
+            <a href="#overview"><h4>TOPIC OVERVIEW</h4></a>
           </li>
           <li id="topic-link" class="">
-            <a href="#topic-details"><h4>TOPIC OVERVIEW</h4></a>
+            <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
           </li>
           <li id="document-link" class="">
             <a href="#documents"><h4>DOCUMENT OVERVIEW</h4></a>
@@ -78,11 +78,6 @@
                 <li data-sort="2"><span>Selected at Top</span></li>
               </ul>
             </div>
-            <div class="view-ten-wrap">
-              <button class="btn-dark view-ten">View 10</button>
-              <button class="btn-dark view-all" \
-                style="display:none">View All</button>
-            </div>
           </h2>
           <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
@@ -98,7 +93,13 @@
           </button>
         </div>
         <div class='vis-wrap'>
-          <h2 class="chart-title">Topics ranked by percentage of entire corpus</h2>
+          <div style="display: flex; align-items: center;">
+            <h2 class="chart-title">Topics ranked by percentage of entire corpus</h2>
+            <div class="view-ten-wrap">
+              <button class="btn-lite active view-all">View All</button>
+              <button class="btn-lite view-ten">View 10</button>
+            </div>
+          </div>
           <div class="vis-no-title">
             <div class="vert-slide-wrap">
               <label class="vertical-label">
@@ -135,8 +136,14 @@
 
       <!-- <hr class="section-separator"/> -->
       <div id="topic-details" class="section" style='display: none;'>
-        <h2 id="topic-titles"></h2>
+        <h2>Topic Details</h2>
         <hr class="dark thick"/>
+        <div class="sub-wrap">
+          <p id="topic-titles" class="sub-heading"></p>
+          <p id="topic-words"class="sub-heading">
+            Hover over topics below to show more words here
+          </p>
+        </div>
         <div id="topic-score-chart-wrapper">
           <div id="selected-topics">
             <h2>Selected topics</h2>
@@ -183,10 +190,14 @@
              --><h5>Article Title</h5><!--
              --><h5>Date</h5><!--
              --><h5>Newspaper</h5><!--
-             --><h5>Prevalence</h5><!--
+             --><h5>Total Score</h5><!--
              --><h5>Top Topics</h5>
               </div>
-              <div class="rsp-table-body articles"></div>
+              <div class="rsp-table-body articles">
+                <div class="load-wrap">
+                  <img src="{% static 'Tome/img/miniloader.svg' %}" alt="Loading"/>
+                </div>
+              </div>
             </div>
             <div id="dnm-vis" class="dnm vs-item" data-item-name='dnm'>
               <div class="dnm dnm-controls">
@@ -217,14 +228,13 @@
       </div>
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
-        <div id="doc-sub">
+        <hr class="dark thick"/>
+        <div id="sub-wrap">
           <p class="sub-heading">
             Select articles above to see their details here
           </p>
         </div>
-        <hr class="dark thick"/>
-        <div class="column-wrap">
-        </div>
+        <div class="column-wrap"></div>
       </div>
     </div>
 
