@@ -827,20 +827,32 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
         + " " + (sizes.height + margin.top + margin.bottom));
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  $.each(visData, function(key, value) {
-    g.append("path")
+
+  var reducedData = Object.values(visData)
+    .reduce(function(list, curr) {
+      return list.concat(curr)
+    }, [])
+    .map(function(point) {
+      return {
+        topic: point.topic,
+        percentage: point.percentage,
+        year: point.year
+      };
+    })
+  g.selectAll('path')
+    .data(Object.values(visData))
+    .enter().append("path")
     .attr("fill", "none")
-    .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
+    .attr("stroke", function(d) { return topics.getColor(d[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
-    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 2 : 3})
-    .style("stroke-dasharray", function(d) { return (value[0].topic == -1) ? "4 3" : "0"})
-    .attr("d", line(value))
+    .attr("stroke-width", function(d) { return (d[0].topic == -1) ? 2 : 3})
+    .style("stroke-dasharray", function(d) { return (d[0].topic == -1) ? "4 3" : "0"})
+    .attr("d", line)
 
-    console.log(value);
-  })
   var lineTip = d3.tip()
     .attr('class', 'd3-tip')
+    .offset([-10,0])
     .html(function(d) {
       return ("<strong>" + ((d.topic !== -1) ? ("Topic " + d.topic) : "Average")
         + '<br>'
@@ -848,16 +860,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
         + '%  in ' + d.year + "</strong>");
     })
   g.selectAll('circle')
-    .data(Object.values(visData)
-      .reduce(function(list, curr) {
-        return list.concat(curr)
-      },[])
-      .map(function(point) {
-        return {
-          topic: point.topic,
-          percentage: point.percentage,
-          year: point.year};
-      }))
+    .data(reducedData)
     .enter().append('circle')
   .attr("fill", function(d) { return topics.getColor(d.topic) })
   .attr('stroke', function(d) { return topics.getColor(d.topic) })
