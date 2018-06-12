@@ -420,7 +420,7 @@ function getStyledTopics(articleTopics, count=3) {
   return topTops;
 }
 
-function loadAdditionalArticles(count=1) {
+function loadAdditionalArticles(count=20) {
   loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
 }
 
@@ -440,7 +440,7 @@ function addArticlesToDustAndMagnet(articles, wipeDust) {
     }), wipeDust);
 }
 
-function loadArticles(keys, excludeArticles=[], count=1, overwrite=true) {
+function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
   console.log(keys);
   console.log(excludeArticles);
   console.log(count);
