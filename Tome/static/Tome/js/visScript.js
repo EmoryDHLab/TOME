@@ -773,13 +773,13 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     return Promise.resolve();
   }
   d3.select("#topic-score-chart").html("");
-  $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
+  $("#topic-score-chart-inner-wrapper").css("width", $("body").innerWidth()
     - $("#selected-topics").outerWidth(true));
   var visData = getVisData(keys, withAVG);
   var margin = {top: 30, right: 30, bottom: 50, left: 80};
 
   var sizes = {
-    width: $(".wrapper").innerWidth()-$("#selected-topics").outerWidth(true)
+    width: $("body").innerWidth()-$("#selected-topics").outerWidth(true)
       - margin.left - margin.right,
     height: 500 - margin.bottom - margin.top
   }
@@ -828,31 +828,50 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   $.each(visData, function(key, value) {
-    // var lineTip = d3.tip()
-    //   .attr('class', 'd3-tip')
-    //   .style('top', 0)
-    //   .style('left', 0)
-    //   .html(function(d) {
-    //     return "<strong>" + value[0].topic + "</strong>";
-    //   })
     g.append("path")
     .attr("fill", "none")
     .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
-    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 2 : 1.5})
+    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 2 : 3})
     .style("stroke-dasharray", function(d) { return (value[0].topic == -1) ? "4 3" : "0"})
     .attr("d", line(value))
-    // .call(lineTip)
-    // .on('mousemove', function(d) {
-    //   var x = d3.event.x,
-    //       y = d3.event.y;
-    //   lineTip.show(d);
-    //   lineTip.style('top', y);
-    //   lineTip.style('left', x);
-    // })
-    // .on('mouseout', lineTip.hide);
+
+    console.log(value);
   })
+  var lineTip = d3.tip()
+    .attr('class', 'd3-tip')
+    .html(function(d) {
+      return ("<strong>" + ((d.topic !== -1) ? ("Topic " + d.topic) : "Average")
+        + '<br>'
+        + truncateDecimals(d.percentage, 2)
+        + '%  in ' + d.year + "</strong>");
+    })
+  g.selectAll('circle')
+    .data(Object.values(visData)
+      .reduce(function(list, curr) {
+        return list.concat(curr)
+      },[])
+      .map(function(point) {
+        return {
+          topic: point.topic,
+          percentage: point.percentage,
+          year: point.year};
+      }))
+    .enter().append('circle')
+  .attr("fill", function(d) { return topics.getColor(d.topic) })
+  .attr('stroke', function(d) { return topics.getColor(d.topic) })
+  .attr('stroke-width', 0)
+  .attr('cx', function(d) { return scale.x(d.year) })
+  .attr('cy', function(d) { return scale.y(d.percentage) })
+  .attr('r', function(d) {return (d.topic == -1) ? 2 : 3})
+  .call(lineTip)
+  .on('mouseover', function(d) {
+    lineTip.show(d);
+  })
+  .on('mouseout', lineTip.hide);
+
+
   g.append("g")
     .classed("y axis", true)
     .call(axis.y)

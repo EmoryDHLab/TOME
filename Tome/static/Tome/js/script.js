@@ -65,20 +65,33 @@ function getLoadedArticleKeys() {
 }
 
 // given an id, change the nav menu to have that selected
-function navChange(id, scrollToIt) {
+function navChange(dest, scrollToIt) {
+  var id = (dest[0] === '#' || dest[0] === '@') ? dest.substring(1) : dest
   $("nav .active").removeClass("active");
   $("nav li").filter(function() {
     return this.children[0].getAttribute('href') == "#" + id;
   }).addClass("active");
-  if (scrollToIt) {
-    document.querySelector("#" + id).scrollIntoView();
-  }
   if(history.pushState) {
     history.pushState(null, null, "#" + id);
   }
   else {
-      location.hash = "#" + id;
+    location.hash = "#" + id;
   }
+  if (dest[0] === '@') {
+    openOverlay(id)
+  } else {
+    if (scrollToIt) {
+      document.querySelector("#" + id).scrollIntoView();
+    }
+  }
+}
+
+function openOverlay(id) {
+  $('#' + id).addClass('is-open')
+}
+
+function closeOverlay(id) {
+  $('#' + id).removeClass('is-open')
 }
 
 function wordObjToString(arr, ct=-1) {
@@ -407,7 +420,7 @@ function getStyledTopics(articleTopics, count=3) {
   return topTops;
 }
 
-function loadAdditionalArticles(count=20) {
+function loadAdditionalArticles(count=1) {
   loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
 }
 
@@ -427,7 +440,7 @@ function addArticlesToDustAndMagnet(articles, wipeDust) {
     }), wipeDust);
 }
 
-function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
+function loadArticles(keys, excludeArticles=[], count=1, overwrite=true) {
   console.log(keys);
   console.log(excludeArticles);
   console.log(count);
@@ -511,9 +524,9 @@ $("#more-articles").click(function() {
 });
 
 $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
-$("nav").on("click", "li.available:not(.active) a", function(e){
+$("nav").on("click", "li.available a", function(e){
   e.preventDefault();
-  navChange(this.getAttribute("href").substring(1), true)
+  navChange(this.getAttribute("href"), true)
   $("li.active").removeClass("active");
   $(this.parentNode).addClass("active");
 });
@@ -638,6 +651,17 @@ $("body").on("click", '.article', function(e) {
     selectArticle(key);
   }
 });
+
+$('body').on('click', '.overlay', function(e) {
+  if (e.target.className.includes('is-open')) {
+    closeOverlay(e.currentTarget.id)
+  }
+})
+
+$('body').on('click', '.close', function(e) {
+  console.log($(e.currentTarget).parents('.is-open'))
+  closeOverlay($(e.currentTarget).parents('.is-open').attr('id'))
+})
 
 $("body").on("click", '#dnm-zoom-reset', function(e) {
   resetDNMZoom(DNM_ID);

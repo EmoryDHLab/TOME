@@ -5,46 +5,75 @@
     <title>TOME</title>
     {% load static %}
     {% load i18n %}
-    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js"
+      integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l"
+      crossorigin="anonymous"></script>
+    <script defer
+      src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js"
+      integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c"
+      crossorigin="anonymous"></script>
     <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet'/>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css'
+      rel='stylesheet'/>
 
     <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
       type="text/css"/>
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Interactive TOpic Model and MEtadata Visualization</h1>
-        <hr>
-      </header>
-      <nav id="head-nav">
-        <ul>
-          <li id="overview-link" class="available active">
-            <a href="#overview"><h4>TOPIC OVERVIEW</h4></a>
-          </li>
-          <li id="topic-link" class="">
-            <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
-          </li>
-          <li id="document-link" class="">
-            <a href="#documents"><h4>DOCUMENT OVERVIEW</h4></a>
-          </li>
-          <li id="document-details-link" class="">
-            <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
-          </li>
-        </ul>
-        <hr>
-      </nav>
+    <header>
+      <h1>Interactive TOpic Model and MEtadata Visualization</h1>
+      <hr>
+    </header>
+    <nav id="head-nav">
+      <ul>
+        <li id="overview-link" class="available active">
+          <a href="#overview"><h4>TOPIC OVERVIEW</h4></a>
+        </li>
+        <li id="topic-link" class="">
+          <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
+        </li>
+        <li id="document-link" class="">
+          <a href="#documents"><h4>DOCUMENT OVERVIEW</h4></a>
+        </li>
+        <li id="document-details-link" class="">
+          <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
+        </li>
+        <li id="about-link" class="available">
+          <a href="@about"><h4>ABOUT</h4></a>
+        </li>
+      </ul>
+      <hr>
+    </nav>
+    <main>
       <div id="loader" style="display:none">
         <img src="{% static "Tome/img/miniloader.svg" %}" alt="spinning icon"/>
       </div>
+      <div id="about" class='overlay'>
+        <div class="overlay-content">
+          <button class='btn-lite close'>X</button>
+          <h2>About</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum.
+          </p>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum.
+          </p>
+        </div>
+      </div>
       <div id="dataset-header">
-        <!-- TODO: Fill in with actual DB information. -->
         <h2>{{corpus.title}}</h2>
-        <!--
-        <button id="change-dataset" class="btn-dark">Change Dataset</button>
-        -->
         <p>
           <span class='summary'>{{corpus.description}}</span>
           <br/>
@@ -236,7 +265,7 @@
         </div>
         <div class="column-wrap"></div>
       </div>
-    </div>
+    </main>
 
     <!-- Scripts -->
     <script src="{% static "Tome/js/d3.min.js" %}"></script>
