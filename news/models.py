@@ -144,7 +144,7 @@ class Corpus(models.Model):
         @param yr : the year from which to get topics
         """
         # get a list of ytrs in the given year
-        topics = self.yeartopicrank_set.filter(year=yr).order_by("-score")
+        topics = self.yeartopicrank_set.filter(year=yr).order_by("rank")
         json_tops = []
         # for each ytr, get the topic
         for t in topics:
@@ -262,6 +262,9 @@ class Newspaper(models.Model):
                 return False
         return True
 
+    def countArticles(self):
+        return Article.objects.filter(issue__newspaper__id=self.id).count()
+
 
 class Issue(models.Model):
     """A collection of articles from the same date from the same newspaper"""
@@ -311,7 +314,10 @@ class Article(models.Model):
 
     class Meta:
         """Nested class to order articles by their issue's date"""
-        ordering = ('issue__date_published',)
+        # ordering = ('issue__date_published',)
+        indexes = [
+            models.Index(fields=['key'])
+        ]
 
     @property
     def day(self):
@@ -385,7 +391,7 @@ class Article(models.Model):
         for atr in atrs:
             if asJSON:
                 # if there the topics need to be jsonable
-                tempD[ct] = atr.topic.toJSON(False)
+                tempD[ct] = atr.topic.toJSON(0)
             else:
                 # if they don't need to be jsonable
                 tempD[ct] = atr.topic

@@ -15,14 +15,15 @@ function convertTopicData(articleData) {
 
 const DNM = {
     tip: d3.tip()
-                .attr('class', 'd3-tip')
-                .offset([-10, 0])
-                .html(function(d) {
-                    return "<strong>"+ d.name +"</strong>";
-                }),
+            .attr('class', 'd3-tip')
+            .offset([-10, 0])
+            .html(function(d) {
+                return "<strong>"+ d.name +"</strong>";
+            }),
     zoom: d3.behavior.zoom().scaleExtent([0.1, 10]),
     panelHeight: 50,
-    width: 500,
+    width: .75 * (document.documentElement.clientWidth
+        || document.body.clientWidth),
     height: 500,
     padding: 0,
     dustRadius: 3,
@@ -55,8 +56,9 @@ function render(id, fData, newKeys, wipeDust=false) {
     if (wipeDust) {
         DNM.data = [];
     }
-    DNM.data= DNM.data.concat(fData);
-    newKeys.forEach(function(key) {
+    DNM.data = DNM.data.concat(fData);
+    console.log(DNM.data);
+    newKeys.forEach(function(key) { // get new keys
         var exists = DNM.keys.find(function(k){
             return k.name == key.name;
         }) != undefined;
@@ -64,7 +66,7 @@ function render(id, fData, newKeys, wipeDust=false) {
             DNM.keys.push(key);
         }
     })
-    DNM.keys = DNM.keys.filter(function(k) {
+    DNM.keys = DNM.keys.filter(function(k) { // remove old ones from vis
         var exists = newKeys.find(function(key){
             return k.name == key.name;
         }) != undefined;
@@ -75,11 +77,12 @@ function render(id, fData, newKeys, wipeDust=false) {
     });
     console.log("DNM_K: ", DNM.keys);
     // keep track of the magnets that are active (clicked)
-    DNM.keys.forEach(function(d) {
+    DNM.keys.map(function(d) {
         // calculate the min and max for each
-        d.min = d3.min(DNM.data, function(val) { return val[d.name]; })
-        d.max = d3.max(DNM.data, function(val) { return val[d.name]; })
+        d.min = d3.min(DNM.data, function(val) { return val[d.name]; });
+        d.max = d3.max(DNM.data, function(val) { return val[d.name]; });
         d.active = true;
+        return d;
     })
     var drag = d3.behavior.drag()
                 .origin(function(d) { return d; })
@@ -89,7 +92,6 @@ function render(id, fData, newKeys, wipeDust=false) {
 
     function dragStart(d) {
         d3.event.sourceEvent.stopPropagation();
-        console.log(d, DNM.keys);
         d3.select(this)
             .classed({
                 'grabbed': true
@@ -145,18 +147,17 @@ function updateDust() {
             // current loc
             var dx = 0;
             DNM.keys.forEach(function(key) {
-                // go through each magnet
-                if (key.active) {
-                    // if it is an active magnet, then apply its forces
-                    var val = key.name; // get the magnet name
-                    var dustVal = d[val]; // get the associated
-                    // get the difference in distance
-                    var deltaX = key.x - d.x;
-                    // get the force scalar
-                    var scale = d3.scale.linear().domain([key.min, key.max]).range([0.0, 1]);
-                    var force = scale(dustVal);
-                    dx += deltaX * force;
+                var val = key.name; // get the magnet name
+                var dustVal = d[val]; // get the associated
+                // get the difference in distance
+                var deltaX = key.x - d.x;
+                // get the force scalar
+                var scale = d3.scale.linear().domain([key.min, key.max]).range([0.0, 0.1]);
+                if (dustVal < key.min || dustVal > key.max) {
+                    throw Error("Dust " + d.name + " not normalizable")
                 }
+                var force = scale(dustVal);
+                dx += deltaX * force;
             })
             d.x += dx;
             return d.x;
@@ -164,18 +165,21 @@ function updateDust() {
         .attr('cy', function(d) {
             // current loc
             var dy = 0;
-            DNM.keys.forEach(function(key) {
-                if (key.active) {
+            DNM.keys
+                .forEach(function(key) {
                     var val = key.name;
                     var dustVal = d[val];
                     // get the difference in distance
                     var deltaY = key.y - d.y;
                     // get the force scalar
-                    var scale = d3.scale.linear().domain([key.min, key.max]).range([0.0, 1]);
+                    var scale = d3.scale.linear()
+                        .domain([key.min, key.max]).range([0.0, 0.1]);
+                    if (dustVal < key.min || dustVal > key.max) {
+                        throw Error("Dust " + d.name + " not normalizable")
+                    }
                     var force = scale(dustVal);
                     dy += deltaY * force;
-                }
-            })
+                });
             d.y += dy;
             return d.y;
         })
@@ -239,12 +243,15 @@ function addMagnets(container, drag, wipeDust) {
                         .data(DNM.keys)
                         .enter()
                         .append('g')
-                        .attr('class', 'magnet-group')
-                        .attr('data-key', function(d) {
-                            return d.name;
-                        })
-                        .call(DNM.tip);
-
+                            .attr('class', 'magnet-group')
+                            .attr('data-key', function(d) {
+                                console.log(d.name);
+                                return d.name;})
+    try {
+        magnets.call(DNM.tip);
+    } catch (err) {
+        console.log("Could not load tips");
+    }
     // create the magnet circles
     magnets.append('circle')
         .attr('class', 'magnet-circle grabbable')
@@ -260,7 +267,7 @@ function addMagnets(container, drag, wipeDust) {
     if (wipeDust) {
         d3.selectAll('circle.magnet-circle')
             .attr('cx', function(d, i) {
-                d.x = DNM.width * .3 * Math.cos(i * 2 * Math.PI / DNM.keys.length) + DNM.width/2;
+                d.x = DNM.height * .3 * Math.cos(i * 2 * Math.PI / DNM.keys.length) + DNM.width/2;
                 return d.x;
             })
             .attr('cy', function(d, i) {
@@ -283,18 +290,20 @@ function addDustParticles(container, reset) {
                         .append('g')
                         .attr('class', 'dust-group article')
                         .attr('data-key', function(d) { return d.key; });
-    dust.call(DNM.tip)
+
     // add in the dust
     dust.append('circle')
         .attr('class', 'dust-circle')
         .attr('cx', function (d) {
             var rand = Math.random() * (DNM.width);
             d.x = rand;
+            console.log(d.x);
             return d.x;
         })
         .attr('cy', function (d) {
             var rand = Math.random() * (DNM.height - DNM.panelHeight);
             d.y = rand;
+            console.log(d.y);
             return d.y;
         })
         .attr('r', DNM.dustRadius)
@@ -305,6 +314,7 @@ function addDustParticles(container, reset) {
 }
 
 function renderFromArticleData(id, articleData, newKeys, wipeDust) {
+    console.log(articleData);
     render(id, convertTopicData(articleData), newKeys, wipeDust);
     console.log("RENDERED");
 }

@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models import Count, Sum
 from decimal import Decimal
+from news.models import Newspaper
 
 
 class Word(models.Model):
@@ -31,6 +33,9 @@ class Topic(models.Model):
         'news.Article', through='ArticleTopicRank')
     # [topics.WordTopicRank] All the words contained int the topic
     words = models.ManyToManyField(Word, through='WordTopicRank')
+    # [topics.NewspaperTopicPair] Cached values to score by papers faster
+    papers = models.ManyToManyField('news.Newspaper',
+                                    through='NewspaperTopicPair')
     # [Integer] the topic's rank within the corpus
     rank = models.IntegerField(default=-1)
 
@@ -46,9 +51,10 @@ class Topic(models.Model):
 
     class Meta:
         """Nested class which puts topic in decending order by score"""
-        ordering = ('-score',)
+        ordering = ('rank',)
         indexes = [
-            models.Index(fields=['-score'])
+            models.Index(fields=['rank']),
+            models.Index(fields=['key'])
         ]
 
     def percentByLocation(self, loc_id):
@@ -56,11 +62,13 @@ class Topic(models.Model):
         Returns the topics percentage relevance at a location
         @param loc_id : the id of a location
         """
-        atrs = self.articletopicrank_set.filter(
-            article__issue__newspaper__location__id=loc_id)
-        ct = atrs.count()
+        ntp_score = self.newspapertopicpair_set.filter(
+            newspaper__location__id=loc_id)\
+            .aggregate(total_score=Sum('score'))['total_score']
+        ct = Newspaper.objects.filter(location__id=loc_id)\
+            .aggregate(article_count=Count('issue__article'))['article_count']
         # caluclate the percentage
-        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
+        raw_perc = 100 * (ntp_score / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
     def percentByPaper(self, paper_id):
@@ -69,19 +77,21 @@ class Topic(models.Model):
         @param paper_id : the newspaper
         """
         # get all topics within the given paper
-        atrs = self.articletopicrank_set.filter(
-            article__issue__newspaper__id=paper_id)
+        # atrs = self.articletopicrank_set.filter(
+        #     article__issue__newspaper__id=paper_id)
+        ntps = self.newspapertopicpair_set.filter(newspaper__id=paper_id)
 
         # count how many articles there are
-        ct = atrs.count()
+        ct = Newspaper.objects.filter(id=paper_id)\
+            .aggregate(article_count=Count('issue__article'))['article_count']
 
         # get a raw percentage by aggregating the scores of the articles
         # then dividing that by the number of articles in total
         # then multiply by 100 to get a percentage
-        raw_perc = 100 * (sum(atrs.values_list('score', flat=True)) / ct)
+        raw_perc = 100 * (sum(ntps.values_list('score', flat=True)) / ct)
         return raw_perc.quantize(Decimal('1.000'))
 
-    def toJSON(self, includeArticles=True):
+    def toJSON(self, includedArticles=10):
         """
         Returns dict representation of the Topic
         @param includeArticles : whether to include articles in the json
@@ -96,16 +106,18 @@ class Topic(models.Model):
         """
         tempD = {'words': []}
         tempD["key"] = self.key
+        tempD["id"] = self.id
         tempD["score"] = self.score
+        tempD["percentage"] = self.percentage
         tempD["rank"] = self.rank
-        words = self.wordtopicrank_set.all().order_by('-score')[:5]
-        for word in words:
-            tempD["words"].append(word.toJSON())
+        words = self.wordtopicrank_set.filter(rank__lt=10)\
+            .order_by('rank')[:10]
+        for wtr in words:
+            tempD["words"].append(wtr.toJSON())
 
-        if (includeArticles):
+        if (includedArticles > 0):
             tempD['articles'] = []
-            # TODO change includeArticles to article count so it isn't capped
-            articles = self.articletopicrank_set.all()[:10]
+            articles = self.articletopicrank_set.all()[:includedArticles]
             for article in articles:
                 tempD["articles"].append(article.toJSON())
         return tempD
@@ -134,8 +146,8 @@ class Topic(models.Model):
         return brk[0] + out + brk[1]
 
     def getWordList(self, length=10):
-        words = self.wordtopicrank_set.all() \
-            .order_by('-score')[:length] \
+        words = self.wordtopicrank_set.filter(rank__lt=length) \
+            .order_by('rank')\
             .values_list('word__text', flat=True)
         return list(words)
 
@@ -164,6 +176,7 @@ class WordTopicRank(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     # [Decimal] the score representing how important the word is to the topic
     score = models.DecimalField(max_digits=16, decimal_places=10)
+    rank = models.IntegerField(default=-1)
 
     class Meta:
         """
@@ -174,7 +187,7 @@ class WordTopicRank(models.Model):
         unique_together = ('word', 'topic')
         indexes = [
             models.Index(fields=['word']),
-            models.Index(fields=['-score']),
+            models.Index(fields=['topic', 'rank']),
             models.Index(fields=['topic'])
         ]
 
@@ -186,6 +199,7 @@ class WordTopicRank(models.Model):
             "word" : "dog",
             "score" : Decimal('0.094'),
             "topic" : 45
+            "rank" : 0
         }
         -- Note that 45 is the key corresponding to the topic --
         """
@@ -193,6 +207,7 @@ class WordTopicRank(models.Model):
         tempD["word"] = self.word.text
         tempD["score"] = self.score
         tempD["topic"] = self.topic.key
+        tempD["rank"] = self.rank
         return tempD
 
     def __str__(self):
@@ -211,6 +226,7 @@ class ArticleTopicRank(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
     # [Decimal] the score associated
     score = models.DecimalField(max_digits=16, decimal_places=10)
+    rank = models.IntegerField(default=-1)
 
     class Meta:
         """
@@ -219,6 +235,9 @@ class ArticleTopicRank(models.Model):
         twice in the same topic)
         """
         unique_together = ('article', 'topic')
+        indexes = [
+            models.Index(fields=['topic', '-score'])
+        ]
 
     def toJSON(self):
         """
@@ -236,6 +255,7 @@ class ArticleTopicRank(models.Model):
         tempD["topic"] = self.topic.key
         tempD["article"] = self.article.id
         tempD["score"] = self.score
+        tempD["rank"] = self.rank
         tempD["year"] = self.article.year
         return tempD
 
@@ -261,6 +281,11 @@ class YearTopicRank(models.Model):
     score = models.DecimalField(max_digits=16, decimal_places=10)
     # [Integer] the rank of the topic that year
     rank = models.IntegerField(default=-1)
+
+    percentage = models.DecimalField(max_digits=13, decimal_places=10,
+                                     default=0)
+
+    article_count = models.IntegerField(default=-1)
 
     class Meta:
         """
@@ -298,8 +323,29 @@ class YearTopicRank(models.Model):
         tempD["year"] = self.year
         tempD["score"] = self.score
         tempD["rank"] = self.rank
+        tempD["percentage"] = self.percentage
         return tempD
 
     def __str__(self):
         """Returns the YearTopicRank as a string"""
         return str(self.year) + ": " + str(self.score)
+
+
+class NewspaperTopicPair(models.Model):
+    """Caches a topic's score by paper to calculate paper scores faster"""
+    # [topics.Topic] the topic associated with the given year
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+    # [news.Newspaper] the newspaper to pair the topic with
+    newspaper = models.ForeignKey('news.Newspaper', on_delete=models.CASCADE)
+    # [Decimal] the score associated with the Topic that year
+    score = models.DecimalField(max_digits=16, decimal_places=10, default=0)
+
+    class Meta:
+        ordering = ['topic__key', '-score']
+        indexes = [
+            models.Index(fields=['topic', '-score'])
+        ]
+
+    def __str__(self):
+        """Returns the string representation of the NTP"""
+        return

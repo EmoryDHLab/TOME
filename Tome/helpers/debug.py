@@ -1,13 +1,12 @@
 DEBUG = True
-print_func = print
 DEFAULT_DECORATOR = "---------------------------------------"
 
 
-def d_print(output):
+def d_print(output='', end='\n'):
     if not DEBUG:
         return
     else:
-        print_func(output)
+        print(output, end=end)
 
 
 class Printer(object):
@@ -15,16 +14,17 @@ class Printer(object):
 
     def __init__(self, inPlace=False, printFunction=d_print):
         super(Printer, self).__init__()
-        self.isInPlace = False
+        self.isInPlace = inPlace
         self.print_func = printFunction
         self.needsReset = True
 
     def log(self, output):
         if (self.isInPlace and not self.needsReset):
-            self.print_func('\r', end='')
+            self.print_func('\r', '')
         if (self.needsReset):
+            self.print_func()
             self.needsReset = False
-        self.print_func(output)
+        self.print_func(output, '' if self.isInPlace else '\n')
 
     def reset(self):
         self.needsReset = True

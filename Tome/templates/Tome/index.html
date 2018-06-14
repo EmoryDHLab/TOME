@@ -5,46 +5,75 @@
     <title>TOME</title>
     {% load static %}
     {% load i18n %}
-    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
-    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js"
+      integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l"
+      crossorigin="anonymous"></script>
+    <script defer
+      src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js"
+      integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c"
+      crossorigin="anonymous"></script>
     <script src='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.js'></script>
-    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css' rel='stylesheet'/>
+    <link href='https://api.mapbox.com/mapbox.js/v3.1.1/mapbox.css'
+      rel='stylesheet'/>
 
     <link href="{% static "Tome/css/main.css" %}" rel="stylesheet"
       type="text/css"/>
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Interactive TOpic Model and MEtadata Visualization</h1>
-        <hr>
-      </header>
-      <nav id="head-nav">
-        <ul>
-          <li id="overview-link" class="available active">
-            <a href="#overview"><h4>OVERVIEW</h4></a>
-          </li>
-          <li id="topic-link" class="">
-            <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
-          </li>
-          <li id="document-link" class="">
-            <a href="#document-details"><h4>DOCUMENTS</h4></a>
-          </li>
-          <li id="document-details-link" class="">
-            <h4>DOCUMENT DETAILS</h4>
-          </li>
-        </ul>
-        <hr>
-      </nav>
+    <header>
+      <h1>Interactive TOpic Model and MEtadata Visualization</h1>
+      <hr>
+    </header>
+    <nav id="head-nav">
+      <ul>
+        <li id="overview-link" class="available active">
+          <a href="#overview"><h4>TOPIC OVERVIEW</h4></a>
+        </li>
+        <li id="topic-link" class="">
+          <a href="#topic-details"><h4>TOPIC DETAILS</h4></a>
+        </li>
+        <li id="document-link" class="">
+          <a href="#documents"><h4>DOCUMENT OVERVIEW</h4></a>
+        </li>
+        <li id="document-details-link" class="">
+          <a href="#document-details"><h4>DOCUMENT DETAILS</h4></a>
+        </li>
+        <li id="about-link" class="available">
+          <a href="@about"><h4>ABOUT</h4></a>
+        </li>
+      </ul>
+      <hr>
+    </nav>
+    <main>
       <div id="loader" style="display:none">
-        <h2>LOADING...</h2>
+        <img src="{% static "Tome/img/miniloader.svg" %}" alt="spinning icon"/>
+      </div>
+      <div id="about" class='overlay'>
+        <div class="overlay-content">
+          <button class='btn-lite close'>X</button>
+          <h2>About</h2>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum.
+          </p>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat. Duis aute irure dolor in
+            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
+            culpa qui officia deserunt mollit anim id est laborum.
+          </p>
+        </div>
       </div>
       <div id="dataset-header">
-        <!-- TODO: Fill in with actual DB information. -->
         <h2>{{corpus.title}}</h2>
-        <!--
-        <button id="change-dataset" class="btn-dark">Change Dataset</button>
-        -->
         <p>
           <span class='summary'>{{corpus.description}}</span>
           <br/>
@@ -60,30 +89,24 @@
         <hr>
       </div>
       <div id="search" class="flex-container flex-center">
-        <h2>Search keyword(s):</h2>
+        <h2>Enter keyword:</h2>
         <input name="keyword" type="text"/>
         <input class="btn-dark" name="submit-search" type="submit"/>
       </div>
 
       <div class="section flex-container" id="overview">
-        <div class='topics flex-col-25'>
-            <h2>Topics
-              <div class="pop-up-wrap">
-                <button class="btn-dark topic-sort">
-                  <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
-                </button>
-                <ul class="pop-up sort-menu">
-                  <li class="heading"><h5>SORT BY</h5></li>
-                  <li class="selected" data-sort="0"><span>Most Prevalent in Corpus</span></li>
-                  <li data-sort="1"><span>Most Similar to Selected</span></li>
-                  <li data-sort="2"><span>Selected at Top</span></li>
-                </ul>
-              </div>
-              <div class="view-ten-wrap">
-                <button class="btn-dark view-ten">View 10</button>
-                <button class="btn-dark view-all" \
-                  style="display:none">View All</button>
-              </div>
+        <div class='topics'>
+          <h2>Topics
+            <div class="pop-up-wrap">
+              <button class="btn-dark topic-sort">
+                <i class="fas fa-sort-amount-down" aria-hidden="true"></i>
+              </button>
+              <ul class="pop-up sort-menu">
+                <li class="heading"><h5>SORT BY</h5></li>
+                <li class="selected" data-sort="0"><span>Most Prevalent in Corpus</span></li>
+                <li data-sort="2"><span>Selected at Top</span></li>
+              </ul>
+            </div>
           </h2>
           <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
@@ -94,12 +117,18 @@
             {% endfor %}
           </ol>
           <ul id="corpus-ten-topics" class="topic-list" style="display:none"></ul>
-          <button id="clear-selected" name="clear-selected" class="btn-dark">
+          <button id="clear-selected" name="clear-selected" class="btn-lite">
             Clear Selected
           </button>
         </div>
-        <div class='vis-wrap flex-col-75'>
-          <h2 class="chart-title">Topics ranked by % of entire corpus</h2>
+        <div class='vis-wrap'>
+          <div style="display: flex; align-items: center;">
+            <h2 class="chart-title">Topics ranked by percentage of entire corpus</h2>
+            <div class="view-ten-wrap">
+              <button class="btn-lite active view-all">View All</button>
+              <button class="btn-lite view-ten">View 10</button>
+            </div>
+          </div>
           <div class="vis-no-title">
             <div class="vert-slide-wrap">
               <label class="vertical-label">
@@ -136,9 +165,15 @@
 
       <!-- <hr class="section-separator"/> -->
       <div id="topic-details" class="section" style='display: none;'>
-        <h2 id="topic-titles"></h2>
+        <h2>Topic Details</h2>
         <hr class="dark thick"/>
-        <div id="topic-score-chart-wrapper" style='display: none;'>
+        <div class="sub-wrap">
+          <p id="topic-titles" class="sub-heading"></p>
+          <p id="topic-words"class="sub-heading">
+            Hover over topics below to show more words here
+          </p>
+        </div>
+        <div id="topic-score-chart-wrapper">
           <div id="selected-topics">
             <h2>Selected topics</h2>
             <div class="list-wrapper">
@@ -146,48 +181,52 @@
             </div>
           </div>
           <div id="topic-score-chart-inner-wrapper" class="c-wrap">
-            <h2>Topic percentage per year</h2>
+            <h2>Topic percentage by year</h2>
             <div id="topic-score-chart"></div>
           </div>
         </div>
 
         <div id="topic-comp-wrapper">
-          <h2>Selected Topics in Context</h2>
+          <h2>Selected topics in context</h2>
           <div id="topic-comp-bars">
 
           </div>
         </div>
 
         <div id='map-wrapper' class='c-wrap' style="display: none;">
-          <h2>Topic scores by geographic location</h2>
-          <div class="grid-wrap">
-            <div id='map' style='width: 600px; height: 600px;'></div>
-            <div class="papers-col left"></div>
-            <div class="papers-col right"></div>
+          <h2>Selected topics by location</h2>
+          <div class="two-col-wrap papers-col">
+            <div style="max-width: 100%; overflow: hidden;">
+              <div id='map' style='width: 600px; height: 600px;'></div>
+            </div>
           </div>
         </div>
       </div>
       <div id='documents' class='section' style="display: none;">
-        <h2>Documents</h2>
+        <h2>Document Overview</h2>
         <hr class="dark thick"/>
         <div class="view-switch">
           <div class='controls vs-controls'>
             <div class="switch-buttons">
-              <button class='active' type="button" name="tbl" data-target='doof'>Table</button>
-              <button type='button' name="dnm" data-target='doof'>Dust & Magnet</button>
+              <button class='active btn-lite' type="button" name="tbl" data-target='doof'>Table</button>
+              <button class='btn-lite' type='button' name="dnm" data-target='doof'>Dust & Magnet</button>
             </div>
           </div>
           <div id='doof' class="vs-frame">
             <div class="rsp-table vs-item active" data-item-name='tbl'>
               <div class="rsp-table-header">
-                <h4>Rank</h4><!--
-             --><h4>Article</h4><!--
-             --><h4>Date</h4><!--
-             --><h4>Newspaper</h4><!--
-             --><h4>Prevalence</h4><!--
-             --><h4>Top Topics</h4>
+                <h5>Rank</h5><!--
+             --><h5>Article Title</h5><!--
+             --><h5>Date</h5><!--
+             --><h5>Newspaper</h5><!--
+             --><h5>Total Score</h5><!--
+             --><h5>Top Topics</h5>
               </div>
-              <div class="rsp-table-body articles"></div>
+              <div class="rsp-table-body articles">
+                <div class="load-wrap">
+                  <img src="{% static 'Tome/img/miniloader.svg' %}" alt="Loading"/>
+                </div>
+              </div>
             </div>
             <div id="dnm-vis" class="dnm vs-item" data-item-name='dnm'>
               <div class="dnm dnm-controls">
@@ -205,25 +244,28 @@
           </div>
         </div>
         <div class='controls'>
-          <button id="more-articles">Load More</button>
           <p>
             Showing
-            <span class="loaded-articles"></span> of
-            <span class="total-articles"></span> articles.
+            <span class="loaded-articles">0</span> of
+            <span class="total-articles">370k</span> articles.
+            <button id="more-articles" class= "btn-lite">Load More</button>
+            <button id='clear-articles' class='btn-lite'>Clear selected</button>
+          </p>
+          <p>
           </p>
         </div>
       </div>
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
         <hr class="dark thick"/>
-
-        <div class="column-wrap">
+        <div id="sub-wrap">
+          <p class="sub-heading">
+            Select articles above to see their details here
+          </p>
         </div>
-        <div class="miniload" style="display:none;">
-          <img src="{% static "Tome/img/miniloader.svg" %}" alt="loading"/>
-        </div>
+        <div class="column-wrap"></div>
       </div>
-    </div>
+    </main>
 
     <!-- Scripts -->
     <script src="{% static "Tome/js/d3.min.js" %}"></script>
@@ -254,7 +296,7 @@
       data_start_year = parseInt('{{ corpus.date_started.year }}');
       data_end_year = parseInt('{{ corpus.date_ended.year }}');
       data_n_range = data_end_year - data_start_year + 1;
-      article_counts = JSON.parse('{{ article_count | safe }}');
+      // article_counts = JSON.parse('{{ article_count | safe }}');
     </script>
     <script src="{% static "Tome/js/visScript.js" %}"></script>
     <script src="{% static "Tome/js/script.js" %}"></script>

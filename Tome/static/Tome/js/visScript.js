@@ -217,8 +217,10 @@ var updateCorpusChart = function() {
 var gridMap = new Map();
 var myChart = d3.select('#corpus-chart').append('svg')
   .attr({
-    height: height,
-    width: width,
+    height: '80vh',
+    width: '100%',
+    viewBox: "0 0 " + height + " " + width,
+    preserveAspectRatio: 'none'
   })
   .selectAll('g').data(rectdata)
   .enter().append('g')
@@ -288,13 +290,27 @@ var sThickness = 5;
 
 var sX = d3.scale.linear()
   .domain([0,data_n_range - 1])
-  .range([0,width])
+  .range([0, 100])
   .clamp(true);
 
 var sY = d3.scale.linear()
   .domain([0,99])
-  .range([0,height])
+  .range([0, 100])
   .clamp(true);
+
+var msX = function(mouseX) {
+  var scaled = mouseX * (data_n_range - 1) / $('#horizontal-slide').width()
+  if (scaled > data_n_range - 1) scaled = data_n_range - 1;
+  if (scaled < 0) scaled = 0;
+  return scaled;
+}
+
+var msY = function(mouseY) {
+  var scaled = mouseY * (99) / $('#vertical-slide').height()
+  if (scaled > 99) scaled = 99;
+  if (scaled < 0) scaled = 0;
+  return scaled;
+}
 
 var dispatch = d3.dispatch('maxChange','minChange', 'rescale');
 function appendSlider(selector, vertical = false, slideRange=[0,99]) {
@@ -306,8 +322,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     mouse: 0
   }
 
+
   var minimumVal = (vertical) ? slideRange[1] : slideRange[0],
       maximumVal = (vertical) ? slideRange[0] : slideRange[1];
+
+  var normalMin = minimumVal;
+  var normalMax = maximumVal;
+
+  if (slideRange[0] != 0 && !vertical) {
+    normalMin = 0;
+    normalMax = slideRange[1] - slideRange[0];
+  }
+
 
   if (vertical) {
     styles.move = 'top';
@@ -321,17 +347,17 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
 
   var sliderTray = slider.append("div")
     .attr('class',"slider-tray")
-    .style(styles.len, width + 'px')
+    .style(styles.len, '100%')
     .style(styles.thick, sThickness + 'px');
 
   var rangeBar = sliderTray.append("div")
     .attr('class', 'range-bar')
-    .style(styles.len, width + 'px')
+    .style(styles.len, '100%')
     .style(styles.thick, sThickness + 'px');
 
   var sliderHandleMax = slider.append("div")
     .attr('class', 'slider-handle max-handle')
-    .attr('data-value', maximumVal);
+    .attr('data-value', normalMax);
 
   if (vertical) {
     sliderHandleMax.style("top","0");
@@ -341,7 +367,7 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
 
   var sliderHandleMin = slider.append("div")
     .attr('class', 'slider-handle min-handle')
-    .attr('data-value', minimumVal);
+    .attr('data-value', normalMin);
 
   sliderHandleMax.append("div")
     .attr("class", "slider-handle-icon")
@@ -359,16 +385,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     .on("dragstart", function(){
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.minChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.minChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
     })
     .on("dragend", function(){
@@ -381,16 +409,18 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
     .on("dragstart", function(){
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.maxChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
       d3.event.sourceEvent.preventDefault();
     })
     .on("drag", function() {
       var vert = this.parentNode.classList.contains("vertical");
       var scl = (vert) ? sY : sX;
+      var mscl = (vert) ? msY : msX;
       dispatch.maxChange(this,
-        scl.invert(d3.mouse(sliderTray.node())[styles.mouse]),
+        mscl(d3.mouse(sliderTray.node())[styles.mouse]),
         scl);
     })
     .on("dragend", function(){
@@ -400,58 +430,55 @@ function appendSlider(selector, vertical = false, slideRange=[0,99]) {
   );
 }
 dispatch.on('maxChange', function(target, value, scl) {
-  value = Math.round(value); //round the value
-  coreVal = value; // save it to a temp
-  value = scl(value);
+  var coreVal = Math.round(value); // save it to a temp
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
   var min = p.select('.min-handle');
   if (p.classed('vertical')) {
-    var mnVal = parseInt(min.style('top').replace("px",""));
-    if (value < mnVal) {
+    var mnVal = parseInt(min.attr('data-value'));
+    if (coreVal < mnVal) {
       corpusSliders.y.maxVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px");
-      p.select(".range-bar").style('top', Math.round(value) + "px")
-        .style('height', Math.abs(mnVal - value) + 'px');
-      d3.select(target).select(".slider-handle-label")
-      .html(coreVal + 1);
-    }
-  } else {
-    var mnVal = parseInt(min.style('left').replace("px",""));
-    if (value > mnVal) {
-      corpusSliders.x.maxVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px")
-      p.select(".range-bar").style('left', Math.round(mnVal) + "px")
-        .style('width', Math.abs(mnVal - value) + "px");
-      d3.select(target).select(".slider-handle-label")
-      .html(corpusSliders.x.getAdjustedMax());
-    }
-  }
-});
-dispatch.on('minChange', function(target, value, scl) {
-  value = Math.round(value);
-  coreVal = value;
-  value = scl(value);
-  d3.select(target).attr('data-value', coreVal);
-  var p = d3.select(target.parentNode);
-  var max = p.select('.max-handle');
-  if (p.classed('vertical')) {
-    mxVal = parseInt(max.style('top').replace("px",""));
-    if (value > mxVal) {
-      corpusSliders.y.minVal = coreVal;
-      d3.select(target).style('top', Math.round(value) + "px");
-      p.select(".range-bar").style('top', Math.round(mxVal) + "px")
-        .style('height', Math.abs(mxVal - value) + 'px');
+      d3.select(target).style('top', scl(coreVal) + "%");
+      p.select(".range-bar").style('top', scl(coreVal) + "%")
+        .style('height', scl(Math.abs(mnVal - coreVal)) + '%');
       d3.select(target).select(".slider-handle-label")
         .html(coreVal + 1);
     }
   } else {
-    var mxVal = parseInt(max.style('left').replace("px",""));
+    var mnVal = parseInt(min.attr('data-value'));
+    if (value > mnVal) {
+      corpusSliders.x.maxVal = coreVal;
+      d3.select(target).style('left', scl(coreVal) + "%")
+      p.select(".range-bar").style('left', scl(mnVal) + "%")
+        .style('width', scl(Math.abs(mnVal - coreVal)) + "%");
+      d3.select(target).select(".slider-handle-label")
+        .html(corpusSliders.x.getAdjustedMax());
+    }
+  }
+});
+dispatch.on('minChange', function(target, value, scl) {
+  var coreVal = Math.round(value);
+  console.log(coreVal);
+  d3.select(target).attr('data-value', coreVal);
+  var p = d3.select(target.parentNode);
+  var max = p.select('.max-handle');
+  if (p.classed('vertical')) {
+    var mxVal = parseInt(max.attr('data-value'));
+    if (coreVal > mxVal) {
+      corpusSliders.y.minVal = coreVal;
+      d3.select(target).style('top', scl(coreVal) + "%");
+      p.select(".range-bar").style('top', scl(mxVal) + "%")
+        .style('height', scl(Math.abs(mxVal - coreVal)) + '%');
+      d3.select(target).select(".slider-handle-label")
+        .html(coreVal + 1);
+    }
+  } else {
+    var mxVal = parseInt(max.attr('data-value'));
     if (value < mxVal) {
       corpusSliders.x.minVal = coreVal;
-      d3.select(target).style('left', Math.round(value) + "px");
-      p.select(".range-bar").style('left', Math.round(value) + "px")
-        .style('width', Math.abs(mxVal - value) + "px");
+      d3.select(target).style('left', scl(coreVal) + "%");
+      p.select(".range-bar").style('left', scl(coreVal) + "%")
+        .style('width', scl(Math.abs(mxVal - value)) + "%");
       d3.select(target).select(".slider-handle-label")
         .html(corpusSliders.x.getAdjustedMin());
     }
@@ -482,6 +509,7 @@ var corpusSliders = {
 function switchMode(){
   // switch modes
   tenMode = !tenMode;
+
   //clear all colors
   d3.selectAll("#corpus-chart rect")
     .attr("fill", topics.defaultColor)
@@ -529,8 +557,6 @@ function viewTenInit(e) {
   updateCorpusChart();
   d3.select('.chart-title').text("Top Ten Topics");
   d3.select("#corpus-topics").classed(".ten-mode", true);
-  d3.select(".view-ten").style("display","none");
-  d3.select(".view-all").style("display","inline-block");
   d3.select("#vertical-slide").style("display","none");
   d3.select("#top-ten")
     .style("display","block")
@@ -551,8 +577,6 @@ function viewAllInit(e) {
   setVertRange(0, 99);
   updateCorpusChart();
   d3.select('.chart-title').text("Topics ranked by % of entire corpus");
-  d3.select(".view-ten").style("display", "inline-block");
-  d3.select(".view-all").style("display", "none");
   d3.select("#vertical-slide").style("display", "block");
   d3.select("#top-ten").style("display", "none");
   d3.selectAll("#corpus-chart rect").style("opacity", "1");
@@ -655,13 +679,7 @@ function createTenList(keys) {
         .classed("color-box", true)
         .style("background-color", function(d){
           return (tenTopics.getColor(d.key));
-        })
-        .append("i")
-          .classed("fa fa-exchange", true)
-          .attr("aria-hidden", true)
-          .style("display", function(d) {
-            return (topics.contains(d.key)) ? "block" : "none";
-          });
+        });
   d3.selectAll("#corpus-ten-topics li")
     .append("p")
       .classed("topic-words", true)
@@ -721,16 +739,20 @@ function getVisData(keys, withAVG) {
       var avgPoint = {
         rank : -1,
         score : 0,
+        percentage: 0,
         topic : -1,
         year : 0,
       }
       for (var j = 0; j < dataTMP.length; j++) {
         avgPoint.year = dataTMP[j][i].year;
         avgPoint.score += dataTMP[j][i].score;
+        avgPoint.percentage += dataTMP[j][i].percentage;
       }
       avgPoint.score /= dataTMP.length
+      avgPoint.percentage /= dataTMP.length
       avgLine.push(avgPoint);
     }
+    console.log(avgLine);
     dataTMP.push(avgLine);
   }
   return dataTMP;
@@ -746,20 +768,20 @@ function showOrHideSection(selector, keyLength) {
 }
 
 function createTopicOverTimeVis(keys, data, withAVG=true) {
-  showOrHideSection("#topic-score-chart-wrapper", keys.length)
+  //showOrHideSection("#topic-score-chart-wrapper", keys.length)
   if (keys.length == 0){
-    return;
+    return Promise.resolve();
   }
   d3.select("#topic-score-chart").html("");
-  $("#topic-score-chart-inner-wrapper").css("width", $(".wrapper").innerWidth()
+  $("#topic-score-chart-inner-wrapper").css("width", $("body").innerWidth()
     - $("#selected-topics").outerWidth(true));
   var visData = getVisData(keys, withAVG);
   var margin = {top: 30, right: 30, bottom: 50, left: 80};
 
   var sizes = {
-    width : $(".wrapper").innerWidth()-$("#selected-topics").outerWidth(true)
+    width: $("body").innerWidth()-$("#selected-topics").outerWidth(true)
       - margin.left - margin.right,
-    height : 500 - margin.bottom - margin.top
+    height: 500 - margin.bottom - margin.top
   }
 
   var scale = {
@@ -771,7 +793,8 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     y: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return 100 * t.score / article_counts[t.year];
+        console.log(t);
+        return t.percentage;
       })
     }), 0])
     .range([0, sizes.height])
@@ -780,7 +803,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     yPerc: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        return 100 * t.score / article_counts[t.year];
+        return t.percentage;
       })
     }), 0])
     .range([0, sizes.height])
@@ -792,23 +815,66 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   }
   var line = d3.svg.line()
   .x(function(d) { return scale.x(d.year); })
-  .y(function(d) { return scale.y(100 * d.score / article_counts[d.year]); })
+  .y(function(d) {
+    return scale.y(d.percentage);
+  })
   .interpolate("linear");
 
   var graph = d3.select("#topic-score-chart").append("svg").data(visData)
-  .attr("width", sizes.width + margin.left + margin.right)
-  .attr("height", sizes.height + margin.top + margin.bottom);
+  .attr("width", "100%")
+  // .attr("preserveAspectRatio", "none")
+  .attr("viewBox", "0 0 " + (sizes.width + margin.left + margin.right)
+        + " " + (sizes.height + margin.top + margin.bottom));
   var g = graph.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-  $.each(visData, function(key, value) {
-    g.append("path")
+
+  var reducedData = Object.values(visData)
+    .reduce(function(list, curr) {
+      return list.concat(curr)
+    }, [])
+    .map(function(point) {
+      return {
+        topic: point.topic,
+        percentage: point.percentage,
+        year: point.year
+      };
+    })
+  g.selectAll('path')
+    .data(Object.values(visData))
+    .enter().append("path")
     .attr("fill", "none")
-    .attr("stroke", function(d) { return topics.getColor(value[0].topic) })
+    .attr("stroke", function(d) { return topics.getColor(d[0].topic) })
     .attr("stroke-linejoin", "round")
     .attr("stroke-linecap", "round")
-    .attr("stroke-width", function(d) {return (value[0].topic == -1) ? 3 : 1.5})
-    .attr("d", line(value));
+    .attr("stroke-width", function(d) { return (d[0].topic == -1) ? 2 : 3})
+    .style("stroke-dasharray", function(d) { return (d[0].topic == -1) ? "4 3" : "0"})
+    .attr("d", line)
+
+  var lineTip = d3.tip()
+    .attr('class', 'd3-tip')
+    .offset([-10,0])
+    .html(function(d) {
+      return ("<strong>" + ((d.topic !== -1) ? ("Topic " + d.topic) : "Average")
+        + '<br>'
+        + truncateDecimals(d.percentage, 2)
+        + '%  in ' + d.year + "</strong>");
+    })
+  g.selectAll('circle')
+    .data(reducedData)
+    .enter().append('circle')
+  .attr("fill", function(d) { return topics.getColor(d.topic) })
+  .attr('stroke', function(d) { return topics.getColor(d.topic) })
+  .attr('stroke-width', 0)
+  .attr('cx', function(d) { return scale.x(d.year) })
+  .attr('cy', function(d) { return scale.y(d.percentage) })
+  .attr('r', function(d) {return (d.topic == -1) ? 2 : 3})
+  .call(lineTip)
+  .on('mouseover', function(d) {
+    lineTip.show(d);
   })
+  .on('mouseout', lineTip.hide);
+
+
   g.append("g")
     .classed("y axis", true)
     .call(axis.y)
@@ -818,7 +884,7 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
       .attr("dy", "-3.5em")
       .attr("dx", "-20%")
       .style("transform", "rotate(-90deg)")
-      .text("% of Corpus (per year)");
+      .text("% of corpus (by year)");
 
   g.append("g")
     .classed("x axis", true)
@@ -834,9 +900,9 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
   $("#selected-topics-list").html("");
   $("#selected-topics").css("height", $("#topic-score-chart-inner-wrapper").height());
   $.each(data, function(key, tData) {
-    var words = wordObjToString(tData.words, 10)
-    spaces = ""
-    for(var i = 2 - key.toString().length; i > 0; i--) {
+    var words = wordObjToString(tData.words, 5)
+    var spaces = "";
+    for (var i = 2 - key.toString().length; i > 0; i--) {
       spaces += "&nbsp;&nbsp;";
     }
     var el = "<li data-topic=" + key + " data-rank=" + tData.rank + ">"
@@ -855,4 +921,5 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
            + "</li>";
    $("#selected-topics-list").append(el);
   }
+  return Promise.resolve();
 }

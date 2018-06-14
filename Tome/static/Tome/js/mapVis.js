@@ -16,40 +16,66 @@ var maxScore = 0;
 // from an external file with AJAX, or loaded from Mapbox automatically.
 
 function updateMapLocations(keys) {
-  $.ajax({
-    type : "GET",
-    url : map_data_link,
-    data : {
-      json_data : JSON.stringify({'topics' : keys})
-    },
-    success : function(data) {
-      console.log(data);
-      if (visLayer != undefined){
-        clearMapData();
+  return new Promise(function(resolve, reject) {
+    $.ajax({
+      type : "GET",
+      url : map_data_link,
+      data : {
+        json_data : JSON.stringify({'topics' : keys})
+      },
+      success : function(data) {
+        console.log(data);
+        if (visLayer != undefined){
+          clearMapData();
+        }
+        console.log(data);
+        if (keys.length == 0) {
+          $("#map-wrapper").css("display","none");
+          // fix map resizes issue
+          map.invalidateSize();
+        } else {
+          $("#map-wrapper").css("display","block");
+          // fix map resizes issue
+          map.invalidateSize();
+        }
+        addMapData(data);
+        updateMapInfo(data);
+        resolve()
+      },
+      error : function(textStatus, errorThrown) {
+        console.log(textStatus);
+        reject(errorThrown);
       }
-      console.log(data);
-      if (keys.length == 0) {
-        $("#map-wrapper").css("display","none");
-        // fix map resizes issue
-        map.invalidateSize();
-      } else {
-        $("#map-wrapper").css("display","block");
-        // fix map resizes issue
-        map.invalidateSize();
-      }
-      addMapData(data);
-      updateMapInfo(data);
-      // endLoad();
-    },
-    error : function(textStatus, errorThrown) {
-      console.log(textStatus);
-    }
+    });
   });
 }
 
 function clearMapData() {
   map.removeLayer(visLayer);
   maxScore = 0;
+}
+
+function createLocationMarker(loc) {
+  var locationMarker = {
+    type: 'Feature',
+    properties: {
+      name: loc.location.city + ", " + loc.location.state,
+      topics: [],
+      count: 0
+    },
+    geometry: {
+      type: 'Point',
+      coordinates: [loc.location.lng, loc.location.lat]
+    }
+  };
+  $.each(loc.topics, function(i, t) {
+    locationMarker.properties.topics.push(t);
+    locationMarker.properties.count += t.score;
+  });
+  if (locationMarker.properties.count > maxScore) {
+    maxScore = locationMarker.properties.count;
+  }
+  return locationMarker;
 }
 
 function addMapData(locations) {
@@ -59,32 +85,11 @@ function addMapData(locations) {
   };
   $.each(locations, function (id, loc) {
     console.log(loc);
-    var locationMarker = {
-      type: 'Feature',
-      properties: {
-        name: loc.location.city + ", " + loc.location.state,
-        topics: [],
-        count: 0
-      },
-      geometry: {
-        type: 'Point',
-        coordinates: [loc.location.lng, loc.location.lat]
-      }
-    };
-    $.each(loc.topics, function(i, t) {
-      console.log("ADDING NEW TOPIC TO " + loc.location.city);
-      locationMarker.properties.topics.push(t);
-      locationMarker.properties.count += t.score;
-    });
-    if (locationMarker.properties.count > maxScore) {
-      maxScore = locationMarker.properties.count;
-    }
-    geoJsonData.features.push(locationMarker);
+    geoJsonData.features.push(createLocationMarker(loc));
   });
 
   visLayer = L.geoJson(geoJsonData, {
       pointToLayer: function(feature, latlng) {
-        console.log("MAPY T : " + feature.properties.topics);
         //var tClr = topics.getColor(feature.properties.topic);
         //if (tClr === undefined) return;
         tClr = ["#ffffff"];
@@ -103,14 +108,15 @@ function addMapData(locations) {
         }
         var popupOptions = { maxWidth: 500 };
         var popupContent = '<div>';
-        var s = (feature.properties.topics.length > 1) ? "s" : "";
-        popupContent += '<h6>' + "Topic" + s + " ";
-        $.each(feature.properties.topics, function(i, topic) {
-          var c = (i + 1 >= feature.properties.topics.length) ? "" : ", ";
-          popupContent += topic.key + c;
-        });
-        popupContent += '</h6>';
-        popupContent += '<span>' + truncateDecimals(feature.properties.count, 4)
+        // var s = (feature.properties.topics.length > 1) ? "s" : "";
+        // popupContent += '<h6>' + "Topic" + s + " ";
+        // $.each(feature.properties.topics, function(i, topic) {
+        //   var c = (i + 1 >= feature.properties.topics.length) ? "" : ", ";
+        //   popupContent += topic.key + c;
+        // });
+        // popupContent += '</h6>';
+        popupContent += '<h6>' + feature.properties.name + "</h6>";
+        popupContent += '<span>' + truncateDecimals(feature.properties.count, 2)
           + '%</span>' + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
         circle.bindPopup(popupContent, popupOptions);
@@ -143,13 +149,16 @@ function addMapData(locations) {
  *
  */
 function makePercCompBar(selector, topicData, styles={}) {
-  var totalPerc = 0;
-  var shifts = {};
-  $.each(topicData, function(i, tpc) {
-    var percent = tpc.score;
-    totalPerc += percent;
-    shifts[tpc.key] = totalPerc - percent;
-  });
+  var topicValues = Object.values(topicData);
+  var topicPercData = topicValues.reduce(function(percObj, tpc) {
+    console.log(percObj, tpc);
+    percObj.total += tpc.score;
+    percObj.shifts[tpc.key] = percObj.total - tpc.score;
+    return percObj;
+  },{total: 0, shifts:{}});
+  var shifts = topicPercData.shifts;
+  var totalPerc = topicPercData.total;
+  console.log(totalPerc);
   var margin = (styles.margin == undefined) ?
     {top: 10, right: 30, bottom: 50, left: 30} : styles.margin;
 
@@ -157,13 +166,14 @@ function makePercCompBar(selector, topicData, styles={}) {
     width : $(selector).innerWidth()
       - margin.left - margin.right,
     offset : 5,
-    height : 40,
+    height : 20,
     upperHeight: 20,
-    gap: 30
+    gap: 20
   } : styles.sizes;
 
   var labels = (styles.labels == undefined) ? {
-    percents: "% of Newspaper"
+    percents: "Percentage of newspaper",
+    shortened: "% of newspaper"
   } : styles.labels;
 
   var scale = {
@@ -178,7 +188,10 @@ function makePercCompBar(selector, topicData, styles={}) {
   };
 
   var axis = {
-    x: d3.svg.axis().scale(scale.x).orient("bottom"),
+    x: d3.svg.axis()
+        .scale(scale.x)
+        .ticks(6)
+        .orient("bottom"),
   }
 
   var area = d3.svg.area()
@@ -213,7 +226,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .append("title")
           .text(function(d) {
             var s = (d.other) ? "Other topics: " : "Selected Topics: ";
-            s += roundToPlace(d.score, 3) + labels.percents;
+            s += roundToPlace(d.score, 3) + ' ' + labels.shortened;
             return s;
           });
   graph.append('path').data([[
@@ -232,7 +245,7 @@ function makePercCompBar(selector, topicData, styles={}) {
   var splitTopics = graph.append("g")
     .attr("transform", "translate(" + margin.left + ","
             + (sizes.upperHeight + sizes.gap) + ")");
-    splitTopics.selectAll('rect').data(Object.values(topicData))
+    splitTopics.selectAll('rect').data(topicValues)
       .enter().append('rect')
         .attr('x', function(d) {return scale.x(shifts[d.key]);})
         .attr('y', 0)
@@ -249,7 +262,7 @@ function makePercCompBar(selector, topicData, styles={}) {
         .append("title")
           .text(function(d) {
             var s = "Topic " + d.key + ": "
-              + roundToPlace(d.score, 3) + labels.percents
+              + roundToPlace(d.score, 3) + ' ' + labels.shortened
             return s;
           })
 
@@ -278,36 +291,45 @@ function makePercCompBar(selector, topicData, styles={}) {
  */
 function getPaperCompBars(paperId, paperData) {
   var selector = ".paper[data-paper-id='" + paperId + "'] .bars";
-  var topicData = paperData['topics'];
+  var topicData = Object.values(paperData['topics']);
+  console.log(topicData);
   makePercCompBar(selector, topicData);
 }
 
-function makeTopicCompBars(topicData) {
+function makeTopicCompBars(data) {
   var selector = "#topic-comp-bars";
   $("#topic-comp-bars").html("");
-  makePercCompBar(selector, topicData, {labels:{percents:"% of Corpus"}});
+  var topicData = Object.values(data)
+    .map(function(topic) {
+      topic.score = topic.percentage;
+      return topic;
+    });
+  console.log(topicData);
+  makePercCompBar(selector, topicData, {
+    labels: {
+      percents:"Percentage of corpus",
+      shortened: "% of corpus"
+    }
+  });
+  return Promise.resolve();
 }
 
 var updateMapInfo = function(data) {
-  $(".papers-col").html("");
-  paperCount = 0;
+  $(".paper").remove();
   $.each(data, function(loc_id, loc_data) {
     $.each(loc_data.papers, function(paper_id, paper_data) {
       var subsection = "<div class='paper' data-paper-id='" + paper_id
         + "' data-paper-loc='" + loc_id + "'>"
-          + "<h3 class='title'>" + paper_data.title
-            + " (" + loc_data.location.city + ")"
+          + "<h3 class='title'>" + paper_data.title + "</h3>"
+          + "<h3 class='subtitle'>"
+            + loc_data.location.city + ', '
+            + loc_data.location.state
           + "</h3>"
           + "<div class='bars'></div>"
         + "</div>";
       var el = $(subsection)[0];
-      if (paperCount < 3) {
-        $(".papers-col.left").append(el);
-      } else {
-        $(".papers-col.right").append(el);
-      }
+      $(".papers-col").append(el);
       getPaperCompBars(paper_id, paper_data);
-      paperCount++;
     });
   });
 }

@@ -4,7 +4,10 @@
 var LOADING = false;
 const DNM_ID = "dnm-vis"
 var previousSearch = "";
-
+var topicSelectionTimeout = null;
+const TOPIC_SELECTION_PAUSE_TIME = 800;
+const MAX_WORDS = 30;
+const ADDITIONAL_WORD_LIST = {}
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -34,6 +37,9 @@ var scrollTop = function() {
     document.body).scrollTop;
 }
 
+// $('document').on('resize', function(e))
+
+
 function getScrollBarWidth () {
     var $outer = $('<div>').css({visibility: 'hidden', width: 100, overflow: 'scroll'}).appendTo('body'),
         widthWithScroll = $('<div>').css({width: '100%'}).appendTo($outer).outerWidth();
@@ -59,39 +65,48 @@ function getLoadedArticleKeys() {
 }
 
 // given an id, change the nav menu to have that selected
-function navChange(id, scrollToIt) {
+function navChange(dest, scrollToIt) {
+  var id = (dest[0] === '#' || dest[0] === '@') ? dest.substring(1) : dest
   $("nav .active").removeClass("active");
   $("nav li").filter(function() {
     return this.children[0].getAttribute('href') == "#" + id;
   }).addClass("active");
-  if (scrollToIt) {
-    document.querySelector("#" + id).scrollIntoView();
-  }
   if(history.pushState) {
     history.pushState(null, null, "#" + id);
   }
   else {
-      location.hash = "#" + id;
+    location.hash = "#" + id;
   }
+  if (dest[0] === '@') {
+    openOverlay(id)
+  } else {
+    if (scrollToIt) {
+      document.querySelector("#" + id).scrollIntoView();
+    }
+  }
+}
+
+function openOverlay(id) {
+  $('#' + id).addClass('is-open')
+}
+
+function closeOverlay(id) {
+  $('#' + id).removeClass('is-open')
 }
 
 function wordObjToString(arr, ct=-1) {
-  console.log(arr);
-  var s = "";
-
-  if (ct != -1 && ct < arr.length) {
-    var truncateAfter = ct;
-  } else {
-    var truncateAfter = arr.length;
-  }
-
-  for (var i = 0; i < truncateAfter; i++) {
-      s += arr[i].word;
-      s += (i < truncateAfter - 1 ) ? ", ": "";
-  }
-  return s;
+  var s = arr.slice(0, (ct != -1 && ct < arr.length) ? ct : arr.length)
+    .map(function(x) { return x.word })
+  return wordListToString(s);
 }
 
+function wordListToString(arr, ct=-1) {
+  var s = arr.slice(0, (ct != -1 && ct < arr.length) ? ct : arr.length)
+    .reduce(function(str, word) {
+      return str + ((str === "") ? "" : ", ") + word
+    },"")
+  return s;
+}
 window.onscroll = function() {
   if( scrollTop() >= hdr ) {
     mn.className = mns;
@@ -100,7 +115,6 @@ window.onscroll = function() {
   }
   var winBottom = $(window).scrollTop() + $(window).height();
   var currentSection = $(".section").filter(function() {
-
     var buffer = 20;
     var elTop = $(this).offset().top;
     var elBottom = $(this).offset().top + $(this).outerHeight(true);
@@ -119,11 +133,7 @@ window.onscroll = function() {
 };
 
 appendSlider("#vertical-slide", true);
-appendSlider("#horizontal-slide", false,
-  [data_start_year - 1, data_end_year - 1]);
-
-d3.select(".vis-no-title")
-  .style("min-width", width + $(".vert-slide-wrap").outerWidth(true) + "px");
+appendSlider("#horizontal-slide", false, [data_start_year - 1, data_end_year - 1]);
 
 function startLoad() {
   $("#loader").css("display","block");
@@ -134,17 +144,41 @@ function endLoad() {
 
 function startMiniLoad() {
   LOADING = true;
-  console.log("startMiniLoad");
-  $(".miniload").css("display","block");
+  console.log("load");
+  $("#loader").css("display","block");
 }
 function endMiniLoad() {
   LOADING = false;
   console.log("stopMiniLoad");
-  $(".miniload").css("display","none");
+  $("#loader").css("display","none");
+}
+
+function getTopicWords(topicKey) {
+  if (ADDITIONAL_WORD_LIST[topicKey]) {
+    return Promise.resolve(ADDITIONAL_WORD_LIST[topicKey])
+  }
+  return new Promise(function (resolve, reject) {
+    $.ajax({
+      type: "GET",
+      url: '/topics/' + topicKey + '/words',
+      data: {
+        count: MAX_WORDS,
+        offset: 0,
+      },
+      success: function (words) {
+        console.log('hit');
+        ADDITIONAL_WORD_LIST[topicKey] = words
+        return resolve(words)
+      },
+      error: function (xhr, ajaxOptions, err) {
+        return reject(err)
+      }
+    });
+  })
 }
 
 function updateTopicsSelected(e) {
-  // startLoad();
+  startLoad();
   $.ajax({
     type : "GET",
     url : topic_data_link,
@@ -157,19 +191,20 @@ function updateTopicsSelected(e) {
       $("#topic-titles").html("");
       var output = "",
           words = "";
-
+      var first = true
       $.each(data, function(key, val) {
-        output += "<span class='topic-title' data-topic='"
+        output += "<span class='topic-title " + ((first) ? "active" : "")
+          + "' data-topic='"
           + val.key + "'>"
-        if (topics.count == 1) {
-          output += "<div class='color-box' style='background-color:"
-            + topics.getColor(val.key) + "'>&nbsp;&nbsp;&nbsp;</div>";
-          words = wordObjToString(val.words.slice(0,10));
+        if (first) {
+          first = false
+          getTopicWords(val.key)
+            .then(function (words) {
+              $('#topic-words').html(wordListToString(words, MAX_WORDS));
+            })
         }
+        console.log("WRD:", words);
         output += "<span>TOPIC " + val.key + "</span>";
-        output += (words != "") ? "<span class='topic-words'>&ndash;&nbsp;"
-          + words + "</span>" : "";
-        output += "</span>";
         $("#topic-titles").append(output);
         output = "";
       });
@@ -180,6 +215,7 @@ function updateTopicsSelected(e) {
         d3.select("#document-details").style("display","block");
         $("#topic-link").addClass("available");
         $("#document-link").addClass("available");
+        $("#document-details-link").addClass("available");
       } else {
         d3.select("#topic-details").style("display","none");
         d3.select("#documents").style("display","none");
@@ -187,13 +223,19 @@ function updateTopicsSelected(e) {
         d3.select("#document-details").style("display","none");
         $("#topic-link").removeClass("available").removeClass("active");
         $("#document-link").removeClass("available").removeClass("active");
+        $("#document-details-link").removeClass("available")
+          .removeClass("active");
+
       }
       console.log(data);
-      createTopicOverTimeVis(topics.getKeys(), data);
-      updateMapLocations(topics.getKeys());
-      makeTopicCompBars(data);
-      loadArticles(topics.getKeys());
-      // endLoad();
+      Promise.all([
+        createTopicOverTimeVis(topics.getKeys(), data),
+        updateMapLocations(topics.getKeys()),
+        makeTopicCompBars(data),
+        loadArticles(topics.getKeys())
+      ]).then(function() {
+        endLoad();
+      });
     },
     error : function(textStatus, errorThrown) {
       console.log(textStatus);
@@ -207,36 +249,25 @@ function updateTopicsList(search) {
     type : "GET",
     url : all_topic_list_link,
     data : {
-      json_data : JSON.stringify({'keywords' : search})
+      json_data : JSON.stringify({'word' : search})
     },
     success : function(data) {
       console.log("UPDATE TOPICS");
-      $("#corpus-topics").html("");
-      var output = "";
-      allTopicList = [];
-      allKeys = [];
-      $.each(data, function(key, t) {
-        allTopicList.push({
-          key:t.key,
-          desc: wordObjToString(t.words, 10)
-        })
-        allKeys.push(t.key);
-        var cls = "";
-        var clr = "transparent";
-        if (topics.contains(t.key)){
-          cls = "selected";
-          clr = topics.getColor(t.key);
-        }
-        output = "<li data-topic=" + t.key + "data-rank="
-          + t.rank + " class='" + cls + "''>"
-            + "<span class='topic-words'>"
-              + wordObjToString(t.words, 5)
-            + "</span>" + "&nbsp;"
-            + "<span class='color-box' style='background-color:"
-              + clr
-            + "'></span>"
-          + "</li>";
-        $("#corpus-topics").append(output);
+      $(".search-result").removeClass('search-result')
+      $(".searched").removeClass('searched')
+      listElementsSorted = $("#corpus-topics li").detach().sort(function(a, b) {
+        console.log(a.dataset.rank, b.dataset.rank)
+        return a.dataset.rank - b.dataset.rank;
+      });
+      if (data.length > 0) {
+        $("#corpus-topics").addClass('searched')
+      }
+      $("#corpus-topics").append(listElementsSorted);
+      data.reverse()
+        .forEach(function(tKey) {
+          var curr = $("#corpus-topics [data-topic='" + tKey + "']").detach()
+          curr.addClass('search-result');
+          $("#corpus-topics").prepend(curr);
       });
       endLoad();
     },
@@ -244,6 +275,22 @@ function updateTopicsList(search) {
       console.log(textStatus);
     }
   });
+}
+
+function topicToListElement(t) {
+  var inTopics = topics.contains(t.key);
+  var cls = (inTopics) ? "selected" : "";
+  var clr = (inTopics) ? topics.getColor(t.key) : "transparent";
+  output = "<li data-topic=" + t.key + "data-rank="
+    + t.rank + " class='" + cls + "''>"
+      + "<span class='topic-words'>"
+        + wordObjToString(t.words, 5)
+      + "</span>" + "&nbsp;"
+      + "<span class='color-box' style='background-color:"
+        + clr
+      + "'></span>"
+    + "</li>";
+    return output;
 }
 
 function addArticleToDocumentDetails(data) {
@@ -259,16 +306,30 @@ function addArticleToDocumentDetails(data) {
   } else {
     column = $(".right.column")
   }
-  articleInfo = '<div class="article-info" data-key=' + data.key + '>'
-    + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
+
+  var months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
+  var datestuff = data.date.split('/')
+  console.log(datestuff)
+  var month = months[parseInt(datestuff[0]) - 1],
+      day = datestuff[1],
+      year = datestuff[2];
+  articleInfo = '<div class="article-info removable" data-key=' + data.key + '>'
+    + '<div class=article-head>'
+      + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
+      + '<button class="delete btn-lite">'
+        + '<i class="fas fa-trash-alt" aria-hidden="true"></i>'
+      + '</button>'
+    + '</div>'
     + '<div class="indent">'
-      + '<ol class="general-info no-dec">'
-        + '<li>EDITOR: ' + data.editor + '</li>'
-        + '<li>DATE: ' + data.date + '</li>'
-        + '<li>NEWSPAPER: ' + data.newspaper + '</li>'
-        + '<li>LOCATION: ' + data.location + '</li>'
-      + '</ol>'
-      + '<h4>Top topics from selected:</h4>'
+      + '<p>'
+        + data.newspaper + ', ' + month + ' ' + day + ', ' + year
+      + '</p>'
+      + '<p><a target="blank" href="#document-details">view complete text</a></p>'
+      + '<h5>Top selected topics:</h5>'
       + '<ol class="topic-info no-dec indent">'
         + (function(tops) {
             var out = "";
@@ -359,13 +420,13 @@ function getStyledTopics(articleTopics, count=3) {
   return topTops;
 }
 
-function loadAdditionalArticles(count=50) {
+function loadAdditionalArticles(count=20) {
   loadArticles(topics.getKeys(), getLoadedArticleKeys(), count, false);
 }
 
 function clearArticlesTable() {
   $(".column").html("");
-  $("#documents .articles").html("");
+  $("#documents .articles .article").remove();
 }
 
 function addArticlesToDustAndMagnet(articles, wipeDust) {
@@ -379,21 +440,32 @@ function addArticlesToDustAndMagnet(articles, wipeDust) {
     }), wipeDust);
 }
 
-function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
+function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
   console.log(keys);
   console.log(excludeArticles);
   console.log(count);
-  startMiniLoad();
-  $.ajax({
-    type : "POST",
-    url : articles_link,
-    beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
-    data : JSON.stringify({
-      topics : keys,
-      articles: excludeArticles,
-      count: count
-    }),
-    success : function(data) {
+  $('.articles').addClass('loading');
+  const getArticles = new Promise(function (resolve, reject) {
+    $.ajax({
+      type : "POST",
+      url : articles_link,
+      beforeSend: function(xhr){xhr.setRequestHeader('X-CSRFToken', csrftoken);},
+      data : JSON.stringify({
+        topics : keys,
+        articles: excludeArticles,
+        count: count
+      }),
+      success : function(data) {
+        resolve(data);
+      },
+      error : function(textStatus, errorThrown) {
+        console.log(textStatus);
+        reject(errorThrown);
+      }
+    });
+  });
+  return (getArticles
+    .then(function(data) {
       if (overwrite) {
         clearArticlesTable()
       }
@@ -407,12 +479,11 @@ function loadArticles(keys, excludeArticles=[], count=50, overwrite=true) {
       $(".article-info").css("min-height", h);
       $(".loaded-articles").html(data.show_count);
       $(".total-articles").html(data.total_count);
-      endMiniLoad();
-    },
-    error : function(textStatus, errorThrown) {
-      console.log(textStatus);
-    }
-  });
+      return;
+    })
+    .then(function() {
+      $('.articles').removeClass('loading');
+    }));
 }
 
 function articleSelected(key) {
@@ -442,14 +513,20 @@ function getArticleDetails(articleKey, useSelectedTopics=true, count=5) {
   });
 }
 
+function clearSelectedArticles() {
+  $('.article.selected').removeClass('selected');
+  $('.article-info').remove()
+}
+
+
 $("#more-articles").click(function() {
   loadAdditionalArticles();
 });
 
 $("nav").on("click", "li:not(.available) a", function(e){ e.preventDefault() });
-$("nav").on("click", "li.available:not(.active) a", function(e){
+$("nav").on("click", "li.available a", function(e){
   e.preventDefault();
-  navChange(this.getAttribute("href").substring(1), true)
+  navChange(this.getAttribute("href"), true)
   $("li.active").removeClass("active");
   $(this.parentNode).addClass("active");
 });
@@ -471,17 +548,24 @@ $(".topic-list").on("mouseout", "li:not(.selected)", function(){
 });
 
 $(".topic-list").on("click", "li", function(e) {
+  clearTimeout(topicSelectionTimeout);
   var t = this.dataset.topic;
   var add = ! d3.select(this).classed("selected");
   if (add) {
     addTopicToSelected(t);
-    updateTopicsSelected(e);
   } else {
     removeTopicFromSelected(t);
-    updateTopicsSelected(e);
   }
-  sortTopicList();
+  topicSelectionTimeout = setTimeout(function() {
+    updateTopicsSelected(e);
+  }, TOPIC_SELECTION_PAUSE_TIME)
+  //sortTopicList();
 });
+
+function topicSelectionHandler(element, event) {
+
+}
+
 
 $("#clear-selected").on("click", function(e) {
   clearSelected();
@@ -489,11 +573,15 @@ $("#clear-selected").on("click", function(e) {
 });
 $(".view-ten").click(function(e) {
   console.log("view ten");
+  $(".view-ten").addClass("active");
+  $(".view-all").removeClass("active");
   switchMode();
 });
 
 $(".view-all").click(function(e) {
   console.log("view all");
+  $(".view-ten").removeClass("active");
+  $(".view-all").addClass("active");
   switchMode();
 });
 
@@ -528,7 +616,6 @@ $(".topic-sort").on('click', function(e){
 })
 
 $(window).on('click', function() {
-  console.log("NOT POP");
   if (sortOpen) {
     $('.sort-menu').css('display', 'none')
     sortOpen = false;
@@ -546,6 +633,15 @@ $('.sort-menu').on('click', 'li:not(.heading)', function(e) {
   sortTopicList();
 });
 
+$('body').on('click', '.topic-title', function(e) {
+  $('.topic-title').removeClass('active')
+  $(e.currentTarget).addClass('active')
+  getTopicWords(e.currentTarget.dataset.topic)
+    .then(function (words) {
+      $('#topic-words').html(wordListToString(words, MAX_WORDS));
+    })
+})
+
 $("body").on("click", '.article', function(e) {
   var target = e.currentTarget,
       key = target.dataset.key;
@@ -555,6 +651,17 @@ $("body").on("click", '.article', function(e) {
     selectArticle(key);
   }
 });
+
+$('body').on('click', '.overlay', function(e) {
+  if (e.target.className.includes('is-open')) {
+    closeOverlay(e.currentTarget.id)
+  }
+})
+
+$('body').on('click', '.close', function(e) {
+  console.log($(e.currentTarget).parents('.is-open'))
+  closeOverlay($(e.currentTarget).parents('.is-open').attr('id'))
+})
 
 $("body").on("click", '#dnm-zoom-reset', function(e) {
   resetDNMZoom(DNM_ID);
@@ -578,7 +685,17 @@ function switchView(switchViewId, viewItemName) {
 $("body").on("click", ".view-switch button", function(e) {
   console.log(e.currentTarget.dataset);
   switchView(e.currentTarget.dataset.target, e.currentTarget.name);
+  $(e.currentTarget).parent().children('.active').removeClass('active');
+  $(e.currentTarget).addClass('active');
 });
+
+$("body").on('click', '#clear-articles', function(e) {
+  clearSelectedArticles()
+});
+
+$("#document-details").on('click','button.delete', function(e) {
+  deselectArticle($(e.currentTarget).parents(".removable").data('key'))
+})
 
 function resetDNMZoom(id) {
   resetZoomPan(id);

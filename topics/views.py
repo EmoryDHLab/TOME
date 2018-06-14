@@ -1,13 +1,12 @@
 from django.db.models import Count, Sum
-from django.http import HttpResponse
-from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 import simplejson as json
-from .models import Topic, ArticleTopicRank
-from news.models import Location, Newspaper, Article
+from .models import Topic, ArticleTopicRank, NewspaperTopicPair
+from news.models import Newspaper, Article
 
 
-# Create your views here.
 def index(request):
     topics_list = Topic.objects.all()
     topics_len = len(topics_list)
@@ -16,6 +15,19 @@ def index(request):
         'topics_list': topics_list
     }
     return render(request, 'topics/index.html', context)
+
+
+def getTopicWords(request, key):
+    ct = int(request.GET.get("count"))
+    offset = int(request.GET.get("offset"))
+    if ct < 1:
+        return HttpResponseBadRequest('{"message": "count must be >= 1"}')
+    topic = get_object_or_404(Topic, key=key)
+    word_list = topic.words.prefetch_related('wordtopicrank')\
+        .order_by('wordtopicrank__rank')\
+        .values_list('text', flat=True)[offset:ct]
+    return HttpResponse(json.dumps(list(word_list)),
+                        content_type='application/json')
 
 
 def topicsAsJSON(request):
@@ -30,26 +42,17 @@ def topicsAsJSON(request):
     return HttpResponse(topics_json, content_type='application/json')
 
 
+# Returns an ordered list of topic keys to the client so that we can reorder on
+# the client
 def allTopicsAsJSON(request):
     keys = json.loads(request.GET.get("json_data"))
-    if ("keywords" in keys):
-        keywords = keys["keywords"].strip()
-        tokens = keywords.split(" ")
-    topics = []
-    topics.append(Topic.objects.filter(
-        words__text__in=tokens).distinct().order_by('-wordtopicrank__score'))
-    topics.append(Topic.objects.exclude(words__text__in=tokens).distinct())
-    topics_json = {}
-    rank = 1
-    for qset in topics:
-        ids = []
-        for t in qset:
-            if (t.id not in ids):
-                ids.append(t.id)
-                topics_json[rank] = t.toJSON()
-                rank += 1
-
-    topics_json = json.dumps(topics_json)
+    word = keys["word"].strip()
+    topics = list(Topic.objects.prefetch_related('words')
+                  .select_related('wordtopicrank')
+                  .filter(words__text=word)
+                  .distinct().order_by('-wordtopicrank__score')
+                  .values_list('key', flat=True))
+    topics_json = json.dumps(topics)
     return HttpResponse(topics_json, content_type='application/json')
 
 
@@ -67,38 +70,41 @@ def locationMap(request):
         }
     """
     keys = json.loads(request.GET.get("json_data"))
-    topics = Topic.objects.filter(key__in=keys["topics"]).order_by('rank')
-    papers = Newspaper.objects.all()
+    # get the scores by paper, annotate with paper article count
+    ntps = NewspaperTopicPair.objects.select_related('newspaper__location')\
+        .select_related('topic').filter(topic__key__in=keys["topics"])\
+        .annotate(article__count=Count('newspaper__issue__article'))\
+        .order_by('newspaper', 'topic__score')
     locs_json = {}
-    locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
-        .filter(newspaper_count__gt=0)
-    for loc in locs:
-        lc = {}
-        lc['location'] = loc.toJSON()
-        lc['topics'] = {}
-        lc['papers'] = {}
-        # for each topic
-        for i in range(len(topics)):
-            # for each newspaper
-            t = topics[i]
-            lc["topics"][i] = {
-                'key': t.key,
-                'score': t.percentByLocation(loc.id)
+    # locs = Location.objects.annotate(newspaper_count=Count('newspaper'))\
+    #     .filter(newspaper_count__gt=0)
+    topic_counter = 0
+    paper_counter = 0
+    for ntp in ntps:
+        paper = ntp.newspaper
+        loc = paper.location
+        topic = ntp.topic
+        lc = {} if (loc.id not in locs_json) else locs_json[loc.id]
+        if not lc:
+            lc['location'] = loc.toJSON()
+            lc['topics'] = {}
+            lc['papers'] = {}
+        if (paper.id not in lc["papers"]):
+            paper_counter += 1
+            topic_counter = 0
+            lc["papers"][paper.id] = {
+                "title": paper.title,
+                "topics": {}
             }
-            for paper in papers.filter(location__id=loc.id):
-                try:
-                    score = t.percentByPaper(paper.id)
-                except Exception as e:
-                    score = 0
-                if (paper.id not in lc["papers"]):
-                    lc["papers"][paper.id] = {
-                        "title": paper.title,
-                        "topics": {}
-                    }
-                lc["papers"][paper.id]["topics"][i] = {
-                    'key': t.key,
-                    'score': score
-                }
+        lc["papers"][paper.id]["topics"][topic_counter] = {
+            'key': topic.key,
+            'score': 100 * (ntp.score / ntp.article__count)
+        }
+        lc['topics'][topic_counter] = {
+            'key': topic.key,
+            'score': topic.percentByLocation(loc.id)
+        }
+        topic_counter += 1
         locs_json[loc.id] = lc
     locs_json = json.dumps(locs_json)
     return HttpResponse(locs_json, content_type='application/json')
@@ -109,9 +115,12 @@ def constructArticleTableData(keys, count, received_articles):
     print('getting article data:', keys, count, received_articles)
     total_received_articles = len(received_articles)
     # determine which the articles we want
-    id_score_tups = ArticleTopicRank.objects.filter(topic__key__in=keys)\
+    # .order_by('topic', '-score')\
+    id_score_tups = ArticleTopicRank.objects \
+        .select_related('article') \
+        .select_related('topic') \
+        .filter(topic__key__in=keys)\
         .exclude(article__key__in=received_articles)\
-        .order_by('-articletopicrank__score')\
         .values('article')\
         .annotate(score=Sum('score')).order_by("-score")\
         .values_list('article__key',
@@ -122,7 +131,10 @@ def constructArticleTableData(keys, count, received_articles):
     relevant = list(id_score_tups)
     # Get all atrs which have not yet been sent, within the given topics
     # Then preselect the articles to we can access them easily later
-    atr_tups = ArticleTopicRank.objects.filter(
+    atr_tups = ArticleTopicRank.objects \
+        .select_related('article') \
+        .select_related('topic') \
+        .filter(
             topic__key__in=keys,
             article__key__in=[k for (k, t, s, d, n) in relevant])\
         .order_by('-score')\

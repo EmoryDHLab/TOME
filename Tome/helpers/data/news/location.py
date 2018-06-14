@@ -10,7 +10,7 @@ LOCATIONS = [
     ('New York', 'New York', Decimal(40.7306), Decimal(-73.9352)),
     ('Philadelphia', 'Pennsylvania', Decimal(39.9526), Decimal(-75.1652)),
     ('Toledo', 'Ohio', Decimal(41.6510), Decimal(-83.5419)),
-    ('Ontario', 'Canada', Decimal(34.0689), Decimal(-117.6512)),
+    ('Ontario', 'Canada', Decimal(43.6532), Decimal(-79.3832)),
     ('Boston', 'Massachusetts', Decimal(42.3611), Decimal(-71.0571)),
     ('Seneca Falls', 'New York', Decimal(42.9106), Decimal(-76.7966)),
     ('Washington', 'DC', Decimal(38.9072), Decimal(-77.0369))

@@ -27,7 +27,7 @@ def createTopics():
 
 
 def pairWords():
-    f = open(BASE_PATH + WORDS_TITLE + '.csv')
+    f = open(BASE_PATH + WORDS_TITLE + '_fixed.csv')
     counter = 0
     word_topic_pairs = []
     baseWordId = Word.objects.all().order_by('id')[0].id
@@ -45,7 +45,7 @@ def pairWords():
                                          baseTopicId + int(topic),
                                          scr)
 
-            word_topic_pairs.append(wtr)
+                word_topic_pairs.append(wtr)
             i += 1
         if (counter % 100 == 0):
             WordTopicRank.objects.bulk_create(word_topic_pairs)

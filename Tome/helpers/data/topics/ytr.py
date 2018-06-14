@@ -1,6 +1,6 @@
 from topics.models import Topic, YearTopicRank
 from news.models import Corpus, Issue
-from Tome.helpers.data.helpers.debug import Printer
+from Tome.helpers.debug import Printer
 
 progress = Printer(True)
 
@@ -18,7 +18,7 @@ def generateYTRs():
 
     ct = 0
     for t in topics:
-        progress.log(ct, "/ 100")
+        progress.log("{} / 100".format(ct))
         for date in dates:
             addYTR(date.year, t, corpus)
         ct += 1
