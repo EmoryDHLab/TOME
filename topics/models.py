@@ -180,9 +180,8 @@ class WordTopicRank(models.Model):
 
     class Meta:
         """
-        Nested class which orders the WTRs by descending score, and forces
-        each word-topic pair to be unique (the same word should never appear
-        twice in the same topic)
+        Nested class which forces each word-topic pair to be unique
+        (the same word should never appear twice in the same topic)
         """
         unique_together = ('word', 'topic')
         indexes = [

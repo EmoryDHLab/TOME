@@ -1,7 +1,7 @@
 from Tome.helpers.data.helpers.general import BASE_PATH
-from news.models import Article
+# from news.models import Article
 import simplejson as json
-import datetime
+# import datetime
 from Tome.helpers.debug import Printer
 
 DATA_BASE_PATH = BASE_PATH
@@ -58,12 +58,13 @@ def parseLine(line, again=False):
 
 def linkArticles():
     f = open(DATA_BASE_PATH + DATA_TITLE)
-    ct = 1
+    # ct = 1
     ids = {}
     for line in f:
         article = parseLine(line.strip())
         if (article['TitleID'][0] not in ids):
-            print('{}: {}'.format(article['TitleID'][0], article['PaperTitle']))
+            print('{}: {}'.format(article['TitleID'][0],
+                                  article['PaperTitle']))
             ids[article['TitleID'][0]] = 1
         else:
             ids[article['TitleID'][0]] += 1

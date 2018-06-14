@@ -111,7 +111,7 @@
           <ol id="corpus-topics" class="topic-list">
             {% for t in topics %}
             <li data-topic="{{ t.key }}" data-rank="{{ t.rank }}">
-              <span class="topic-words">{{t.topFive}}</span>
+              <span class="topic-words">{{ t.top_words }}</span>
               <span class="color-box"></span>
             </li>
             {% endfor %}
@@ -280,14 +280,30 @@
       '{% for t in topics %}'
         allTopicList.push({
           key : parseInt('{{ t.key }}'),
-          desc : '{{ t.topTen }}',
+          desc : '{{ t.top_words }}',
           rank : parseInt('{{ t.rank }}'),
         });
+      '{% endfor %}'
+      topic_data = {}
+      '{% for ytr in ytrs %}'
+        ;(function () {
+          var ytr = {
+            year: parseInt('{{ ytr.year }}'),
+            score: parseFloat('{{ ytr.score }}'),
+            topic: parseInt('{{ ytr.topic.key }}'),
+            rank: parseInt('{{ ytr.rank }}'),
+            percentage: parseFloat('{{ ytr.percentage }}'),
+          }
+          if (!topic_data[ytr.year]) {
+            topic_data[ytr.year] = []
+          }
+          topic_data[ytr.year].push(ytr);
+        })();
       '{% endfor %}'
       allKeys = allTopicList.map(function(t) {
         return t.key;
       });
-      topic_data = JSON.parse('{{ topics_js | safe }}');
+      // topic_data = JSON.parse('{{ topics_js | safe }}');
       topic_data_link = "{% url 'topics:topics_as_json' %}";
       all_topic_list_link = "{% url 'topics:all_topics_as_json' %}";
       articles_link = "{% url 'topics:articles_by_topics' %}";
