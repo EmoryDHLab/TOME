@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from . import views
+from . import views, settings
 
 urlpatterns = [
     url(r'^$', views.index),
@@ -23,3 +23,7 @@ urlpatterns = [
     url(r'^topics/', include('topics.urls')),
     url(r'^admin/', admin.site.urls),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns.append(url(r'^__debug__/', include(debug_toolbar.urls)))
