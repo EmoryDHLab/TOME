@@ -67,10 +67,11 @@ function getLoadedArticleKeys() {
 // given an id, change the nav menu to have that selected
 function navChange(dest, scrollToIt) {
   var id = (dest[0] === '#' || dest[0] === '@') ? dest.substring(1) : dest
-  $("nav .active").removeClass("active");
-  $("nav li").filter(function() {
+  var current = $("nav li").filter(function() {
     return this.children[0].getAttribute('href') == "#" + id;
-  }).addClass("active");
+  })
+  $("nav .active").removeClass("active");
+  current.addClass("active");
   if(history.pushState) {
     history.pushState(null, null, "#" + id);
   }
@@ -144,12 +145,10 @@ function endLoad() {
 
 function startMiniLoad() {
   LOADING = true;
-  console.log("load");
   $("#loader").css("display","block");
 }
 function endMiniLoad() {
   LOADING = false;
-  console.log("stopMiniLoad");
   $("#loader").css("display","none");
 }
 
@@ -166,7 +165,6 @@ function getTopicWords(topicKey) {
         offset: 0,
       },
       success: function (words) {
-        console.log('hit');
         ADDITIONAL_WORD_LIST[topicKey] = words
         return resolve(words)
       },
@@ -186,8 +184,6 @@ function updateTopicsSelected(e) {
       json_data : JSON.stringify({'topics' : topics.getKeys()})
     },
     success : function(data) {
-      console.log("UPDATE");
-      console.log(data);
       $("#topic-titles").html("");
       var output = "",
           words = "";
@@ -203,7 +199,6 @@ function updateTopicsSelected(e) {
               $('#topic-words').html(wordListToString(words, MAX_WORDS));
             })
         }
-        console.log("WRD:", words);
         output += "<span>Topic " + val.key + "</span>";
         $("#topic-titles").append(output);
         output = "";
@@ -227,7 +222,6 @@ function updateTopicsSelected(e) {
           .removeClass("active");
 
       }
-      console.log(data);
       Promise.all([
         createTopicOverTimeVis(topics.getKeys(), data),
         updateMapLocations(topics.getKeys()),
@@ -252,11 +246,9 @@ function updateTopicsList(search) {
       json_data : JSON.stringify({'word' : search})
     },
     success : function(data) {
-      console.log("UPDATE TOPICS");
       $(".search-result").removeClass('search-result')
       $(".searched").removeClass('searched')
       listElementsSorted = $("#corpus-topics li").detach().sort(function(a, b) {
-        console.log(a.dataset.rank, b.dataset.rank)
         return a.dataset.rank - b.dataset.rank;
       });
       if (data.length > 0) {
@@ -313,7 +305,6 @@ function addArticleToDocumentDetails(data) {
   ]
 
   var datestuff = data.date.split('/')
-  console.log(datestuff)
   var month = months[parseInt(datestuff[0]) - 1],
       day = datestuff[1],
       year = datestuff[2];
@@ -367,7 +358,6 @@ function removeArticleDetails(key) {
 }
 
 function addArticleToDocuments(article) {
-  console.log(article)
   var articleDiv = document.createElement("div");
     articleDiv.className = "article";
     articleDiv.dataset.key = article.key;
@@ -440,9 +430,6 @@ function addArticlesToDustAndMagnet(articles, wipeDust) {
 }
 
 function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
-  console.log(keys);
-  console.log(excludeArticles);
-  console.log(count);
   $('.articles').addClass('loading');
   const getArticles = new Promise(function (resolve, reject) {
     $.ajax({
@@ -458,7 +445,6 @@ function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
         resolve(data);
       },
       error : function(textStatus, errorThrown) {
-        console.log(textStatus);
         reject(errorThrown);
       }
     });
@@ -468,7 +454,6 @@ function loadArticles(keys, excludeArticles=[], count=20, overwrite=true) {
       if (overwrite) {
         clearArticlesTable()
       }
-      console.log(data);
       articles = data.articles;
       $.each(articles, function(rank, article) {
         addArticleToDocuments(article)
@@ -571,14 +556,12 @@ $("#clear-selected").on("click", function(e) {
   updateTopicsSelected(e);
 });
 $(".view-ten").click(function(e) {
-  console.log("view ten");
   $(".view-ten").addClass("active");
   $(".view-all").removeClass("active");
   switchMode();
 });
 
 $(".view-all").click(function(e) {
-  console.log("view all");
   $(".view-ten").removeClass("active");
   $(".view-all").addClass("active");
   switchMode();
@@ -658,7 +641,6 @@ $('body').on('click', '.overlay', function(e) {
 })
 
 $('body').on('click', '.close', function(e) {
-  console.log($(e.currentTarget).parents('.is-open'))
   closeOverlay($(e.currentTarget).parents('.is-open').attr('id'))
 })
 
@@ -676,13 +658,11 @@ $("body").on("click", '#dnm-zoom-out', function(e) {
 
 function switchView(switchViewId, viewItemName) {
   var itemNameQuery = "#" + switchViewId + " .vs-item[data-item-name='" + viewItemName + "']";
-  console.log($("vs-item.active"));
   $("#" + switchViewId + " .vs-item.active").removeClass('active');
   $(itemNameQuery).addClass('active');
 }
 
 $("body").on("click", ".view-switch button", function(e) {
-  console.log(e.currentTarget.dataset);
   switchView(e.currentTarget.dataset.target, e.currentTarget.name);
   $(e.currentTarget).parent().children('.active').removeClass('active');
   $(e.currentTarget).addClass('active');
