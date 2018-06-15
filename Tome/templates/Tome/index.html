@@ -56,7 +56,7 @@
             <hr>
           </section>
           <section class="about__content">
-            <h3>The Interface</h3>
+            <h3>About the Interface</h3>
             <p class='about__paragraph'>
               TOME is a tool for humanities scholars, designed as an entrypoint
               into large collections of digitized text. It rests upon the
@@ -94,7 +94,7 @@
               the humanities research process; and to expand the conversation
               about their uses and their constraints.
             </p>
-            <h3>The Project</h3>
+            <h3>About the Project</h3>
             <p class='about__paragraph'>
               TOME began as a collaboration between <a target='blank' href="http://lklein.com/">Lauren Klein</a>
               and <a target='blank' href="https://www.cc.gatech.edu/~jeisenst/">Jacob Eisenstein</a>, funded by an
@@ -116,7 +116,7 @@
               Exploration,” <i>Digital Humanities 2018</i> (Association of Digital
               Humanities Organizations, 2018).
             </p>
-            <h3>The Technical Details</h3>
+            <h3>Technical Details</h3>
             <p class='about__paragraph'>
               Our corpus consists of over 300,000 documents drawn from a
               collection of nineteenth-century newspapers, focusing on issues
@@ -156,17 +156,13 @@
               Django’s ORM framework.
             </p>
             <p class='about__paragraph'>
-              This site is built using <a target='blank' href="https://www.djangoproject.com/">Django</a>, which we leveraged to make modelling our database easier.
-              This was not without its tradeoffs, and perhaps future iterations on this project could
-              learn from our oversight. Once the page loads, we use ajax to dynamically pull more data for
-              our visualizations from the server, some of these calls have to make a lot of calculations,
-              so our load times are not always ideal. Raw SQL might have been a better choice than the ORM
-              for this project. That said, the site acts as a solid prototype of our ideas. We put optimizations
-              on the back-burner in favor of a proof-of-concept approach.
+              The TOME interface was built with <a target='blank' href="https://www.djangoproject.com/">Django</a>, which we chose because of its ORM capabilities.
+              We also employ Ajax to pull additional data from the server in response to user interactions.
+              Because of the number of some of the underlying calculations, the site sometimes experiences slow load times.
+              Should we develop this from a prototype to a fully-functioning interface, additional optimizations-- or, perhaps, raw SQL-- will be required.
             </p>
             <p class='about__paragraph'>
-              The topic model and related processing scripts, as well as the code
-              for this site, can be found on <a target='blank' href="https://github.com/GeorgiaTechDHLab/TOME/">GitHub</a>.
+              All of the code for this site, including the topic model and related processing scripts, can be found on <a target='blank' href="https://github.com/GeorgiaTechDHLab/TOME/">GitHub</a>.
             </p>
           </section>
           <section class='about__footer'>
@@ -238,7 +234,7 @@
         </div>
         <div class='vis-wrap'>
           <div style="display: flex; align-items: center;">
-            <h2 class="chart-title">Topics ranked by percentage of entire corpus</h2>
+            <h2 class="chart-title">Topics ranked by percentage of corpus</h2>
             <div class="view-ten-wrap">
               <button class="btn-lite active view-all">View All</button>
               <button class="btn-lite view-ten">View 10</button>
