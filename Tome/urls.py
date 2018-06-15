@@ -23,7 +23,6 @@ urlpatterns = [
     url(r'^topics/', include('topics.urls')),
     url(r'^admin/', admin.site.urls),
 ]
-
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns.append(url(r'^__debug__/', include(debug_toolbar.urls)))
