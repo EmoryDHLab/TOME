@@ -50,26 +50,141 @@
       </div>
       <div id="about" class='overlay'>
         <div class="overlay-content">
-          <button class='btn-lite close'>X</button>
-          <h2>About</h2>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </p>
+          <section class="about__header">
+            <button class='btn-lite close'>X</button>
+            <h2>About</h2>
+            <hr>
+          </section>
+          <section class="about__content">
+            <h3>The Interface</h3>
+            <p class='about__paragraph'>
+              TOME is a tool for humanities scholars, designed as an entrypoint
+              into large collections of digitized text. It rests upon the
+              technique of topic modeling, a machine learning technique for
+              automatically identifying a set of topics--or themes--in a document
+              set. Megan R. Brett provides a basic introduction to topic modeling
+              <a target='blank' href="http://journalofdigitalhumanities.org/2-1/topic-modeling-a-basic-introduction-by-megan-r-brett/">here</a>. Ted Underwood provides a slightly more technical overview
+              <a target='blank' href="https://tedunderwood.com/2012/04/07/topic-modeling-made-just-simple-enough/">here</a>. And Scott Weingart provides some additional history of the
+              technique, along with an account of some additional applications
+              <a target='blank' href="http://www.scottbot.net/HIAL/index.html@p=221.html">here</a>.
+            </p>
+            <p class='about__paragraph'>
+              For our part, we sought to leverage the affordances of topic
+              modeling for a particular use: refining a large collection of
+              documents into a smaller set of more relevant texts-- ideally,
+              texts that a scholar would eventually read. In designing our
+              interface, we drew from our knowledge of how humanities scholars
+              usually begin the process of online research: with a keyword
+              search. We also incorporated ideas about the value of exploratory
+              data analysis, an approach to analyzing data that emphasizes
+              iteration. As the scholar gains a better sense of what is in their
+              dataset, and what questions they’d like to pursue, they can return
+              to the original model and refine it, adjusting any available
+              parameters and exploring the results. Here, scholars cannot refine
+              the original topic model. But they can return to the original
+              filtering mechanism at the top of the page, selecting additional
+              relevant topics (or de-selecting less relevant ones) as they
+              continue to refine the set of documents they plan to read.
+            </p>
+            <p class='about__paragraph'>
+              TOME is a prototype interface, with the caveats that any
+              prototype entails. In making our interface public, our goal is to
+              offer an interactive example of how topic modeling-- and machine
+              learning techniques more generally-- might be incorporated into
+              the humanities research process; and to expand the conversation
+              about their uses and their constraints.
+            </p>
+            <h3>The Project</h3>
+            <p class='about__paragraph'>
+              TOME began as a collaboration between <a target='blank' href="http://lklein.com/">Lauren Klein</a>
+              and <a target='blank' href="https://www.cc.gatech.edu/~jeisenst/">Jacob Eisenstein</a>, funded by an
+              <a target='blank' href="https://www.neh.gov/divisions/odh">NEH Office of Digital Humanities</a> Startup Grant.
+              During the first phase of the project, from 2013 to 2015, Iris Sun
+              (MS DM ‘14), Ana Smith (BS CS ‘15), and Catherine Roshelli (BS CM ‘15)
+              worked on the project. The resultant paper,
+              “<a target='blank' href="https://academic.oup.com/dsh/article/30/suppl_1/i130/365257">
+                Exploratory Analysis for Digitized Archival Collections</a>,”
+                <i>Digital Scholarship in the Humanities</i> 30.1 (Fall 2015) describes
+                that work.
+            </p>
+            <p class='about__paragraph'>
+              In 2017, Klein returned to the project with a new project team:
+              Adam Hayward (BS CS ‘20), Nikita Bawa (BS CS ‘18), Caroline Foster
+              (MS HCI ‘17), and Morgan Orangi (MS DM ‘18). This interface is the
+              result of that collaboration. It is described in more technical
+              detail in “TOME: A Topic Modeling Tool for Document Discovery and
+              Exploration,” <i>Digital Humanities 2018</i> (Association of Digital
+              Humanities Organizations, 2018).
+            </p>
+            <h3>The Technical Details</h3>
+            <p class='about__paragraph'>
+              Our corpus consists of over 300,000 documents drawn from a
+              collection of nineteenth-century newspapers, focusing on issues
+              including abolition and women’s rights. These papers include:
+              <i>
+                The Christian Recorder,
+                The Colored American,
+                Douglass Monthly,
+                Frank Leslie’s Weekly,
+                Frederick Douglass Paper,
+                Freedom’s Journal,
+                Godey’s Lady’s Book,
+                The Liberator,
+                The Lily,
+                The National Anti-Slavery Standard,
+                The National Citizen and Ballot Box,
+                The National Era,
+                The North Star,
+                The Provincial Freeman,
+                The Revolution,
+                and The Weekly Advocate.
+              </i>
+            </p>
+            <p class='about__paragraph'>
+              The documents were scraped from <a target='blank' href="http://accessible-archives.com/">Accessible Archives</a>
+              as per an agreement with Accessible.
+              Additional data cleaning, as well as metadata creation, was
+              performed through custom Python scripts.
+            </p>
+            <p class='about__paragraph'>
+              The topic model of our corpus was created using <a target='blank' href="https://radimrehurek.com/gensim/">gensim</a>,
+              the vector space and topic modeling library. We employed gensim’s wrapper for
+              Latent Dirichlet Allocation (LDA) from <a target='blank' href="http://mallet.cs.umass.edu/">MALLET</a>. We generated 100
+              topics after 100 iterations, filtering the 100 most common words.
+              We printed the topics and topical composition of each document to
+              CSV files. We then ingested the data into a MySQL database using
+              Django’s ORM framework.
+            </p>
+            <p class='about__paragraph'>
+              This site is built using <a target='blank' href="https://www.djangoproject.com/">Django</a>, which we leveraged to make modelling our database easier.
+              This was not without its tradeoffs, and perhaps future iterations on this project could
+              learn from our oversight. Once the page loads, we use ajax to dynamically pull more data for
+              our visualizations from the server, some of these calls have to make a lot of calculations,
+              so our load times are not always ideal. Raw SQL might have been a better choice than the ORM
+              for this project. That said, the site acts as a solid prototype of our ideas. We put optimizations
+              on the back-burner in favor of a proof-of-concept approach.
+            </p>
+            <p class='about__paragraph'>
+              The topic model and related processing scripts, as well as the code
+              for this site, can be found on <a target='blank' href="https://github.com/GeorgiaTechDHLab/TOME/">GitHub</a>.
+            </p>
+          </section>
+          <section class='about__footer'>
+            <hr>
+            <h3>Credits</h3>
+            <section class='about__footer__content'>
+            <p>This site was implemented by <a target='blank' href='http://adamhayward.me'>Adam Hayward</a>, BS CS ‘20.</p>
+            <p>The topic model was implemented by <a target='blank' href="https://nikitabawa.weebly.com/">Nikita Bawa</a>, BS CS ‘18.</p>
+            <p>
+              The site was designed by <a target='blank' href="https://www.carolinerfoster.com/">Caroline Foster</a>, MS HCI ‘17.
+              <a href="http://morganorangi.com/">Morgan Orangi</a> (MS DM ‘18) contributed additional design components.
+            </p>
+            <p>
+              The project was managed by <a target='blank' href="http://lklein.com/">Lauren Klein</a>.
+              Please <a target='blank' href="mailto:lauren.klein@lmc.gatech.edu">contact her</a> with any questions
+            </p>
+            <p>A project of the Georgia Tech <a target='blank' href="http://dhlab.lmc.gatech.edu/">Digital Humanities Lab</a>.</p>
+          </section>
         </div>
       </div>
       <div id="dataset-header">
@@ -168,7 +283,7 @@
         <h2>Topic Details</h2>
         <hr class="dark thick"/>
         <div class="sub-wrap">
-          <p id="topic-titles" class="sub-heading"></p>
+          <h3 id="topic-titles"></h3>
           <p id="topic-words"class="sub-heading">
             Hover over topics below to show more words here
           </p>
@@ -197,7 +312,7 @@
           <h2>Selected topics by location</h2>
           <div class="two-col-wrap papers-col">
             <div style="max-width: 100%; overflow: hidden;">
-              <div id='map' style='width: 600px; height: 600px;'></div>
+              <div id='map' style='min-width: 600px; max-width:calc(100% - 30px + .5em); height: 580px; margin-bottom: 20px'></div>
             </div>
           </div>
         </div>
@@ -258,12 +373,14 @@
       <div id="document-details" class="section" style='display: none;'>
         <h2>Document Details</h2>
         <hr class="dark thick"/>
-        <div id="sub-wrap">
-          <p class="sub-heading">
-            Select articles above to see their details here
-          </p>
+        <div id="document-details__content">
+          <div class="column-wrap"></div>
+          <div class="sub-wrap">
+            <p class="sub-heading">
+              Select articles above to see their details
+            </p>
+          </div>
         </div>
-        <div class="column-wrap"></div>
       </div>
     </main>
 
@@ -300,5 +417,10 @@
     </script>
     <script src="{% static "Tome/js/visScript.js" %}"></script>
     <script src="{% static "Tome/js/script.js" %}"></script>
+    <svg class='filter'>
+      <filter id="grayscale">
+        <feColorMatrix type="matrix" values="0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 0.3 0"/>
+      </filter>
+    </svg>
   </body>
 </html>

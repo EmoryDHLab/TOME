@@ -60,18 +60,20 @@ function createLocationMarker(loc) {
     type: 'Feature',
     properties: {
       name: loc.location.city + ", " + loc.location.state,
-      topics: [],
-      count: 0
+      topics: Object.values(loc.topics),
+      count: Object.values(loc.topics)
+        .map(function (t) { return t.score })
+        .reduce(function (tot, score) {
+          console.log(loc.location.city, score, tot + score);
+          return tot + score
+        }, 0)
     },
     geometry: {
       type: 'Point',
       coordinates: [loc.location.lng, loc.location.lat]
     }
   };
-  $.each(loc.topics, function(i, t) {
-    locationMarker.properties.topics.push(t);
-    locationMarker.properties.count += t.score;
-  });
+
   if (locationMarker.properties.count > maxScore) {
     maxScore = locationMarker.properties.count;
   }
@@ -117,22 +119,21 @@ function addMapData(locations) {
         // popupContent += '</h6>';
         popupContent += '<h6>' + feature.properties.name + "</h6>";
         popupContent += '<span>' + truncateDecimals(feature.properties.count, 2)
-          + '%</span>' + '</div>';
+          + '% area topic score</span>' + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
         circle.bindPopup(popupContent, popupOptions);
         circle.on('mouseover', function() {
           circle.setStyle({ weight: 3 });
-        });
-        circle.on('mouseout', function() {
-          circle.setStyle({ weight: markerOptions.weight });
-        });
-        circle.on('click', function() {
           circle.openPopup(latlng);
           var popUp = this.getPopup().getElement().querySelector('.leaflet-popup-content-wrapper');
           var popUpTip = this.getPopup().getElement().querySelector('.leaflet-popup-tip');
           popUpTip.style.borderTopColor = tClr;
           popUp.style.borderColor = tClr;
           popUp.style.backgroundColor = "white";
+        });
+        circle.on('mouseout', function() {
+          circle.setStyle({ weight: markerOptions.weight });
+          circle.closePopup(latlng);
         });
         return circle;
       }
