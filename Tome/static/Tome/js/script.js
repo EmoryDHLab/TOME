@@ -320,7 +320,7 @@ function addArticleToDocumentDetails(data) {
   articleInfo = '<div class="article-info removable" data-key=' + data.key + '>'
     + '<div class=article-head>'
       + '<h3>' + (ct + 1) + '. '
-        + '<a target="blank" href="' + data.link + '">' + data.title + '</a></h3>'
+        + '<a target="blank" href="' + 'http://accessible-archives.com/' + '">' + data.title + '</a></h3>'
       + '<button class="delete btn-lite">'
         + '<i class="fas fa-trash-alt" aria-hidden="true"></i>'
       + '</button>'

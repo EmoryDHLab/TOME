@@ -843,6 +843,10 @@ svg.filter { height: 0 }
   margin: 0;
 }
 
+#selected-topics-list li:hover {
+  background-color: #d8d8d8;
+}
+
 #selected-topics li {
   margin-bottom: 5px;
 }
