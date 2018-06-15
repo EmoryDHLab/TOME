@@ -24,11 +24,9 @@ function updateMapLocations(keys) {
         json_data : JSON.stringify({'topics' : keys})
       },
       success : function(data) {
-        console.log(data);
         if (visLayer != undefined){
           clearMapData();
         }
-        console.log(data);
         if (keys.length == 0) {
           $("#map-wrapper").css("display","none");
           // fix map resizes issue
@@ -43,7 +41,6 @@ function updateMapLocations(keys) {
         resolve()
       },
       error : function(textStatus, errorThrown) {
-        console.log(textStatus);
         reject(errorThrown);
       }
     });
@@ -64,7 +61,6 @@ function createLocationMarker(loc) {
       count: Object.values(loc.topics)
         .map(function (t) { return t.score })
         .reduce(function (tot, score) {
-          console.log(loc.location.city, score, tot + score);
           return tot + score
         }, 0)
     },
@@ -86,7 +82,6 @@ function addMapData(locations) {
     features: []
   };
   $.each(locations, function (id, loc) {
-    console.log(loc);
     geoJsonData.features.push(createLocationMarker(loc));
   });
 
@@ -99,7 +94,6 @@ function addMapData(locations) {
             .domain([0, maxScore])
             .range([0.25, 0.9]);
         size = 10;
-        console.log(feature.properties);
         var markerOptions = {
           radius: size,
           fillColor: tClr,
@@ -152,14 +146,12 @@ function addMapData(locations) {
 function makePercCompBar(selector, topicData, styles={}) {
   var topicValues = Object.values(topicData);
   var topicPercData = topicValues.reduce(function(percObj, tpc) {
-    console.log(percObj, tpc);
     percObj.total += tpc.score;
     percObj.shifts[tpc.key] = percObj.total - tpc.score;
     return percObj;
   },{total: 0, shifts:{}});
   var shifts = topicPercData.shifts;
   var totalPerc = topicPercData.total;
-  console.log(totalPerc);
   var margin = (styles.margin == undefined) ?
     {top: 10, right: 30, bottom: 50, left: 30} : styles.margin;
 
@@ -215,7 +207,6 @@ function makePercCompBar(selector, topicData, styles={}) {
         .attr('x', function(d) { return (d.other) ? scale.overall(totalPerc) : 0;})
         .attr('y', function(d) { return 0;})
         .attr('width', function(d) {
-          console.log(d, sizes.width);
           return scale.overall(d.score);
         })
         .attr('height', function(d) {
@@ -251,7 +242,6 @@ function makePercCompBar(selector, topicData, styles={}) {
         .attr('x', function(d) {return scale.x(shifts[d.key]);})
         .attr('y', 0)
         .attr('width',function(d) {
-          console.log("SCORE: " + d.score);
           return scale.x(d.score);
         })
         .attr('height',function(d) {
@@ -293,7 +283,6 @@ function makePercCompBar(selector, topicData, styles={}) {
 function getPaperCompBars(paperId, paperData) {
   var selector = ".paper[data-paper-id='" + paperId + "'] .bars";
   var topicData = Object.values(paperData['topics']);
-  console.log(topicData);
   makePercCompBar(selector, topicData);
 }
 
@@ -305,7 +294,6 @@ function makeTopicCompBars(data) {
       topic.score = topic.percentage;
       return topic;
     });
-  console.log(topicData);
   makePercCompBar(selector, topicData, {
     labels: {
       percents:"Percentage of corpus",

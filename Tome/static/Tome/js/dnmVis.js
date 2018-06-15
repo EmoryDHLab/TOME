@@ -57,7 +57,6 @@ function render(id, fData, newKeys, wipeDust=false) {
         DNM.data = [];
     }
     DNM.data = DNM.data.concat(fData);
-    console.log(DNM.data);
     newKeys.forEach(function(key) { // get new keys
         var exists = DNM.keys.find(function(k){
             return k.name == key.name;
@@ -75,7 +74,6 @@ function render(id, fData, newKeys, wipeDust=false) {
         }
         return exists;
     });
-    console.log("DNM_K: ", DNM.keys);
     // keep track of the magnets that are active (clicked)
     DNM.keys.map(function(d) {
         // calculate the min and max for each
@@ -245,7 +243,6 @@ function addMagnets(container, drag, wipeDust) {
                         .append('g')
                             .attr('class', 'magnet-group')
                             .attr('data-key', function(d) {
-                                console.log(d.name);
                                 return d.name;})
     try {
         magnets.call(DNM.tip);
@@ -279,8 +276,6 @@ function addMagnets(container, drag, wipeDust) {
 }
 
 function addDustParticles(container, reset) {
-    console.log(DNM.data);
-    console.log(reset);
     if (reset) {
         container.selectAll('.dust-group').remove();
     }
@@ -297,13 +292,11 @@ function addDustParticles(container, reset) {
         .attr('cx', function (d) {
             var rand = Math.random() * (DNM.width);
             d.x = rand;
-            console.log(d.x);
             return d.x;
         })
         .attr('cy', function (d) {
             var rand = Math.random() * (DNM.height - DNM.panelHeight);
             d.y = rand;
-            console.log(d.y);
             return d.y;
         })
         .attr('r', DNM.dustRadius)
@@ -314,7 +307,5 @@ function addDustParticles(container, reset) {
 }
 
 function renderFromArticleData(id, articleData, newKeys, wipeDust) {
-    console.log(articleData);
     render(id, convertTopicData(articleData), newKeys, wipeDust);
-    console.log("RENDERED");
 }

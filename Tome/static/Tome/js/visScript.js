@@ -54,7 +54,6 @@ function updateAllSelected(toTen = true) {
 
 // takes a topic and selects it on the UI (in lists/etc)
 function updateSelected(topic) {
-  console.log(topic);
   if (topic == undefined) return;
   var targets = d3.selectAll("li[data-topic = '"+ topic +"']");
   var add = !targets.classed("selected");
@@ -458,7 +457,6 @@ dispatch.on('maxChange', function(target, value, scl) {
 });
 dispatch.on('minChange', function(target, value, scl) {
   var coreVal = Math.round(value);
-  console.log(coreVal);
   d3.select(target).attr('data-value', coreVal);
   var p = d3.select(target.parentNode);
   var max = p.select('.max-handle');
@@ -752,7 +750,6 @@ function getVisData(keys, withAVG) {
       avgPoint.percentage /= dataTMP.length
       avgLine.push(avgPoint);
     }
-    console.log(avgLine);
     dataTMP.push(avgLine);
   }
   return dataTMP;
@@ -793,7 +790,6 @@ function createTopicOverTimeVis(keys, data, withAVG=true) {
     y: d3.scale.linear()
     .domain([d3.max(visData, function(tops) {
       return d3.max(tops, function(t) {
-        console.log(t);
         return t.percentage;
       })
     }), 0])

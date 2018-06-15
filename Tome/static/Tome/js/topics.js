@@ -34,23 +34,19 @@ TopicList.prototype.getColor = function(k) {
 TopicList.prototype.add = function(k) {
   k = parseInt(k);
   if (this.contains(k)) {
-    console.log("Already in it.");
     return;
   }
   if (this.count == 10){
-    console.log("Too many.");
     return;
   }
   if (this.count < this.getSelected().length){
     for (i = 0; i < this.getSelected().length; i++) {
       if (this.getSelected()[i] == undefined) {
         this.getSelected()[i] = k;
-        console.log("placed");
         break;
       }
     }
   } else {
-    console.log("placed");
     this.getSelected().push(k);
   }
   this.count++;
@@ -84,7 +80,6 @@ TopicList.prototype.addOrGet = function(k) {
 TopicList.prototype.deleteSelected = function(k) {
   k = parseInt(k);
   i = this.getSelected().indexOf(k);
-  console.log(i);
   if (i > -1) {
       this.getSelected()[i] = undefined;
       this.count--;
@@ -153,7 +148,6 @@ TopicList.prototype.getKeys = function() {
 }
 
 TopicList.prototype.copyFrom = function(keys) {
-  console.log(keys);
   this.clear();
   for (var i = 0; i < keys.length; i++) {
     if (keys[i] != undefined) {
