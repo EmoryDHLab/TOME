@@ -204,7 +204,7 @@ function updateTopicsSelected(e) {
             })
         }
         console.log("WRD:", words);
-        output += "<span>TOPIC " + val.key + "</span>";
+        output += "<span>Topic " + val.key + "</span>";
         $("#topic-titles").append(output);
         output = "";
       });
@@ -319,16 +319,15 @@ function addArticleToDocumentDetails(data) {
       year = datestuff[2];
   articleInfo = '<div class="article-info removable" data-key=' + data.key + '>'
     + '<div class=article-head>'
-      + '<h3>' + (ct + 1) + '. ' + data.title + '</h3>'
+      + '<h3>' + (ct + 1) + '. '
+        + '<a target="blank" href="' + data.link + '">' + data.title + '</a></h3>'
       + '<button class="delete btn-lite">'
         + '<i class="fas fa-trash-alt" aria-hidden="true"></i>'
       + '</button>'
     + '</div>'
     + '<div class="indent">'
-      + '<p>'
-        + data.newspaper + ', ' + month + ' ' + day + ', ' + year
-      + '</p>'
-      + '<p><a target="blank" href="#document-details">view complete text</a></p>'
+      + '<h3><i>' + data.newspaper + '</i></h3>'
+      + '<p>' + month + ' ' + day + ', ' + year + '</p>'
       + '<h5>Top selected topics:</h5>'
       + '<ol class="topic-info no-dec indent">'
         + (function(tops) {
@@ -695,6 +694,22 @@ $("body").on('click', '#clear-articles', function(e) {
 
 $("#document-details").on('click','button.delete', function(e) {
   deselectArticle($(e.currentTarget).parents(".removable").data('key'))
+})
+
+$("body").on('mouseover', "#selected-topics-list li", function (e) {
+  var key = e.currentTarget.dataset.topic
+  $('#topic-score-chart svg').addClass('desaturated')
+  $('#topic-score-chart path[data-key="' + key + '"], '
+    + '#topic-score-chart circle[data-key="' + key + '"]')
+    .addClass('saturated');
+})
+
+$("body").on('mouseout', "#selected-topics-list li", function (e) {
+  var key = e.currentTarget.dataset.topic
+  $('#topic-score-chart svg').removeClass('desaturated')
+  $('#topic-score-chart path[data-key="' + key + '"], '
+    + '#topic-score-chart circle[data-key="' + key + '"]')
+    .removeClass('saturated');
 })
 
 function resetDNMZoom(id) {
