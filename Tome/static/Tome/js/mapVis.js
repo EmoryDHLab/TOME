@@ -113,7 +113,7 @@ function addMapData(locations) {
         // popupContent += '</h6>';
         popupContent += '<h6>' + feature.properties.name + "</h6>";
         popupContent += '<span>' + truncateDecimals(feature.properties.count, 2)
-          + '% area topic score</span>' + '</div>';
+          + '% of papers in this location</span>' + '</div>';
         var circle = L.circleMarker(latlng, markerOptions);
         circle.bindPopup(popupContent, popupOptions);
         circle.on('mouseover', function() {
