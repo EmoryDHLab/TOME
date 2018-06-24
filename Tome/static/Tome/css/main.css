@@ -718,7 +718,7 @@ input[type='range'].vertical {
   margin-bottom: 20px;
 }
 
-.about__content {
+.about__content, .about__footer {
   /* -webkit-columns: 200px 3;
   -moz-columns: 200px 3;
   columns: 200px 3; */
