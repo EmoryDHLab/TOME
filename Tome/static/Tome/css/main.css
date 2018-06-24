@@ -719,9 +719,13 @@ input[type='range'].vertical {
 }
 
 .about__content {
-  -webkit-columns: 200px 3; /* Chrome, Safari, Opera */
-  -moz-columns: 200px 3; /* Firefox */
-  columns: 200px 3;
+  /* -webkit-columns: 200px 3;
+  -moz-columns: 200px 3;
+  columns: 200px 3; */
+  width: 70%;
+  max-width: 800px;
+  /* min-width: 360px; */
+  margin: auto;
 }
 
 .about__content h3 {
