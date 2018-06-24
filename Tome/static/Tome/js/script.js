@@ -328,7 +328,7 @@ function addArticleToDocumentDetails(data) {
                 + 'Topic <span class="color-box key" '
                   +'style="background-color:' + topics.getColor(t.key)
                   + '">' + t.key + '</span> &mdash; '
-                + 'Scored <span class="score">' + t.score + '</span>'
+                + '<span class="score">' + truncateDecimals(t.score*100, 3) + '%</span>'
                 + '<p class="topic-words indent">'
                     + (function(words) {
                         var out = "";
@@ -378,7 +378,7 @@ function addArticleToDocuments(article) {
     newspaper.className = "paper-title";
     $(articleDiv).append(newspaper);
   var prevalence = document.createElement("p");
-    prevalence.innerHTML = truncateDecimals(article.score, 4);
+    prevalence.innerHTML = truncateDecimals(article.score * 100, 2);
     $(articleDiv).append(prevalence);
   var topTops = getStyledTopics(article.topics);
     $(articleDiv).append(topTops);
