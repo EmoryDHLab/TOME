@@ -1,6 +1,6 @@
 from Tome.helpers.debug import Printer
 
-BASE_PATH = '/home/adam/Documents/TomeData/'
+BASE_PATH = '/home/ahayward3/'
 
 progress = Printer(True)
 

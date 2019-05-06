@@ -10,7 +10,7 @@ MONTHLY_PAPERS = [0, 4]
 DEFAULT_DAY = 1
 DEFAULT_MONTH = 1
 
-METADATA_TITLE = 'documentMetadata'
+METADATA_TITLE = 'TOME-20190204-docMetadata-headline-last-edited'
 
 
 articleKeys = {}

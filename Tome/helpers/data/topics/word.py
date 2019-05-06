@@ -15,7 +15,7 @@ def buildWord(text):
 
 
 def importWords():
-    f = open(BASE_PATH + WORDS_TITLE + '_fixed.csv')
+    f = open(BASE_PATH + WORDS_TITLE + '.csv')
     counter = 0
     words = []
     progress.reset()

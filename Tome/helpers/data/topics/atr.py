@@ -5,7 +5,7 @@ from Tome.helpers.data.helpers.general import BASE_PATH
 from Tome.helpers.debug import Printer
 from django.db.models import Sum
 
-ATRS_TITLE = 'all_newspapers_doc_topics'
+ATRS_TITLE = 'docTopics-new'
 TOPIC_COUNT = Topic.objects.count()
 
 out = Printer()

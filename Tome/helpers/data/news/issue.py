@@ -5,7 +5,7 @@ from Tome.helpers.data.helpers.general import BASE_PATH
 from Tome.helpers.debug import Printer
 
 DATA_BASE_PATH = BASE_PATH
-DATA_TITLE = METADATA_TITLE + '_fixed'
+DATA_TITLE = METADATA_TITLE
 
 out = Printer()
 

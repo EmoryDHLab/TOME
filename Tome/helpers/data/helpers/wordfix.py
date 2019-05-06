@@ -4,7 +4,7 @@ except ImportError as e:
     from Tome.helpers.data.helpers.general import parse, getColumnsFromLine
 
 MIN_WORD_LINE_LENGTH = 201
-WORDS_TITLE = 'word_to_topics'
+WORDS_TITLE = 'AntiSlaverytopics-new'
 words = {}
 
 
